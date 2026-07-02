@@ -53,6 +53,29 @@ export type ResultadoPago =
 export async function procesarWebhookPago(db: Db, evento: EventoPago): Promise<ResultadoPago> {
   if (evento.estado !== "aprobada") return { resultado: "link_no_activo" };
 
+  // Cinturón extra ante 40P01 (deadlock): la víctima se revierte COMPLETA
+  // (incluida su marca de idempotencia, misma transacción), así que reintentar
+  // es correcto y seguro.
+  for (let intento = 1; ; intento++) {
+    try {
+      return await procesarUnaVez(db, evento);
+    } catch (e) {
+      if (esDeadlock(e) && intento < 3) continue;
+      throw e;
+    }
+  }
+}
+
+function esDeadlock(e: unknown): boolean {
+  let actual = e as { code?: string; cause?: unknown } | undefined;
+  for (let i = 0; actual && i < 5; i++) {
+    if (actual.code === "40P01") return true;
+    actual = actual.cause as { code?: string; cause?: unknown } | undefined;
+  }
+  return false;
+}
+
+async function procesarUnaVez(db: Db, evento: EventoPago): Promise<ResultadoPago> {
   return await db.transaction(async (tx) => {
     // 1 · Idempotencia estricta
     const insertado = await tx
@@ -120,18 +143,23 @@ export async function procesarWebhookPago(db: Db, evento: EventoPago): Promise<R
           ),
         );
 
-      // 4b · Invalidar links activos competidores solapados (misma propiedad)
+      // 4b · Invalidar links activos competidores solapados (misma propiedad).
+      // SKIP LOCKED evita el deadlock: si el rival tiene SU link bloqueado es
+      // porque su webhook está corriendo — perderá la carrera de días y se
+      // auto-invalidará. Jamás esperamos su lock mientras él espera los días.
       await tx.execute(sql`
         UPDATE links_de_pago SET estado = 'invalidado'
-        WHERE estado = 'activo'
-          AND mitad = 1
-          AND id <> ${link.id}
-          AND reserva_id IN (
-            SELECT id FROM reservas
-            WHERE propiedad_id = ${reserva.propiedadId}
-              AND id <> ${reserva.id}
-              AND desde <= ${reserva.hasta} AND hasta >= ${reserva.desde}
-          )`);
+        WHERE id IN (
+          SELECT lp.id FROM links_de_pago lp
+          JOIN reservas r ON r.id = lp.reserva_id
+          WHERE lp.estado = 'activo'
+            AND lp.mitad = 1
+            AND lp.id <> ${link.id}
+            AND r.propiedad_id = ${reserva.propiedadId}
+            AND r.id <> ${reserva.id}
+            AND r.desde <= ${reserva.hasta} AND r.hasta >= ${reserva.desde}
+          FOR UPDATE OF lp SKIP LOCKED
+        )`);
     }
 
     // 5 · Registrar transacción + splits EXACTOS
