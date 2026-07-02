@@ -1,3 +1,6 @@
+"use client";
+
+import { motion } from "motion/react";
 import type { Reserva } from "@/lib/domain/tipos";
 import { entregaAutorizada, progresoReserva } from "@/lib/domain/reserva";
 import { EstadoBadge, Money } from "./ui";
@@ -24,9 +27,12 @@ export function Semaforo({ reserva, propiedadNombre }: { reserva: Reserva; propi
       </div>
 
       <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-panel">
-        <div
-          className={`h-full rounded-full transition-all ${verde ? "bg-esmeralda" : "bg-oro"}`}
-          style={{ width: `${progreso}%` }}
+        <motion.div
+          className={`h-full rounded-full ${verde ? "bg-esmeralda" : "bg-oro"}`}
+          initial={{ width: 0 }}
+          whileInView={{ width: `${progreso}%` }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
         />
       </div>
 

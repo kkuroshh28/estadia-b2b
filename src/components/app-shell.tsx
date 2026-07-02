@@ -11,6 +11,7 @@ const SECCIONES = [
     items: [
       { href: "/app/propietario", label: "Panel y reservas" },
       { href: "/app/propietario/calendario", label: "Calendario y tarifa" },
+      { href: "/app/propietario/principales", label: "Mis principales" },
     ],
   },
   {
@@ -19,6 +20,7 @@ const SECCIONES = [
     items: [
       { href: "/app/principal", label: "Solicitudes entrantes" },
       { href: "/app/negociacion", label: "Módulo de negociación" },
+      { href: "/app/principal/comisiones", label: "Mis comisiones" },
     ],
   },
   {
@@ -27,8 +29,22 @@ const SECCIONES = [
     items: [
       { href: "/app/externo", label: "Buscar disponibilidad" },
       { href: "/app/externo/links", label: "Links de pago" },
+      { href: "/app/externo/comisiones", label: "Mis comisiones" },
     ],
   },
+  {
+    rol: "Común",
+    alias: null,
+    items: [{ href: "/app/chat", label: "Chat interno" }],
+  },
+];
+
+const NAV_MOVIL = [
+  { href: "/app/propietario", label: "Panel", icono: "▦" },
+  { href: "/app/principal", label: "Solicitudes", icono: "◉" },
+  { href: "/app/externo", label: "Buscar", icono: "⌕" },
+  { href: "/app/chat", label: "Chat", icono: "✉" },
+  { href: "/app/externo/links", label: "Links", icono: "⛓" },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -39,7 +55,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen">
-      {/* SIDEBAR */}
+      {/* SIDEBAR (desktop) */}
       <aside className="hidden w-64 shrink-0 flex-col border-r border-borde bg-panel lg:flex">
         <Link href="/" className="border-b border-borde px-6 py-5">
           <p className="font-display text-xl text-tinta">
@@ -121,24 +137,28 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        {/* Nav móvil */}
-        <div className="flex gap-2 overflow-x-auto border-b border-borde bg-panel px-4 py-2 lg:hidden">
-          {SECCIONES.flatMap((s) => s.items).map((i) => (
-            <Link
-              key={i.href}
-              href={i.href}
-              className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-xs ${
-                pathname === i.href
-                  ? "border-esmeralda/40 bg-esmeralda-tenue text-esmeralda"
-                  : "border-borde text-bruma"
-              }`}
-            >
-              {i.label}
-            </Link>
-          ))}
-        </div>
+        <main className="flex-1 px-5 pb-24 pt-8 sm:px-8 lg:pb-8">{children}</main>
 
-        <main className="flex-1 px-5 py-8 sm:px-8">{children}</main>
+        {/* NAV INFERIOR (móvil) */}
+        <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-borde bg-panel/95 backdrop-blur lg:hidden">
+          <div className="mx-auto flex max-w-md items-stretch justify-between px-2 pb-[env(safe-area-inset-bottom)]">
+            {NAV_MOVIL.map((i) => {
+              const activo = pathname.startsWith(i.href);
+              return (
+                <Link
+                  key={i.href}
+                  href={i.href}
+                  className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-semibold transition ${
+                    activo ? "text-esmeralda" : "text-bruma-osc hover:text-bruma"
+                  }`}
+                >
+                  <span className="text-base leading-none">{i.icono}</span>
+                  {i.label}
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
       </div>
     </div>
   );

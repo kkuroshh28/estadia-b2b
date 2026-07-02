@@ -289,6 +289,49 @@ export const LINKS_DE_PAGO: LinkDePago[] = [
   },
 ];
 
+/**
+ * Días OCUPADOS de julio 2026 por propiedad (reservas pagadas + iCal + bloqueos
+ * manuales). En búsqueda y ficha estos días están deshabilitados: ni clickeables.
+ */
+export const DIAS_OCUPADOS_JULIO: Record<string, number[]> = {
+  "prop-01": [4, 5, 24, 25, 26],
+  "prop-02": [10, 11, 12, 13],
+  "prop-03": [20, 31],
+  "prop-04": [1, 2],
+  "prop-05": [3, 4],
+  "prop-06": [15, 16, 17],
+};
+
+/** Historial de splits liquidados (para "Mis comisiones"). */
+export interface SplitLiquidado {
+  fecha: string;
+  codigo: string;
+  propiedad: string;
+  mitad: 1 | 2;
+  comisionTotal: number;
+  principal: number;
+  externo: number;
+  dispersado: boolean;
+}
+
+export const SPLITS_LIQUIDADOS: SplitLiquidado[] = [
+  { fecha: "01 jul", codigo: "EST-2026-00341", propiedad: "Penthouse Provenza 1102", mitad: 2, comisionTotal: 320_000, principal: 160_000, externo: 128_000, dispersado: true },
+  { fecha: "28 jun", codigo: "EST-2026-00358", propiedad: "Casa Campestre Llanogrande", mitad: 1, comisionTotal: 300_000, principal: 150_000, externo: 120_000, dispersado: true },
+  { fecha: "24 jun", codigo: "EST-2026-00341", propiedad: "Penthouse Provenza 1102", mitad: 1, comisionTotal: 320_000, principal: 160_000, externo: 128_000, dispersado: true },
+  { fecha: "20 jun", codigo: "EST-2026-00287", propiedad: "Glamping Bosque Nublado", mitad: 2, comisionTotal: 120_000, principal: 60_000, externo: 48_000, dispersado: true },
+  { fecha: "18 jun", codigo: "EST-2026-00287", propiedad: "Glamping Bosque Nublado", mitad: 1, comisionTotal: 120_000, principal: 60_000, externo: 48_000, dispersado: true },
+  { fecha: "12 jun", codigo: "EST-2026-00274", propiedad: "Finca Mirador del Peñol", mitad: 2, comisionTotal: 410_000, principal: 205_000, externo: 164_000, dispersado: true },
+];
+
+export const COMISIONES_POR_MES = [
+  { mes: "Feb", principal: 980_000, externo: 784_000 },
+  { mes: "Mar", principal: 1_420_000, externo: 1_136_000 },
+  { mes: "Abr", principal: 1_150_000, externo: 920_000 },
+  { mes: "May", principal: 1_890_000, externo: 1_512_000 },
+  { mes: "Jun", principal: 2_140_000, externo: 1_712_000 },
+  { mes: "Jul", principal: 2_340_000, externo: 1_872_000 },
+];
+
 export function propiedadPorId(id: string): Propiedad {
   const p = PROPIEDADES.find((x) => x.id === id);
   if (!p) throw new Error(`Propiedad no encontrada: ${id}`);

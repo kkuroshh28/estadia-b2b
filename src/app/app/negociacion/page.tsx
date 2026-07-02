@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { AnimatePresence, motion } from "motion/react";
 import { AvatarAlias, Badge, Card, Money } from "@/components/ui";
+import { MoneyAnimado } from "@/components/motion";
 import { DesgloseSplit } from "@/components/desglose";
 import { NEGOCIACION_DEMO, propiedadPorId } from "@/lib/data/demo";
 import { calcularSplit, validarPropuesta } from "@/lib/domain/split";
@@ -105,7 +107,13 @@ export default function ModuloNegociacion() {
               const esMia = o.emisor === perspectiva;
               const aliasEmisor = o.emisor === "principal" ? neg.aliasPrincipal : neg.aliasExterno;
               return (
-                <div key={o.id} className={`flex gap-3 ${esMia ? "flex-row-reverse" : ""}`}>
+                <motion.div
+                  key={o.id}
+                  initial={{ opacity: 0, y: 16, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 28 }}
+                  className={`flex gap-3 ${esMia ? "flex-row-reverse" : ""}`}
+                >
                   <AvatarAlias alias={aliasEmisor} size={34} />
                   <div
                     className={`max-w-[75%] rounded-2xl border px-4 py-3 ${
@@ -124,12 +132,18 @@ export default function ModuloNegociacion() {
                       <Money valor={o.monto - neg.tarifaNetaTotal} className="text-oro" />
                     </p>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
 
+            <AnimatePresence>
             {acordado && (
-              <div className="rounded-2xl border border-esmeralda/35 bg-esmeralda-tenue p-5 text-center">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.92, y: 18 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ type: "spring", stiffness: 240, damping: 20 }}
+                className="rounded-2xl border border-esmeralda/35 bg-esmeralda-tenue p-5 text-center"
+              >
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-esmeralda">
                   Precio acordado por ambos
                 </p>
@@ -145,8 +159,9 @@ export default function ModuloNegociacion() {
                 >
                   Ver checkout del cliente →
                 </Link>
-              </div>
+              </motion.div>
             )}
+            </AnimatePresence>
           </div>
         </Card>
 
@@ -179,7 +194,7 @@ export default function ModuloNegociacion() {
                   onChange={(e) => setPropuesta(Number(e.target.value))}
                   className="mt-3 w-full accent-oro"
                 />
-                <Money valor={propuesta} className="mt-1 block text-center text-2xl font-bold text-tinta" />
+                <MoneyAnimado valor={propuesta} className="mt-1 block text-center text-2xl font-bold text-tinta" />
                 {!validacion.valida && (
                   <p className="mt-2 rounded-lg border border-rojo/30 bg-rojo-tenue p-2 text-[11px] text-rojo">
                     {validacion.motivo}

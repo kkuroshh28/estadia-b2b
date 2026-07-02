@@ -1,36 +1,36 @@
 @import "tailwindcss";
 
-/* ─── ESTADÍA · sistema de diseño "esmeralda y oro" ───
-   Negro-verde profundo (bosque antioqueño) como lienzo,
-   esmeralda para lo operativo/positivo, oro para el dinero. */
+/* ─── ESTADÍA · sistema de diseño "fintech de gremio inmobiliario" ───
+   Carbón profundo azulado como lienzo. Esmeralda financiera = dinero/confirmado.
+   Ámbar = pendiente/negociación. Rojo solo errores/ban. Mono tabular = firma. */
 
 @theme {
-  --color-fondo: #070b09;
-  --color-panel: #0b110d;
-  --color-tarjeta: #101812;
-  --color-tarjeta-alta: #152018;
-  --color-borde: #1d2b22;
-  --color-borde-claro: #2c4033;
+  --color-fondo: #0b0f14;
+  --color-panel: #0e141b;
+  --color-tarjeta: #121a24;
+  --color-tarjeta-alta: #16202d;
+  --color-borde: #1d2836;
+  --color-borde-claro: #2c3b4e;
 
-  --color-tinta: #edf3ec;
-  --color-bruma: #8fa397;
-  --color-bruma-osc: #5c6f63;
+  --color-tinta: #eef2f7;
+  --color-bruma: #8b9aac;
+  --color-bruma-osc: #5b6b7e;
 
-  --color-esmeralda: #3edc97;
-  --color-esmeralda-tenue: #123425;
-  --color-oro: #e5b660;
-  --color-oro-tenue: #33270f;
-  --color-rojo: #e6685e;
-  --color-rojo-tenue: #381512;
-  --color-ambar: #e0a33e;
-  --color-ambar-tenue: #32250e;
-  --color-azul: #6aa7e8;
-  --color-azul-tenue: #14243a;
+  --color-esmeralda: #2fd48a;
+  --color-esmeralda-tenue: #0c2a1e;
+  --color-oro: #e3a63c; /* ámbar: pendiente/negociación (alias histórico "oro") */
+  --color-oro-tenue: #2e2210;
+  --color-ambar: #e3a63c;
+  --color-ambar-tenue: #2e2210;
+  --color-rojo: #e5655c;
+  --color-rojo-tenue: #331414;
+  --color-azul: #5fa8f5;
+  --color-azul-tenue: #12233b;
 }
 
 @theme inline {
   --font-sans: var(--font-archivo);
-  --font-display: var(--font-instrument);
+  --font-display: var(--font-bricolage);
   --font-mono: var(--font-jetbrains);
 }
 
@@ -40,14 +40,28 @@ body {
   font-family: var(--font-archivo), sans-serif;
 }
 
+/* La display geométrica pide peso y tracking apretado; sin itálica sintética. */
+.font-display {
+  font-weight: 640;
+  letter-spacing: -0.025em;
+}
+.font-display em {
+  font-style: normal;
+}
+
 ::selection {
   background: color-mix(in srgb, var(--color-esmeralda) 30%, transparent);
 }
 
-/* Scrollbar sobrio */
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--color-borde-claro) transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-esmeralda);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 /* Grano sutil para dar textura al fondo */
@@ -57,41 +71,19 @@ body {
   inset: 0;
   pointer-events: none;
   z-index: 50;
-  opacity: 0.035;
+  opacity: 0.03;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* Malla de gradiente atmosférica del hero */
+/* Atmósfera del hero: profundidad, no decoración */
 .atmosfera {
   background:
-    radial-gradient(ellipse 55% 45% at 18% 8%, rgba(62, 220, 151, 0.09), transparent 62%),
-    radial-gradient(ellipse 42% 38% at 85% 18%, rgba(229, 182, 96, 0.07), transparent 60%),
-    radial-gradient(ellipse 70% 55% at 50% 110%, rgba(18, 52, 37, 0.5), transparent 70%);
+    radial-gradient(ellipse 55% 45% at 18% 8%, rgba(47, 212, 138, 0.07), transparent 62%),
+    radial-gradient(ellipse 42% 38% at 85% 18%, rgba(227, 166, 60, 0.05), transparent 60%),
+    radial-gradient(ellipse 70% 55% at 50% 112%, rgba(18, 35, 59, 0.55), transparent 70%);
 }
 
-/* Revelado escalonado de entrada */
-@keyframes subir {
-  from {
-    opacity: 0;
-    transform: translateY(18px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.revelar {
-  opacity: 0;
-  animation: subir 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-.revelar-1 { animation-delay: 0.05s; }
-.revelar-2 { animation-delay: 0.15s; }
-.revelar-3 { animation-delay: 0.25s; }
-.revelar-4 { animation-delay: 0.38s; }
-.revelar-5 { animation-delay: 0.52s; }
-
-/* Pulso del semáforo / badges vivos */
+/* Pulso de estados vivos */
 @keyframes pulso {
   0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 45%, transparent); }
   60% { box-shadow: 0 0 0 6px transparent; }
@@ -100,15 +92,33 @@ body {
   animation: pulso 2.2s ease-out infinite;
 }
 
-/* Línea decorativa con degradado */
+/* Línea decorativa con degradado de marca */
 .linea-oro {
-  background: linear-gradient(90deg, transparent, var(--color-oro) 30%, var(--color-esmeralda) 70%, transparent);
+  background: linear-gradient(90deg, transparent, var(--color-ambar) 30%, var(--color-esmeralda) 70%, transparent);
   height: 1px;
 }
 
-/* Números tabulares para dinero */
+/* Números tabulares en mono: la firma de producto financiero serio */
 .cifra {
   font-family: var(--font-jetbrains), monospace;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
+}
+
+/* Skeleton loaders */
+@keyframes brillar {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.esqueleto {
+  border-radius: 0.75rem;
+  background: linear-gradient(90deg, var(--color-tarjeta) 25%, var(--color-tarjeta-alta) 50%, var(--color-tarjeta) 75%);
+  background-size: 200% 100%;
+  animation: brillar 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulso, .esqueleto {
+    animation: none;
+  }
 }

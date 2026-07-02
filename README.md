@@ -31,8 +31,11 @@ un link de pago.
 
 ## Qué hay en este repo
 
-**Demo de producto navegable** (Next.js 16 · App Router · Tailwind v4 · TypeScript)
-con la lógica de negocio real como capa de dominio pura y testeable:
+**Demo de producto navegable** (Next.js 16 · App Router · Tailwind v4 · TypeScript ·
+Framer Motion · Recharts) con la lógica de negocio real como capa de dominio pura y
+testeable. Sistema de diseño "fintech de gremio inmobiliario": carbón azulado,
+esmeralda financiera (dinero/confirmado), ámbar (pendiente/negociación), mono
+tabular para cifras, y la visualización de firma del **flujo del dinero**.
 
 ```
 src/lib/domain/
@@ -57,7 +60,12 @@ supabase/schema.sql    Schema PostgreSQL completo de referencia (NO aplicado aú
 | `/app/negociacion` | **Módulo de negociación**: oferta→contraoferta→aceptación con desglose en vivo |
 | `/app/externo` | Búsqueda con disponibilidad real y tarifa neta visible |
 | `/app/externo/links` | Links de pago con estados (activo/pagado/invalidado) |
-| `/pago/[linkId]` | Checkout del cliente final — sin desgloses, estados de link |
+| `/pago/[linkId]` | Checkout del cliente final — pago simulado, confirmación animada, estados de link |
+| `/registro` | Onboarding con KYC simulado y **revelación del alias** |
+| `/app/chat` | Chat interno entre alias con filtro anti-fuga EN VIVO (strikes → ban) |
+| `/app/principal/comisiones` · `/app/externo/comisiones` | Historial de splits + gráfica mensual |
+| `/app/externo/propiedad/[id]` | Ficha técnica + selector de fechas (días ocupados inseleccionables) |
+| `/app/propietario/principales` | Gestión de los 3–5 principales por propiedad |
 
 ## Correr local
 

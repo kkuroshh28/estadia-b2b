@@ -1,17 +1,53 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { AnimatePresence, motion } from "motion/react";
 import { AvatarAlias, Badge, Card, Money, Stat } from "@/components/ui";
 import { Semaforo } from "@/components/semaforo";
 import { RESERVAS, SOLICITUDES, propiedadPorId } from "@/lib/data/demo";
 
 export default function PanelPrincipal() {
   const [aceptadas, setAceptadas] = useState<string[]>([]);
+  const [toast, setToast] = useState(false);
   const misReservas = RESERVAS.filter((r) => r.aliasPrincipal === "CONDOR-472");
+
+  // Demo tiempo real: a los 6 s "entra" una solicitud nueva.
+  useEffect(() => {
+    const entra = setTimeout(() => setToast(true), 6000);
+    const sale = setTimeout(() => setToast(false), 14000);
+    return () => { clearTimeout(entra); clearTimeout(sale); };
+  }, []);
 
   return (
     <div className="mx-auto max-w-5xl space-y-10">
+      {/* TOAST de solicitud entrante */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: -24, scale: 0.94 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -12, scale: 0.96 }}
+            transition={{ type: "spring", stiffness: 380, damping: 24 }}
+            className="fixed right-4 top-16 z-50 w-80 rounded-2xl border border-oro/40 bg-tarjeta-alta p-4 shadow-2xl"
+          >
+            <div className="flex items-start gap-3">
+              <AvatarAlias alias="YARUMO-611" size={36} />
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-oro">Nueva solicitud entrante</p>
+                <p className="mt-0.5 text-xs text-tinta">
+                  <span className="font-mono">YARUMO-611</span> pide Glamping Bosque
+                  Nublado · 8–10 ago · 2 noches
+                </p>
+                <p className="mt-1 text-[10px] text-bruma-osc">
+                  El primero que acepte se la queda — corre.
+                </p>
+              </div>
+              <button onClick={() => setToast(false)} className="text-bruma-osc hover:text-tinta">✕</button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="font-display text-3xl text-tinta">Solicitudes entrantes</h1>

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Badge, Card, Cover, Money, Stat } from "@/components/ui";
+import { MoneyAnimado } from "@/components/motion";
 import { Semaforo } from "@/components/semaforo";
+import { GraficaIngresos } from "@/components/grafica-ingresos";
 import { PROPIEDADES, RESERVAS, propiedadPorId } from "@/lib/data/demo";
 import { calcularNetoPropietario } from "@/lib/domain/split";
 
@@ -20,7 +22,7 @@ export default function PanelPropietario() {
       <div className="grid gap-4 sm:grid-cols-3">
         <Stat
           etiqueta="Neto recibido · julio"
-          valor={<Money valor={netoJulio} />}
+          valor={<MoneyAnimado valor={netoJulio} />}
           detalle="Dispersión directa a tu cuenta certificada"
           tono="esmeralda"
         />
@@ -36,6 +38,16 @@ export default function PanelPropietario() {
           tono="oro"
         />
       </div>
+
+      <Card className="p-6">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-xl text-tinta">Neto mensual 2026</h2>
+          <Badge tono="esmeralda">Tarifa neta completa · −3% pasarela</Badge>
+        </div>
+        <div className="mt-4">
+          <GraficaIngresos />
+        </div>
+      </Card>
 
       {/* PROPIEDADES */}
       <section>

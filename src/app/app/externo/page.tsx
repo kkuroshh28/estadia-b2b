@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { Badge, Card, Cover, Money } from "@/components/ui";
 import { PROPIEDADES } from "@/lib/data/demo";
 
@@ -114,6 +115,12 @@ export default function BusquedaExterno() {
                 <p className="mt-3 text-[11px] leading-relaxed text-bruma-osc">
                   {p.amenidades.slice(0, 3).join(" · ")}
                 </p>
+                <Link
+                  href={`/app/externo/propiedad/${p.id}`}
+                  className="mt-2 text-[11px] font-semibold text-esmeralda hover:underline"
+                >
+                  Ver ficha técnica y fechas →
+                </Link>
                 <div className="mt-auto flex items-end justify-between border-t border-borde pt-3">
                   <div>
                     <p className="text-[10px] font-semibold uppercase tracking-wider text-bruma-osc">

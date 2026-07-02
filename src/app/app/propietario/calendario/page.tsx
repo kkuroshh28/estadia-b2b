@@ -1,18 +1,20 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Badge, Card, Money } from "@/components/ui";
+import { useMemo, useRef, useState } from "react";
+import { motion } from "motion/react";
+import { Badge, Card } from "@/components/ui";
+import { MoneyAnimado } from "@/components/motion";
 import { PROPIEDADES } from "@/lib/data/demo";
 import { calcularNetoPropietario } from "@/lib/domain/split";
 import type { EstadoDia } from "@/lib/domain/tipos";
 
 /**
  * Calendario de julio 2026 — una sola fuente de verdad de disponibilidad.
- * Solo el propietario tiene acceso de escritura (bloqueo manual).
- * Los días reservados por la app son intocables: los bloqueó el dinero.
+ * Solo el propietario tiene acceso de escritura. Bloqueo manual por clic o
+ * arrastrando para seleccionar un rango. Los días reservados por la app son
+ * intocables: los bloqueó el dinero.
  */
 
-// Estados base por propiedad (derivados de reservas pagadas + sync iCal)
 const BASE: Record<string, Partial<Record<number, EstadoDia>>> = {
   "prop-01": { 24: "bloqueado_ical", 25: "bloqueado_ical", 26: "bloqueado_ical" },
   "prop-02": { 10: "reservado_app", 11: "reservado_app", 12: "reservado_app", 13: "reservado_app" },
@@ -32,16 +34,20 @@ const BLOQUEOS_INICIALES: Record<string, number[]> = {
 };
 
 const ESTILO_DIA: Record<EstadoDia, string> = {
-  disponible: "border-borde bg-tarjeta text-tinta hover:border-esmeralda/50",
+  disponible:
+    "border-borde bg-tarjeta text-tinta hover:border-esmeralda/50 hover:bg-tarjeta-alta cursor-pointer",
   reservado_app: "border-esmeralda/40 bg-esmeralda-tenue text-esmeralda cursor-not-allowed",
-  bloqueado_manual: "border-oro/40 bg-oro-tenue text-oro",
+  bloqueado_manual: "border-oro/40 bg-oro-tenue text-oro cursor-pointer",
   bloqueado_ical: "border-azul/35 bg-azul-tenue text-azul cursor-not-allowed",
 };
 
 export default function CalendarioPropietario() {
   const [propId, setPropId] = useState("prop-01");
   const [bloqueos, setBloqueos] = useState<Record<string, number[]>>(BLOQUEOS_INICIALES);
+  const [recientes, setRecientes] = useState<number[]>([]);
   const [tarifa, setTarifa] = useState(1_450_000);
+  const arrastre = useRef<{ inicio: number; hasta: number } | null>(null);
+  const [rangoVivo, setRangoVivo] = useState<[number, number] | null>(null);
 
   const prop = PROPIEDADES.find((p) => p.id === propId)!;
   const neto = useMemo(() => calcularNetoPropietario(tarifa), [tarifa]);
@@ -52,16 +58,49 @@ export default function CalendarioPropietario() {
     return "disponible";
   };
 
-  const alternarBloqueo = (dia: number) => {
-    const estado = estadoDe(dia);
-    if (estado === "reservado_app" || estado === "bloqueado_ical") return;
-    setBloqueos((prev) => ({
-      ...prev,
-      [propId]: prev[propId]?.includes(dia)
-        ? prev[propId].filter((d) => d !== dia)
-        : [...(prev[propId] ?? []), dia],
-    }));
+  const editable = (dia: number) => {
+    const e = estadoDe(dia);
+    return e === "disponible" || e === "bloqueado_manual";
   };
+
+  const empezarArrastre = (dia: number) => {
+    if (!editable(dia)) return;
+    arrastre.current = { inicio: dia, hasta: dia };
+    setRangoVivo([dia, dia]);
+  };
+
+  const extenderArrastre = (dia: number) => {
+    if (!arrastre.current) return;
+    arrastre.current.hasta = dia;
+    setRangoVivo([
+      Math.min(arrastre.current.inicio, dia),
+      Math.max(arrastre.current.inicio, dia),
+    ]);
+  };
+
+  const terminarArrastre = () => {
+    const drag = arrastre.current;
+    arrastre.current = null;
+    setRangoVivo(null);
+    if (!drag) return;
+    const [a, b] = [Math.min(drag.inicio, drag.hasta), Math.max(drag.inicio, drag.hasta)];
+    const dias = Array.from({ length: b - a + 1 }, (_, i) => a + i).filter(editable);
+    if (dias.length === 0) return;
+
+    setBloqueos((prev) => {
+      const actuales = prev[propId] ?? [];
+      // Un solo día ya bloqueado → toggle (desbloquear); si no, bloquear el rango.
+      if (a === b && actuales.includes(a)) {
+        return { ...prev, [propId]: actuales.filter((d) => d !== a) };
+      }
+      const nuevos = dias.filter((d) => !actuales.includes(d));
+      setRecientes(nuevos);
+      return { ...prev, [propId]: [...actuales, ...nuevos] };
+    });
+  };
+
+  const enRangoVivo = (dia: number) =>
+    rangoVivo !== null && dia >= rangoVivo[0] && dia <= rangoVivo[1] && editable(dia);
 
   const offsetJulio2026 = 2; // 1 de julio de 2026 cae miércoles (semana inicia lunes)
 
@@ -70,9 +109,8 @@ export default function CalendarioPropietario() {
       <div>
         <h1 className="font-display text-3xl text-tinta">Calendario y tarifa neta</h1>
         <p className="mt-1 text-sm text-bruma">
-          Eres el único con acceso de escritura. Toca un día disponible para
-          bloquearlo (renta por fuera, mantenimiento, uso personal) y tócalo de
-          nuevo para liberarlo.
+          Eres el único con acceso de escritura. Haz clic en un día para bloquearlo o
+          liberarlo, o arrastra para bloquear un rango completo.
         </p>
       </div>
 
@@ -104,20 +142,43 @@ export default function CalendarioPropietario() {
               <div key={i}>{d}</div>
             ))}
           </div>
-          <div className="mt-2 grid grid-cols-7 gap-1.5">
+          <div
+            className="mt-2 grid select-none grid-cols-7 gap-1.5"
+            style={{ touchAction: "none" }}
+            onPointerUp={terminarArrastre}
+            onPointerLeave={terminarArrastre}
+          >
             {Array.from({ length: offsetJulio2026 }).map((_, i) => (
               <div key={`v-${i}`} />
             ))}
             {Array.from({ length: 31 }, (_, i) => i + 1).map((dia) => {
               const estado = estadoDe(dia);
+              const seleccionando = enRangoVivo(dia);
+              const recien = recientes.includes(dia) && estado === "bloqueado_manual";
               return (
                 <button
                   key={dia}
-                  onClick={() => alternarBloqueo(dia)}
-                  className={`cifra aspect-square rounded-lg border text-sm transition ${ESTILO_DIA[estado]}`}
+                  onPointerDown={() => empezarArrastre(dia)}
+                  onPointerEnter={() => extenderArrastre(dia)}
+                  disabled={!editable(dia)}
+                  className={`cifra relative aspect-square rounded-lg border text-sm transition ${
+                    seleccionando
+                      ? "border-oro bg-oro-tenue text-oro"
+                      : ESTILO_DIA[estado]
+                  }`}
                   title={estado.replace("_", " ")}
                 >
                   {dia}
+                  {recien && (
+                    <motion.span
+                      initial={{ scale: 0, rotate: -35, opacity: 0 }}
+                      animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                      transition={{ type: "spring", stiffness: 420, damping: 18 }}
+                      className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-oro text-[9px] text-fondo"
+                    >
+                      🔒
+                    </motion.span>
+                  )}
                 </button>
               );
             })}
@@ -157,15 +218,15 @@ export default function CalendarioPropietario() {
           <div className="mt-4 space-y-3">
             <div className="flex items-center justify-between rounded-xl border border-borde bg-panel px-4 py-3">
               <span className="text-sm text-bruma">Tarifa neta</span>
-              <Money valor={neto.tarifaNeta} className="text-lg font-bold text-tinta" />
+              <MoneyAnimado valor={neto.tarifaNeta} className="text-lg font-bold text-tinta" />
             </div>
             <div className="flex items-center justify-between rounded-xl border border-borde bg-panel px-4 py-3">
               <span className="text-sm text-bruma">Pasarela (~3%)</span>
-              <Money valor={-neto.costoPasarelaEstimado} className="text-sm font-semibold text-rojo" />
+              <MoneyAnimado valor={-neto.costoPasarelaEstimado} className="text-sm font-semibold text-rojo" />
             </div>
             <div className="flex items-center justify-between rounded-xl border border-esmeralda/30 bg-esmeralda-tenue px-4 py-3">
               <span className="text-sm font-semibold text-esmeralda">Tú recibes</span>
-              <Money valor={neto.recibe} className="text-lg font-bold text-esmeralda" />
+              <MoneyAnimado valor={neto.recibe} className="text-lg font-bold text-esmeralda" />
             </div>
           </div>
           <p className="mt-4 text-[11px] leading-relaxed text-bruma-osc">

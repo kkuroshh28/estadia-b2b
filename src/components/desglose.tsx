@@ -1,9 +1,13 @@
+"use client";
+
 import { calcularSplit } from "@/lib/domain/split";
+import { MoneyAnimado } from "./motion";
 import { Money } from "./ui";
 
 /**
  * Desglose en vivo del split (§4.2): "si cierras en $X, tú ganas $A y él gana $B".
- * Negociación con las cartas sobre la mesa.
+ * Negociación con las cartas sobre la mesa; las cifras transicionan con spring
+ * mientras se arrastra el monto propuesto.
  */
 export function DesgloseSplit({
   precioFinal,
@@ -29,16 +33,14 @@ export function DesgloseSplit({
 
   return (
     <div className={`rounded-xl border border-oro/20 bg-oro-tenue/40 ${compacto ? "p-3" : "p-4"}`}>
-      <div className="flex items-baseline justify-between">
-        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-oro">
-          Si cierras en <Money valor={precioFinal} />
-        </p>
-      </div>
+      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-oro">
+        Si cierras en <MoneyAnimado valor={precioFinal} />
+      </p>
       <div className={`mt-2 space-y-1 ${compacto ? "text-xs" : "text-sm"}`}>
         {filas.map((f) => (
           <div key={f.k} className="flex items-center justify-between gap-4">
             <span className="text-bruma">{f.k}</span>
-            <Money valor={f.v} className={f.c} />
+            <MoneyAnimado valor={f.v} className={f.c} />
           </div>
         ))}
       </div>

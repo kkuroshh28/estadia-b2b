@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Archivo, Instrument_Serif, JetBrains_Mono } from "next/font/google";
+import { Archivo, Bricolage_Grotesque, JetBrains_Mono } from "next/font/google";
+import { MotionProvider } from "@/components/motion";
 import "./globals.css";
 
 const archivo = Archivo({
@@ -7,10 +8,8 @@ const archivo = Archivo({
   subsets: ["latin"],
 });
 
-const instrument = Instrument_Serif({
-  variable: "--font-instrument",
-  weight: "400",
-  style: ["normal", "italic"],
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-bricolage",
   subsets: ["latin"],
 });
 
@@ -33,9 +32,11 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${archivo.variable} ${instrument.variable} ${jetbrains.variable} h-full antialiased`}
+      className={`${archivo.variable} ${bricolage.variable} ${jetbrains.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <MotionProvider>{children}</MotionProvider>
+      </body>
     </html>
   );
 }
