@@ -26,7 +26,7 @@ export function Semaforo({ reserva, propiedadNombre }: { reserva: Reserva; propi
         <EstadoBadge estado={reserva.estado} vivo={!verde && progreso > 0 && progreso < 100} />
       </div>
 
-      <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-panel">
+      <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-borde">
         <motion.div
           className={`h-full rounded-full ${verde ? "bg-esmeralda" : "bg-oro"}`}
           initial={{ width: 0 }}

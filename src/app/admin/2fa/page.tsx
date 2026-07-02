@@ -39,7 +39,7 @@ export default function Admin2FA() {
       <button
         onClick={elevar}
         disabled={codigo.length !== 6}
-        className="mt-4 w-full rounded-full bg-esmeralda py-3 text-sm font-bold text-fondo disabled:opacity-50"
+        className="mt-4 w-full rounded-full bg-tiffany py-3 text-sm font-bold text-tinta disabled:opacity-50"
       >
         Elevar sesión
       </button>

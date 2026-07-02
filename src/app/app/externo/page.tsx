@@ -47,7 +47,7 @@ export default function BusquedaExterno() {
             <label className="text-[10px] font-bold uppercase tracking-wider text-bruma-osc">
               Fechas (obligatorio)
             </label>
-            <div className="mt-2 rounded-lg border border-esmeralda/30 bg-esmeralda-tenue px-3 py-2 text-xs font-semibold text-esmeralda">
+            <div className="mt-2 rounded-lg border border-tiffany bg-tiffany-bruma px-3 py-2 text-xs font-semibold text-tinta">
               17 jul → 20 jul · 3 noches
             </div>
           </div>
@@ -75,7 +75,7 @@ export default function BusquedaExterno() {
               max={14}
               value={capacidad}
               onChange={(e) => setCapacidad(Number(e.target.value))}
-              className="mt-3 w-full accent-esmeralda"
+              className="mt-3 w-full accent-tiffany"
             />
           </div>
           <div>
@@ -89,7 +89,7 @@ export default function BusquedaExterno() {
               step={50_000}
               value={maxNoche}
               onChange={(e) => setMaxNoche(Number(e.target.value))}
-              className="mt-3 w-full accent-esmeralda"
+              className="mt-3 w-full accent-tiffany"
             />
           </div>
         </div>
@@ -135,7 +135,7 @@ export default function BusquedaExterno() {
                     className={`rounded-full px-4 py-2 text-[11px] font-bold transition ${
                       solicitada
                         ? "cursor-default border border-esmeralda/40 bg-esmeralda-tenue text-esmeralda"
-                        : "bg-esmeralda text-fondo hover:brightness-110"
+                        : "bg-tiffany text-tinta hover:bg-tiffany-claro"
                     }`}
                   >
                     {solicitada ? "Enviada ✓" : "Solicitar renta"}

@@ -35,10 +35,10 @@ const BLOQUEOS_INICIALES: Record<string, number[]> = {
 
 const ESTILO_DIA: Record<EstadoDia, string> = {
   disponible:
-    "border-borde bg-tarjeta text-tinta hover:border-esmeralda/50 hover:bg-tarjeta-alta cursor-pointer",
-  reservado_app: "border-esmeralda/40 bg-esmeralda-tenue text-esmeralda cursor-not-allowed",
-  bloqueado_manual: "border-oro/40 bg-oro-tenue text-oro cursor-pointer",
-  bloqueado_ical: "border-azul/35 bg-azul-tenue text-azul cursor-not-allowed",
+    "border-borde bg-panel text-tinta hover:border-tiffany hover:bg-tiffany-bruma cursor-pointer",
+  reservado_app: "border-tiffany bg-tiffany font-bold text-tinta cursor-not-allowed",
+  bloqueado_manual: "rayado border-borde-claro bg-panel text-bruma cursor-pointer",
+  bloqueado_ical: "border-tiffany-claro bg-tiffany-claro/45 text-tinta cursor-not-allowed",
 };
 
 export default function CalendarioPropietario() {
@@ -121,7 +121,7 @@ export default function CalendarioPropietario() {
             onClick={() => setPropId(p.id)}
             className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${
               p.id === propId
-                ? "border-esmeralda/50 bg-esmeralda-tenue text-esmeralda"
+                ? "border-tiffany bg-tiffany-bruma text-tinta"
                 : "border-borde text-bruma hover:border-borde-claro hover:text-tinta"
             }`}
           >
@@ -174,7 +174,7 @@ export default function CalendarioPropietario() {
                       initial={{ scale: 0, rotate: -35, opacity: 0 }}
                       animate={{ scale: 1, rotate: 0, opacity: 1 }}
                       transition={{ type: "spring", stiffness: 420, damping: 18 }}
-                      className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-oro text-[9px] text-fondo"
+                      className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-tinta text-[9px] text-white"
                     >
                       🔒
                     </motion.span>
@@ -184,10 +184,10 @@ export default function CalendarioPropietario() {
             })}
           </div>
           <div className="mt-5 flex flex-wrap gap-4 border-t border-borde pt-4 text-[11px] text-bruma">
-            <span className="flex items-center gap-1.5"><span className="size-2.5 rounded border border-borde bg-tarjeta" /> Disponible</span>
-            <span className="flex items-center gap-1.5"><span className="size-2.5 rounded bg-esmeralda/70" /> Reservado por la app (pago confirmado)</span>
-            <span className="flex items-center gap-1.5"><span className="size-2.5 rounded bg-oro/70" /> Bloqueo manual tuyo</span>
-            <span className="flex items-center gap-1.5"><span className="size-2.5 rounded bg-azul/70" /> Sincronizado Airbnb/Booking</span>
+            <span className="flex items-center gap-1.5"><span className="size-2.5 rounded border border-borde bg-panel" /> Disponible</span>
+            <span className="flex items-center gap-1.5"><span className="size-2.5 rounded bg-tiffany" /> Reservado por la app (pago confirmado)</span>
+            <span className="flex items-center gap-1.5"><span className="rayado size-2.5 rounded border border-borde-claro" /> Bloqueo manual tuyo</span>
+            <span className="flex items-center gap-1.5"><span className="size-2.5 rounded bg-tiffany-claro" /> Sincronizado Airbnb/Booking</span>
           </div>
           <p className="mt-4 rounded-xl border border-esmeralda/20 bg-esmeralda-tenue/40 p-3 text-[11px] leading-relaxed text-bruma">
             <span className="font-bold text-esmeralda">Sin holds:</span> una negociación
@@ -213,7 +213,7 @@ export default function CalendarioPropietario() {
             step={10_000}
             value={tarifa}
             onChange={(e) => setTarifa(Number(e.target.value))}
-            className="mt-3 w-full accent-esmeralda"
+            className="mt-3 w-full accent-tiffany"
           />
           <div className="mt-4 space-y-3">
             <div className="flex items-center justify-between rounded-xl border border-borde bg-panel px-4 py-3">

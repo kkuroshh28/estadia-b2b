@@ -43,7 +43,7 @@ export default function Login() {
   return (
     <main className="atmosfera flex min-h-screen flex-col items-center justify-center px-6">
       <Link href="/" className="font-display text-2xl text-tinta">
-        ESTADÍA<span className="text-esmeralda">.</span>
+        ESTADÍA<span className="text-tiffany">.</span>
       </Link>
       <motion.div
         initial={{ opacity: 0, y: 16 }}
@@ -75,7 +75,7 @@ export default function Login() {
             <button
               onClick={pedirCodigo}
               disabled={cargando || !email.includes("@")}
-              className="mt-5 w-full rounded-full bg-esmeralda py-3.5 text-sm font-bold text-fondo transition hover:brightness-110 disabled:opacity-50"
+              className="mt-5 w-full rounded-full bg-tiffany py-3.5 text-sm font-bold text-tinta transition hover:bg-tiffany-claro disabled:opacity-50"
             >
               {cargando ? "Enviando…" : "Enviar código"}
             </button>
@@ -97,7 +97,7 @@ export default function Login() {
             <button
               onClick={entrar}
               disabled={cargando || codigo.length !== 6}
-              className="mt-5 w-full rounded-full bg-esmeralda py-3.5 text-sm font-bold text-fondo transition hover:brightness-110 disabled:opacity-50"
+              className="mt-5 w-full rounded-full bg-tiffany py-3.5 text-sm font-bold text-tinta transition hover:bg-tiffany-claro disabled:opacity-50"
             >
               {cargando ? "Verificando…" : "Entrar"}
             </button>

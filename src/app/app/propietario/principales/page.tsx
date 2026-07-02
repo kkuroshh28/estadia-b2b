@@ -68,7 +68,7 @@ export default function GestionPrincipales() {
             onClick={() => setPropId(p.id)}
             className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${
               p.id === propId
-                ? "border-esmeralda/50 bg-esmeralda-tenue text-esmeralda"
+                ? "border-tiffany bg-tiffany-bruma text-tinta"
                 : "border-borde text-bruma hover:border-borde-claro hover:text-tinta"
             }`}
           >
@@ -89,7 +89,7 @@ export default function GestionPrincipales() {
             <button
               onClick={invitar}
               disabled={invitando}
-              className="rounded-full bg-esmeralda px-5 py-2.5 text-xs font-bold text-fondo transition hover:brightness-110 disabled:opacity-60"
+              className="rounded-full bg-tiffany px-5 py-2.5 text-xs font-bold text-tinta transition hover:bg-tiffany-claro disabled:opacity-60"
             >
               {invitando ? "Invitación enviada ✓" : "Invitar principal"}
             </button>

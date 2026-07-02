@@ -81,7 +81,7 @@ export default function ChatInterno() {
           <span className="font-mono text-xs text-bruma">COLIBRI-345</span>
           <span className="text-bruma-osc">·</span>
           <AvatarAlias alias="CONDOR-472" size={30} />
-          <span className="font-mono text-xs text-oro">CONDOR-472 (tú)</span>
+          <span className="font-mono text-xs text-tinta">CONDOR-472 (tú)</span>
         </div>
       </div>
 
@@ -119,7 +119,7 @@ export default function ChatInterno() {
                   m.bloqueado
                     ? "rounded-tr-sm border-rojo/40 bg-rojo-tenue"
                     : m.emisor === "yo"
-                      ? "rounded-tr-sm border-esmeralda/25 bg-esmeralda-tenue text-tinta"
+                      ? "rounded-tr-sm border-tiffany-claro bg-tiffany-bruma text-tinta"
                       : "rounded-tl-sm border-borde bg-panel text-bruma"
                 }`}
               >
@@ -153,7 +153,7 @@ export default function ChatInterno() {
             <button
               onClick={enviar}
               disabled={baneado}
-              className="rounded-full bg-esmeralda px-6 text-sm font-bold text-fondo transition hover:brightness-110 disabled:opacity-40"
+              className="rounded-full bg-tiffany px-6 text-sm font-bold text-tinta transition hover:bg-tiffany-claro disabled:opacity-40"
             >
               Enviar
             </button>

@@ -83,7 +83,7 @@ export function Checkout({ link, tarifaNetaMitad }: { link: LinkDePago; tarifaNe
               <button
                 onClick={pagar}
                 disabled={fase === "procesando"}
-                className="w-full rounded-xl bg-esmeralda py-3.5 text-sm font-bold text-fondo transition hover:brightness-110 disabled:opacity-70"
+                className="w-full rounded-xl bg-tiffany py-3.5 text-sm font-bold text-tinta transition hover:bg-tiffany-claro disabled:opacity-70"
               >
                 {fase === "procesando" ? (
                   <motion.span
@@ -116,7 +116,7 @@ export function Checkout({ link, tarifaNetaMitad }: { link: LinkDePago; tarifaNe
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: "spring", stiffness: 260, damping: 13, delay: 0.1 }}
                 className="mx-auto flex size-16 items-center justify-center rounded-full bg-esmeralda-tenue text-3xl text-esmeralda"
-                style={{ boxShadow: "0 0 50px rgba(47,212,138,0.18)" }}
+                style={{ boxShadow: "0 0 50px rgba(10,186,181,0.25)" }}
               >
                 ✓
               </motion.div>

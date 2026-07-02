@@ -33,7 +33,7 @@ export default function HubRoles() {
       <div className="mt-10 grid gap-5 sm:grid-cols-3">
         {ROLES.map((r) => (
           <Link key={r.href} href={r.href}>
-            <Card className="h-full p-6 transition hover:border-esmeralda/40 hover:bg-tarjeta-alta">
+            <Card className="h-full p-6 transition hover:border-tiffany hover:bg-tarjeta-alta">
               <p className="cifra text-[11px] font-bold uppercase tracking-wider text-oro">{r.kpi}</p>
               <h2 className="mt-2 font-display text-xl text-tinta">{r.rol}</h2>
               <p className="mt-2 text-sm leading-relaxed text-bruma">{r.d}</p>

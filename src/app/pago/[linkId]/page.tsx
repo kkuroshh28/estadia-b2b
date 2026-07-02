@@ -21,7 +21,7 @@ export default async function CheckoutCliente({
   return (
     <main className="atmosfera flex min-h-screen flex-col items-center justify-center px-6 py-16">
       <p className="font-display text-2xl text-tinta">
-        ESTADÍA<span className="text-esmeralda">.</span>
+        ESTADÍA<span className="text-tiffany">.</span>
       </p>
       <p className="mb-8 mt-1 text-[11px] uppercase tracking-[0.22em] text-bruma-osc">
         Pago seguro con tarjeta

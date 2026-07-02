@@ -59,7 +59,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <aside className="hidden w-64 shrink-0 flex-col border-r border-borde bg-panel lg:flex">
         <Link href="/" className="border-b border-borde px-6 py-5">
           <p className="font-display text-xl text-tinta">
-            ESTADÍA<span className="text-esmeralda">.</span>
+            ESTADÍA<span className="text-tiffany">.</span>
           </p>
           <p className="mt-0.5 text-[10px] uppercase tracking-[0.2em] text-bruma-osc">
             Red B2B · Antioquia
@@ -73,7 +73,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   {s.rol}
                 </p>
                 {s.alias && (
-                  <span className="font-mono text-[10px] text-oro/80">{s.alias}</span>
+                  <span className="font-mono text-[10px] text-bruma">{s.alias}</span>
                 )}
               </div>
               <div className="space-y-0.5">
@@ -85,7 +85,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       href={i.href}
                       className={`block rounded-lg px-3 py-2 text-sm transition ${
                         activo
-                          ? "bg-esmeralda-tenue font-semibold text-esmeralda"
+                          ? "bg-tiffany-bruma font-semibold text-tinta"
                           : "text-bruma hover:bg-tarjeta hover:text-tinta"
                       }`}
                     >
@@ -111,7 +111,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <header className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-borde bg-fondo/85 px-5 py-3 backdrop-blur">
           <div className="flex items-center gap-3">
             <Link href="/" className="font-display text-lg text-tinta lg:hidden">
-              ESTADÍA<span className="text-esmeralda">.</span>
+              ESTADÍA<span className="text-tiffany">.</span>
             </Link>
             <span className="hidden text-sm text-bruma lg:inline">
               {seccionActiva ? `Vista de ${seccionActiva.rol}` : "Selecciona un rol"}
@@ -149,7 +149,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   key={i.href}
                   href={i.href}
                   className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-semibold transition ${
-                    activo ? "text-esmeralda" : "text-bruma-osc hover:text-bruma"
+                    activo ? "font-bold text-tinta" : "text-bruma-osc hover:text-bruma"
                   }`}
                 >
                   <span className="text-base leading-none">{i.icono}</span>

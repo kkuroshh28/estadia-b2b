@@ -60,7 +60,7 @@ export function PanelComisiones({ rol }: { rol: "principal" | "externo" }) {
                 labelStyle={{ color: "var(--color-bruma)" }}
                 formatter={(v) => [formatearCOP(Number(v)), "Comisión"]}
               />
-              <Bar dataKey={rol} radius={[6, 6, 0, 0]} fill="var(--color-esmeralda)" opacity={0.9} maxBarSize={44} />
+              <Bar dataKey={rol} radius={[6, 6, 0, 0]} fill="var(--color-tiffany)" opacity={0.9} maxBarSize={44} />
             </BarChart>
           </ResponsiveContainer>
         </div>

@@ -135,8 +135,8 @@ export function FichaPropiedad({ propiedad }: { propiedad: Propiedad }) {
                     ocupado
                       ? "cursor-not-allowed border-borde bg-panel text-bruma-osc line-through opacity-50"
                       : seleccionado
-                        ? "border-esmeralda bg-esmeralda-tenue font-bold text-esmeralda"
-                        : "border-borde bg-tarjeta text-tinta hover:border-esmeralda/50 hover:bg-tarjeta-alta"
+                        ? "border-tiffany bg-tiffany-bruma font-bold text-tinta"
+                        : "border-borde bg-tarjeta text-tinta hover:border-tiffany hover:bg-tarjeta-alta"
                   }`}
                 >
                   {dia}
@@ -152,7 +152,7 @@ export function FichaPropiedad({ propiedad }: { propiedad: Propiedad }) {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="mt-5 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-esmeralda/25 bg-esmeralda-tenue/40 p-4"
+                className="mt-5 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-tiffany-claro bg-tiffany-bruma/40 p-4"
               >
                 <div>
                   <p className="text-sm font-semibold text-tinta">
@@ -164,7 +164,7 @@ export function FichaPropiedad({ propiedad }: { propiedad: Propiedad }) {
                 </div>
                 <button
                   onClick={() => setSolicitada(true)}
-                  className="rounded-full bg-esmeralda px-6 py-3 text-xs font-bold text-fondo transition hover:brightness-110"
+                  className="rounded-full bg-tiffany px-6 py-3 text-xs font-bold text-tinta transition hover:bg-tiffany-claro"
                 >
                   Solicitar estas fechas
                 </button>

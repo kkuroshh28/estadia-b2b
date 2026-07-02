@@ -76,3 +76,25 @@ drivers `simulado`; encender lo real = pegar credenciales + flag
 | Contratos PDF | generado automático al Pago 1, plantilla por duración, hash sha256, **comisionistas jamás lo ven** |
 | OCR chat | imagen con teléfono → bloqueada + strike; limpia → aprobada |
 | **Flujo completo e2e** | registro→KYC→solicitud (primero gana)→negociación→pagos 1 y 2 por webhook→splits exactos (comisión = precio−neta al centavo)→contrato→semáforo verde→completada |
+
+---
+
+# Anexo — Rediseño cromático Tiffany + blanco (2026-07-01)
+
+Cambio de piel completo sin tocar lógica: **75/75 tests siguen verdes**, cero
+errores de consola, build 32 rutas.
+
+- Tokens nuevos en `globals.css` (los nombres históricos se remapean:
+  esmeralda≡confirmado, oro≡pendiente — cambiar un token cambia toda la app;
+  `grep` de hexes viejos = 0 resultados).
+- Física del tema claro: tarjetas blancas con sombra suave + borde 1px sobre
+  fondo hueso; bandas "terciopelo" (tinta profunda) en hero y cierre de la
+  landing con el flujo del dinero en Tiffany flotando encima.
+- Contraste MEDIDO (docs/decision-contraste.md): botón primario = tinta sobre
+  Tiffany (4.97:1 AA); blanco sobre Tiffany descartado con números (2.41:1).
+  Cero texto Tiffany sobre blanco.
+- Calendario: reservado=relleno Tiffany · manual=patrón rayado · iCal=claro;
+  cerrojo animado en tinta. Charts retematizados (serie principal Tiffany).
+- Activos: favicon/PWA/OG/theme-color regenerados en Tiffany.
+- Capturas antes/después en `docs/capturas/` (landing, calendario, negociación,
+  checkout, móvil 375px).

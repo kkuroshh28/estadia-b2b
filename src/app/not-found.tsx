@@ -4,7 +4,7 @@ export default function NoEncontrada() {
   return (
     <main className="atmosfera flex min-h-screen flex-col items-center justify-center px-6 text-center">
       <p className="font-display text-2xl text-tinta">
-        ESTADÍA<span className="text-esmeralda">.</span>
+        ESTADÍA<span className="text-tiffany">.</span>
       </p>
       <p className="cifra mt-8 text-6xl font-bold text-borde-claro">404</p>
       <h1 className="mt-3 font-display text-3xl text-tinta">Esta página no existe</h1>
@@ -15,7 +15,7 @@ export default function NoEncontrada() {
       <div className="mt-8 flex gap-3">
         <Link
           href="/"
-          className="rounded-full bg-esmeralda px-6 py-3 text-sm font-bold text-fondo transition hover:brightness-110"
+          className="rounded-full bg-tiffany px-6 py-3 text-sm font-bold text-tinta transition hover:bg-tiffany-claro"
         >
           Ir al inicio
         </Link>

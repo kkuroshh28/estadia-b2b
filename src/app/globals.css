@@ -1,31 +1,45 @@
 @import "tailwindcss";
 
-/* ─── ESTADÍA · sistema de diseño "fintech de gremio inmobiliario" ───
-   Carbón profundo azulado como lienzo. Esmeralda financiera = dinero/confirmado.
-   Ámbar = pendiente/negociación. Rojo solo errores/ban. Mono tabular = firma. */
+/* ─── ESTADÍA · sistema "Tiffany + blanco" ───
+   Luminoso, premium, joyería/fintech boutique. La jerarquía en tema claro se
+   construye con sombras suaves + bordes 1px + peso tipográfico (no con brillo).
+   Semánticos del dinero: confirmado (esmeralda profundo) / pendiente (ámbar) /
+   error — el Tiffany es MARCA, nunca significa "dinero confirmado".
+
+   Nota de compatibilidad de tokens: los nombres históricos se conservan y se
+   remapean — `esmeralda`≡confirmado, `oro`/`ambar`≡pendiente, `rojo`≡error.
+   Cambiar un token aquí cambia toda la app. */
 
 @theme {
-  --color-fondo: #0b0f14;
-  --color-panel: #0e141b;
-  --color-tarjeta: #121a24;
-  --color-tarjeta-alta: #16202d;
-  --color-borde: #1d2836;
-  --color-borde-claro: #2c3b4e;
+  /* Marca */
+  --color-tiffany: #0abab5;
+  --color-tiffany-claro: #81d8d0;
+  --color-tiffany-bruma: #e9f8f7;
+  --color-tiffany-profundo: #089e9a;
 
-  --color-tinta: #eef2f7;
-  --color-bruma: #8b9aac;
-  --color-bruma-osc: #5b6b7e;
+  /* Neutros (física del tema claro) */
+  --color-fondo: #f7fafa; /* hueso: el fondo general — las tarjetas blancas flotan */
+  --color-panel: #ffffff;
+  --color-tarjeta: #ffffff;
+  --color-tarjeta-alta: #e9f8f7; /* tarjeta destacada = tiffany-bruma */
+  --color-borde: #e3eceb;
+  --color-borde-claro: #c8dbd9;
 
-  --color-esmeralda: #2fd48a;
-  --color-esmeralda-tenue: #0c2a1e;
-  --color-oro: #e3a63c; /* ámbar: pendiente/negociación (alias histórico "oro") */
-  --color-oro-tenue: #2e2210;
-  --color-ambar: #e3a63c;
-  --color-ambar-tenue: #2e2210;
-  --color-rojo: #e5655c;
-  --color-rojo-tenue: #331414;
-  --color-azul: #5fa8f5;
-  --color-azul-tenue: #12233b;
+  --color-tinta: #0f3d3b; /* texto principal — verde azulado profundo, jamás negro puro */
+  --color-bruma: #5a7573; /* texto secundario (AA sobre blanco) */
+  --color-bruma-osc: #5f7876; /* captions (AA sobre blanco) */
+
+  /* Semánticos del dinero (significado intacto) */
+  --color-esmeralda: #047857; /* confirmado */
+  --color-esmeralda-tenue: #ecfdf5;
+  --color-oro: #b45309; /* pendiente / negociación */
+  --color-oro-tenue: #fffbeb;
+  --color-ambar: #b45309;
+  --color-ambar-tenue: #fffbeb;
+  --color-rojo: #b91c1c; /* error / ban */
+  --color-rojo-tenue: #fef2f2;
+  --color-azul: #1d6fa5; /* informativo (iCal) — texto AA sobre claro */
+  --color-azul-tenue: #eff6ff;
 }
 
 @theme inline {
@@ -40,7 +54,6 @@ body {
   font-family: var(--font-archivo), sans-serif;
 }
 
-/* La display geométrica pide peso y tracking apretado; sin itálica sintética. */
 .font-display {
   font-weight: 640;
   letter-spacing: -0.025em;
@@ -50,7 +63,7 @@ body {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--color-esmeralda) 30%, transparent);
+  background: color-mix(in srgb, var(--color-tiffany) 28%, transparent);
 }
 
 * {
@@ -58,63 +71,89 @@ body {
   scrollbar-color: var(--color-borde-claro) transparent;
 }
 
+/* Focus ring de marca: visible sobre blanco, con offset */
 :focus-visible {
-  outline: 2px solid var(--color-esmeralda);
+  outline: 2px solid var(--color-tiffany-profundo);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
-/* Grano sutil para dar textura al fondo */
+/* Elevación del tema claro: sombra suave; mayor para modales/toasts */
+.elevada {
+  box-shadow: 0 1px 3px rgba(15, 61, 59, 0.08), 0 1px 2px rgba(15, 61, 59, 0.04);
+}
+.elevada-alta {
+  box-shadow: 0 8px 30px rgba(15, 61, 59, 0.14);
+}
+
+/* Banda oscura ("joya sobre terciopelo"): hero y footer en tinta */
+.terciopelo {
+  background:
+    radial-gradient(ellipse 55% 50% at 20% 10%, rgba(10, 186, 181, 0.14), transparent 62%),
+    radial-gradient(ellipse 45% 40% at 85% 20%, rgba(129, 216, 208, 0.1), transparent 60%),
+    #0f3d3b;
+  color: #ffffff;
+}
+
+/* Atmósfera clara para páginas públicas (checkout, login, registro) */
+.atmosfera {
+  background:
+    radial-gradient(ellipse 60% 45% at 18% 0%, rgba(10, 186, 181, 0.07), transparent 60%),
+    radial-gradient(ellipse 45% 40% at 90% 15%, rgba(129, 216, 208, 0.08), transparent 60%),
+    var(--color-fondo);
+}
+
+/* El grano queda casi imperceptible en claro */
 .grano::before {
   content: "";
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 50;
-  opacity: 0.03;
+  opacity: 0.015;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* Atmósfera del hero: profundidad, no decoración */
-.atmosfera {
-  background:
-    radial-gradient(ellipse 55% 45% at 18% 8%, rgba(47, 212, 138, 0.07), transparent 62%),
-    radial-gradient(ellipse 42% 38% at 85% 18%, rgba(227, 166, 60, 0.05), transparent 60%),
-    radial-gradient(ellipse 70% 55% at 50% 112%, rgba(18, 35, 59, 0.55), transparent 70%);
-}
-
-/* Pulso de estados vivos */
 @keyframes pulso {
-  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 45%, transparent); }
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 40%, transparent); }
   60% { box-shadow: 0 0 0 6px transparent; }
 }
 .pulso {
   animation: pulso 2.2s ease-out infinite;
 }
 
-/* Línea decorativa con degradado de marca */
+/* Línea decorativa de marca */
 .linea-oro {
-  background: linear-gradient(90deg, transparent, var(--color-ambar) 30%, var(--color-esmeralda) 70%, transparent);
+  background: linear-gradient(90deg, transparent, var(--color-tiffany) 30%, var(--color-tiffany-claro) 70%, transparent);
   height: 1px;
 }
 
-/* Números tabulares en mono: la firma de producto financiero serio */
+/* Números tabulares en mono: la firma financiera, ahora en tinta */
 .cifra {
   font-family: var(--font-jetbrains), monospace;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
 }
 
-/* Skeleton loaders */
+/* Skeletons: shimmer gris-Tiffany muy sutil sobre hueso */
 @keyframes brillar {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
 .esqueleto {
   border-radius: 0.75rem;
-  background: linear-gradient(90deg, var(--color-tarjeta) 25%, var(--color-tarjeta-alta) 50%, var(--color-tarjeta) 75%);
+  background: linear-gradient(90deg, #eef4f4 25%, var(--color-tiffany-bruma) 50%, #eef4f4 75%);
   background-size: 200% 100%;
   animation: brillar 1.6s ease-in-out infinite;
+}
+
+/* Patrón rayado para bloqueo manual del calendario */
+.rayado {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(90, 117, 115, 0.22) 0 4px,
+    transparent 4px 9px
+  );
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -41,7 +41,7 @@ export default async function Verificaciones() {
                   await accionAprobarPropiedad(p.id);
                 }}
               >
-                <button className="rounded-full bg-esmeralda px-5 py-2 text-xs font-bold text-fondo hover:brightness-110">
+                <button className="rounded-full bg-tiffany px-5 py-2 text-xs font-bold text-tinta hover:bg-tiffany-claro">
                   Otorgar sello Verificada
                 </button>
               </form>

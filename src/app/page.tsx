@@ -49,26 +49,27 @@ const FLUJO = [
 export default function Landing() {
   return (
     <main className="grano atmosfera min-h-screen">
-      {/* NAV */}
+      {/* BANDA TERCIOPELO: nav + hero — la joya Tiffany sobre el fondo profundo */}
+      <div className="terciopelo">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
-        <p className="font-display text-2xl text-tinta">
-          ESTADÍA<span className="text-esmeralda">.</span>
+        <p className="font-display text-2xl text-white">
+          ESTADÍA<span className="text-tiffany-claro">.</span>
         </p>
-        <div className="hidden items-center gap-8 text-sm text-bruma sm:flex">
-          <a href="#modelo" className="transition hover:text-tinta">Modelo</a>
-          <a href="#reglas" className="transition hover:text-tinta">Reglas</a>
-          <a href="#confianza" className="transition hover:text-tinta">Confianza</a>
+        <div className="hidden items-center gap-8 text-sm text-[#a9c4c2] sm:flex">
+          <a href="#modelo" className="transition hover:text-white">Modelo</a>
+          <a href="#reglas" className="transition hover:text-white">Reglas</a>
+          <a href="#confianza" className="transition hover:text-white">Confianza</a>
         </div>
         <div className="flex items-center gap-3">
           <Link
             href="/app"
-            className="hidden rounded-full border border-borde-claro px-5 py-2 text-sm font-semibold text-bruma transition hover:text-tinta sm:block"
+            className="hidden rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-[#cfe0de] transition hover:text-white sm:block"
           >
             Ver demo
           </Link>
           <Link
             href="/registro"
-            className="rounded-full border border-esmeralda/40 bg-esmeralda-tenue px-5 py-2 text-sm font-bold text-esmeralda transition hover:bg-esmeralda hover:text-fondo"
+            className="rounded-full bg-tiffany px-5 py-2 text-sm font-bold text-tinta transition hover:bg-tiffany-claro"
           >
             Crear cuenta
           </Link>
@@ -76,7 +77,7 @@ export default function Landing() {
       </nav>
 
       {/* HERO */}
-      <header className="mx-auto max-w-6xl px-6 pb-24 pt-12 sm:pt-20">
+      <header className="mx-auto max-w-6xl px-6 pb-20 pt-12 sm:pt-16">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
             <Reveal>
@@ -86,13 +87,13 @@ export default function Landing() {
               </div>
             </Reveal>
             <Reveal delay={0.08}>
-              <h1 className="mt-6 font-display text-4xl leading-[1.05] text-tinta sm:text-6xl">
+              <h1 className="mt-6 font-display text-4xl leading-[1.05] text-white sm:text-6xl">
                 La app no te quita tu cliente.{" "}
-                <em className="text-esmeralda">Te da inventario.</em>
+                <em className="text-tiffany-claro">Te da inventario.</em>
               </h1>
             </Reveal>
             <Reveal delay={0.16}>
-              <p className="mt-6 max-w-xl text-lg leading-relaxed text-bruma">
+              <p className="mt-6 max-w-xl text-lg leading-relaxed text-[#b9cfcd]">
                 La red que conecta propietarios de rentas cortas en Antioquia con su
                 gremio de comisionistas. Calendario que nunca miente, negociación con
                 las cartas sobre la mesa y split automático en cada pago. El cliente
@@ -103,13 +104,13 @@ export default function Landing() {
               <div className="mt-9 flex flex-wrap items-center gap-4">
                 <Link
                   href="/registro"
-                  className="rounded-full bg-esmeralda px-7 py-3.5 text-sm font-bold text-fondo transition hover:brightness-110"
+                  className="rounded-full bg-tiffany px-7 py-3.5 text-sm font-bold text-tinta transition hover:bg-tiffany-claro"
                 >
                   Empezar registro →
                 </Link>
                 <Link
                   href="/app"
-                  className="rounded-full border border-borde-claro px-7 py-3.5 text-sm font-semibold text-bruma transition hover:border-oro/50 hover:text-oro"
+                  className="rounded-full border border-white/25 px-7 py-3.5 text-sm font-semibold text-[#cfe0de] transition hover:border-tiffany-claro hover:text-white"
                 >
                   Explorar la demo
                 </Link>
@@ -130,15 +131,15 @@ export default function Landing() {
               ["0 holds", "sin reservas tentativas"],
             ].map(([v, k]) => (
               <div key={k} className="bg-panel px-6 py-5">
-                <p className="cifra text-xl font-bold text-oro">{v}</p>
+                <p className="cifra text-xl font-bold text-tinta">{v}</p>
                 <p className="mt-1 text-xs text-bruma">{k}</p>
               </div>
             ))}
           </div>
         </Reveal>
       </header>
-
-      <div className="linea-oro mx-auto max-w-6xl" />
+      </div>
+      {/* fin banda terciopelo */}
 
       {/* ROLES — 3 caminos */}
       <section className="mx-auto max-w-6xl px-6 py-24">
@@ -173,14 +174,14 @@ export default function Landing() {
             },
           ].map((r, i) => (
             <Reveal key={r.rol} delay={i * 0.1}>
-              <div className="group flex h-full flex-col rounded-2xl border border-borde bg-tarjeta p-7 transition hover:border-esmeralda/40 hover:bg-tarjeta-alta">
+              <div className="group flex h-full flex-col rounded-2xl border border-borde bg-tarjeta p-7 transition hover:border-tiffany hover:bg-tarjeta-alta">
                 <p className={`cifra text-[11px] font-bold uppercase tracking-[0.18em] ${r.tono}`}>{r.pct}</p>
                 <h3 className="mt-3 font-display text-2xl text-tinta">{r.rol}</h3>
                 <p className="mt-3 text-sm leading-relaxed text-bruma">{r.d}</p>
                 <div className="mt-auto flex gap-3 pt-6">
                   <Link
                     href={`/registro?rol=${encodeURIComponent(r.rol)}`}
-                    className="rounded-full bg-esmeralda/90 px-4 py-2 text-xs font-bold text-fondo transition hover:bg-esmeralda"
+                    className="rounded-full bg-tiffany px-4 py-2 text-xs font-bold text-tinta transition hover:bg-tiffany"
                   >
                     Registrarme
                   </Link>
@@ -198,7 +199,7 @@ export default function Landing() {
       </section>
 
       {/* MODELO DE DINERO */}
-      <section id="modelo" className="border-y border-borde bg-panel/60 py-24">
+      <section id="modelo" className="border-y border-borde bg-tiffany-bruma/50 py-24">
         <div className="mx-auto max-w-6xl px-6">
           <Reveal>
             <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-oro">El modelo de dinero</p>
@@ -287,7 +288,7 @@ export default function Landing() {
       </section>
 
       {/* FLUJO DE ESTADOS */}
-      <section className="border-y border-borde bg-panel/60 py-24">
+      <section className="border-y border-borde bg-tiffany-bruma/50 py-24">
         <div className="mx-auto max-w-6xl px-6">
           <Reveal>
             <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-oro">Máquina de estados</p>
@@ -328,7 +329,7 @@ export default function Landing() {
               </div>
             </Reveal>
             <Reveal delay={0.08}>
-              <div className="h-full rounded-2xl border border-esmeralda/25 bg-esmeralda-tenue/40 p-6">
+              <div className="h-full rounded-2xl border border-tiffany-claro bg-tiffany-bruma/40 p-6">
                 <h3 className="font-semibold text-esmeralda">Al entrar el Pago 2</h3>
                 <p className="mt-2 text-sm leading-relaxed text-bruma">
                   Split 2 dispersado y semáforo en verde: &ldquo;Pago completo ✓&rdquo;. Solo esa
@@ -356,8 +357,8 @@ export default function Landing() {
                 Propiedades con certificado de tradición y libertad → sello{" "}
                 <span className="font-semibold text-esmeralda">Propiedad Verificada</span>.
                 Adentro, cada comisionista opera con un alias —{" "}
-                <span className="font-mono text-sm text-oro">CONDOR-472</span>,{" "}
-                <span className="font-mono text-sm text-oro">CEIBA-118</span> — sin
+                <span className="font-mono text-sm text-tinta">CONDOR-472</span>,{" "}
+                <span className="font-mono text-sm text-tinta">CEIBA-118</span> — sin
                 relación alguna con sus datos personales.
               </p>
               <p className="mt-4 leading-relaxed text-bruma">
@@ -379,7 +380,7 @@ export default function Landing() {
                 <div className="max-w-[85%] rounded-2xl rounded-tl-sm border border-borde bg-panel px-4 py-3 text-bruma">
                   Listo, el cliente confirma 3 noches. ¿Cerramos en $5.100.000?
                 </div>
-                <div className="ml-auto max-w-[85%] rounded-2xl rounded-tr-sm border border-esmeralda/25 bg-esmeralda-tenue px-4 py-3 text-tinta">
+                <div className="ml-auto max-w-[85%] rounded-2xl rounded-tr-sm border border-tiffany-claro bg-tiffany-bruma px-4 py-3 text-tinta">
                   De una. Acepto en el módulo y sale el link.
                 </div>
                 <div className="max-w-[85%] rounded-2xl rounded-tl-sm border border-rojo/40 bg-rojo-tenue px-4 py-3">
@@ -404,14 +405,14 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* CTA FINAL */}
-      <section className="border-t border-borde bg-panel/60">
+      {/* CTA FINAL — banda terciopelo de cierre */}
+      <section className="terciopelo">
         <div className="mx-auto max-w-6xl px-6 py-24 text-center">
           <Reveal>
-            <h2 className="mx-auto max-w-3xl font-display text-5xl leading-tight text-tinta">
-              Fugarse cuesta más <em className="text-oro">de lo que ahorra.</em>
+            <h2 className="mx-auto max-w-3xl font-display text-5xl leading-tight text-white">
+              Fugarse cuesta más <em className="text-tiffany-claro">de lo que ahorra.</em>
             </h2>
-            <p className="mx-auto mt-5 max-w-xl text-bruma">
+            <p className="mx-auto mt-5 max-w-xl text-[#b9cfcd]">
               Calendario que nunca miente, pago garantizado con split automático,
               contrato autogenerado y una reputación que vale plata. Eso no se
               consigue por WhatsApp.
@@ -419,22 +420,22 @@ export default function Landing() {
             <div className="mt-10 flex flex-wrap justify-center gap-4">
               <Link
                 href="/registro"
-                className="rounded-full bg-esmeralda px-8 py-4 text-sm font-bold text-fondo transition hover:brightness-110"
+                className="rounded-full bg-tiffany px-8 py-4 text-sm font-bold text-tinta transition hover:bg-tiffany-claro"
               >
                 Crear mi cuenta →
               </Link>
               <Link
                 href="/app"
-                className="rounded-full border border-borde-claro px-8 py-4 text-sm font-semibold text-bruma transition hover:text-tinta"
+                className="rounded-full border border-white/25 px-8 py-4 text-sm font-semibold text-[#cfe0de] transition hover:text-white"
               >
                 Ver la demo
               </Link>
             </div>
           </Reveal>
         </div>
-        <footer className="border-t border-borde">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-8 text-xs text-bruma-osc">
-            <p className="font-display text-lg text-bruma">ESTADÍA<span className="text-esmeralda">.</span></p>
+        <footer className="border-t border-white/10">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-8 text-xs text-[#8fb0ad]">
+            <p className="font-display text-lg text-white">ESTADÍA<span className="text-tiffany-claro">.</span></p>
             <p>Antioquia, Colombia · Piloto Oriente Antioqueño · Demo de producto — no es asesoría legal</p>
           </div>
         </footer>

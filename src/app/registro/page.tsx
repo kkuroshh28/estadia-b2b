@@ -53,7 +53,7 @@ function BotonSiguiente({ onClick, children = "Continuar →" }: { onClick: () =
   return (
     <button
       onClick={onClick}
-      className="mt-6 w-full rounded-full bg-esmeralda py-3.5 text-sm font-bold text-fondo transition hover:brightness-110"
+      className="mt-6 w-full rounded-full bg-tiffany py-3.5 text-sm font-bold text-tinta transition hover:bg-tiffany-claro"
     >
       {children}
     </button>
@@ -84,7 +84,7 @@ function Registro() {
   return (
     <main className="atmosfera flex min-h-screen flex-col items-center px-6 py-10">
       <Link href="/" className="font-display text-2xl text-tinta">
-        ESTADÍA<span className="text-esmeralda">.</span>
+        ESTADÍA<span className="text-tiffany">.</span>
       </Link>
 
       <div className="mt-8 w-full max-w-lg">
@@ -101,7 +101,7 @@ function Registro() {
                     <button
                       key={r}
                       onClick={() => { setRol(r); setPaso(1); }}
-                      className="w-full rounded-2xl border border-borde bg-panel p-5 text-left transition hover:border-esmeralda/50 hover:bg-tarjeta-alta"
+                      className="w-full rounded-2xl border border-borde bg-panel p-5 text-left transition hover:border-tiffany hover:bg-tarjeta-alta"
                     >
                       <p className="font-semibold text-tinta">{r}</p>
                       <p className="mt-1 text-xs text-bruma">
@@ -143,7 +143,7 @@ function Registro() {
                   {!biometriaLista ? (
                     <>
                       <motion.div
-                        className="absolute inset-x-6 h-0.5 rounded bg-esmeralda/80"
+                        className="absolute inset-x-6 h-0.5 rounded bg-tiffany"
                         animate={{ top: ["18%", "80%", "18%"] }}
                         transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
                       />
@@ -196,11 +196,11 @@ function Registro() {
                   initial={{ scale: 0.6, opacity: 0, filter: "blur(8px)" }}
                   animate={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
                   transition={{ delay: 0.5, type: "spring", stiffness: 180, damping: 16 }}
-                  className="mx-auto mt-6 inline-flex flex-col items-center gap-3 rounded-3xl border border-oro/40 bg-oro-tenue/50 px-10 py-8"
-                  style={{ boxShadow: "0 0 60px rgba(227,166,60,0.12)" }}
+                  className="mx-auto mt-6 inline-flex flex-col items-center gap-3 rounded-3xl border border-tiffany-claro bg-tiffany-bruma px-10 py-8"
+                  style={{ boxShadow: "0 0 60px rgba(10,186,181,0.22)" }}
                 >
                   <AvatarAlias alias={alias} size={56} />
-                  <p className="cifra text-3xl font-bold tracking-wide text-oro">{alias}</p>
+                  <p className="cifra text-3xl font-bold tracking-wide text-tinta">{alias}</p>
                 </motion.div>
                 <p className="mx-auto mt-5 max-w-sm text-xs leading-relaxed text-bruma">
                   Aleatorio, único e irrepetible. No se puede cambiar ni transferir. Tu
@@ -217,13 +217,13 @@ function Registro() {
                 <h1 className="font-display text-2xl text-tinta">Las reglas que no se negocian</h1>
                 <div className="mt-5 space-y-3">
                   <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-borde bg-panel p-4">
-                    <input type="checkbox" checked={aceptaInterno} onChange={(e) => setAceptaInterno(e.target.checked)} className="mt-0.5 accent-esmeralda" />
+                    <input type="checkbox" checked={aceptaInterno} onChange={(e) => setAceptaInterno(e.target.checked)} className="mt-0.5 accent-tiffany" />
                     <span className="text-xs leading-relaxed text-bruma">
                       Toda comunicación y negociación ocurre <span className="font-bold text-tinta">dentro de la app</span>. WhatsApp o cualquier canal externo entre usuarios está prohibido.
                     </span>
                   </label>
                   <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-rojo/25 bg-rojo-tenue/40 p-4">
-                    <input type="checkbox" checked={aceptaBan} onChange={(e) => setAceptaBan(e.target.checked)} className="mt-0.5 accent-esmeralda" />
+                    <input type="checkbox" checked={aceptaBan} onChange={(e) => setAceptaBan(e.target.checked)} className="mt-0.5 accent-tiffany" />
                     <span className="text-xs leading-relaxed text-bruma">
                       Entiendo que intercambiar datos de contacto significa{" "}
                       <span className="font-bold text-rojo">ban perpetuo e inmediato, sin apelación</span>, aplicado a mi cédula y biometría — no solo a mi cuenta.
@@ -233,7 +233,7 @@ function Registro() {
                 {aceptaBan && aceptaInterno ? (
                   <Link
                     href="/app"
-                    className="mt-6 block w-full rounded-full bg-esmeralda py-3.5 text-center text-sm font-bold text-fondo transition hover:brightness-110"
+                    className="mt-6 block w-full rounded-full bg-tiffany py-3.5 text-center text-sm font-bold text-tinta transition hover:bg-tiffany-claro"
                   >
                     Crear mi cuenta y entrar →
                   </Link>

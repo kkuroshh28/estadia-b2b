@@ -64,7 +64,7 @@ export default function ModuloNegociacion() {
               key={rol}
               onClick={() => setPerspectiva(rol)}
               className={`rounded-full px-4 py-2 transition ${
-                perspectiva === rol ? "bg-esmeralda-tenue text-esmeralda" : "text-bruma"
+                perspectiva === rol ? "bg-tiffany-bruma text-tinta" : "text-bruma"
               }`}
             >
               Ver como {rol === "principal" ? neg.aliasPrincipal : neg.aliasExterno}
@@ -118,7 +118,7 @@ export default function ModuloNegociacion() {
                   <div
                     className={`max-w-[75%] rounded-2xl border px-4 py-3 ${
                       esMia
-                        ? "rounded-tr-sm border-esmeralda/25 bg-esmeralda-tenue"
+                        ? "rounded-tr-sm border-tiffany-claro bg-tiffany-bruma"
                         : "rounded-tl-sm border-borde bg-panel"
                     }`}
                   >
@@ -155,7 +155,7 @@ export default function ModuloNegociacion() {
                 </p>
                 <Link
                   href="/pago/lnk-7f3a"
-                  className="mt-4 inline-block rounded-full bg-esmeralda px-6 py-2.5 text-xs font-bold text-fondo transition hover:brightness-110"
+                  className="mt-4 inline-block rounded-full bg-tiffany px-6 py-2.5 text-xs font-bold text-tinta transition hover:bg-tiffany-claro"
                 >
                   Ver checkout del cliente →
                 </Link>
@@ -173,7 +173,7 @@ export default function ModuloNegociacion() {
             </p>
             <div className="mt-2 flex items-center gap-2">
               <AvatarAlias alias={alias} size={30} />
-              <p className="font-mono text-sm font-bold text-oro">{alias}</p>
+              <p className="font-mono text-sm font-bold text-tinta">{alias}</p>
             </div>
 
             {acordado ? (
@@ -203,7 +203,7 @@ export default function ModuloNegociacion() {
                 <div className="mt-4 grid gap-2">
                   <button
                     onClick={aceptar}
-                    className="rounded-full bg-esmeralda px-5 py-3 text-xs font-bold text-fondo transition hover:brightness-110"
+                    className="rounded-full bg-tiffany px-5 py-3 text-xs font-bold text-tinta transition hover:bg-tiffany-claro"
                   >
                     Aceptar la última oferta (<Money valor={ultima.monto} />)
                   </button>

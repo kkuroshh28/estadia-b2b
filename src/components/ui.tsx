@@ -72,7 +72,7 @@ export function Card({
 }) {
   return (
     <div
-      className={`rounded-2xl border border-borde ${alta ? "bg-tarjeta-alta" : "bg-tarjeta"} ${className}`}
+      className={`elevada rounded-2xl border border-borde ${alta ? "bg-tarjeta-alta" : "bg-tarjeta"} ${className}`}
     >
       {children}
     </div>

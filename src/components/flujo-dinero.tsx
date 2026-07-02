@@ -28,25 +28,25 @@ export function FlujoDinero({
       k: "Propietario",
       sub: "tarifa neta completa",
       v: total.tarifaNeta,
-      color: "var(--color-esmeralda)",
+      color: "var(--color-tiffany)",
       texto: "text-esmeralda",
-      borde: "border-esmeralda/30",
+      borde: "border-tiffany-claro",
     },
     {
       k: "C. Principal",
       sub: "50% de la comisión",
       v: total.principal,
-      color: "var(--color-ambar)",
-      texto: "text-oro",
-      borde: "border-oro/30",
+      color: "var(--color-tiffany-profundo)",
+      texto: "text-tinta",
+      borde: "border-borde",
     },
     {
       k: "C. Externo",
       sub: "40% de la comisión",
       v: total.externo,
-      color: "var(--color-ambar)",
-      texto: "text-oro",
-      borde: "border-oro/30",
+      color: "var(--color-tiffany-claro)",
+      texto: "text-tinta",
+      borde: "border-borde",
     },
     {
       k: "Plataforma",
@@ -54,12 +54,12 @@ export function FlujoDinero({
       v: total.app,
       color: "var(--color-bruma)",
       texto: "text-bruma",
-      borde: "border-borde-claro",
+      borde: "border-borde",
     },
   ];
 
   return (
-    <div className="rounded-2xl border border-borde bg-panel/70 p-6">
+    <div className="elevada-alta rounded-2xl border border-borde bg-panel p-6">
       <div className="flex items-center justify-between gap-3">
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-bruma-osc">
           {titulo}
