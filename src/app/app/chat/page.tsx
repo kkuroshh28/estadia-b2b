@@ -34,10 +34,22 @@ export default function ChatInterno() {
   const [baneado, setBaneado] = useState(false);
   const siguienteId = useRef(10);
 
-  const enviar = () => {
+  const enviar = async () => {
     const limpio = texto.trim();
     if (!limpio || baneado) return;
-    const filtro = filtrarMensaje(limpio);
+    // La decisión REAL es del servidor (anti-fuga server-side); el filtro
+    // local solo cubre el caso sin red para que la demo no se rompa offline.
+    let filtro = filtrarMensaje(limpio);
+    try {
+      const res = await fetch("/api/chat/validar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ texto: limpio }),
+      });
+      if (res.ok) filtro = await res.json();
+    } catch {
+      // sin red: se mantiene el veredicto local
+    }
     const id = siguienteId.current++;
 
     if (filtro.bloqueado) {
