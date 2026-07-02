@@ -1,0 +1,29 @@
+CONTRATO DE HOSPEDAJE — VIVIENDA TURÍSTICA
+(Estadías inferiores a 30 noches · Ley 300 de 1996 y normas de turismo)
+
+*** BORRADOR PARA REVISIÓN DEL ABOGADO — NO USAR EN PRODUCCIÓN SIN VALIDACIÓN LEGAL ***
+
+Reserva: {{codigo}}
+Fecha de generación: {{fecha_generacion}}
+
+EL PROPIETARIO / OPERADOR: {{nombre_propietario}}, identificado como aparece al
+pie de su firma, titular del inmueble "{{nombre_propiedad}}" ubicado en
+{{municipio}}, Antioquia (RNT: {{rnt}}).
+
+EL HUÉSPED: {{nombre_huesped}}, identificado como aparece al pie de su firma.
+
+1. OBJETO. El Propietario concede al Huésped el uso temporal del inmueble para
+   fines exclusivamente turísticos, del {{fecha_entrada}} al {{fecha_salida}}
+   ({{noches}} noches), para máximo {{huespedes}} personas.
+2. PRECIO. El valor total del hospedaje es {{precio_total}} COP, pagadero en dos
+   cuotas del 50% mediante los links de pago de la plataforma ESTADÍA. No se
+   acepta efectivo. La entrega del inmueble está condicionada a la confirmación
+   del pago completo.
+3. REGLAS DEL INMUEBLE. {{reglas}}
+4. CANCELACIONES. Según la política vigente publicada en los términos de la
+   plataforma al momento de la reserva.
+5. TRATAMIENTO DE DATOS. Las partes autorizan el tratamiento de sus datos según
+   la Ley 1581 de 2012 y la política de la plataforma.
+
+Este documento se generó automáticamente con hash de integridad {{hash}} y se
+distribuye únicamente a las partes que legalmente lo requieren.

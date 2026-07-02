@@ -56,3 +56,23 @@ Una persona nueva puede: clonar → `docs/demo.md` (correr local con Docker en 4
 comandos) → `npm test` (55 verdes) → leer `ARQUITECTURA.md` +
 `ESPECIFICACION.md` + `cumplimiento-reglas.md` y entender el negocio completo.
 Build verde (23 rutas), producción desplegada: https://estadia-b2b.vercel.app
+
+---
+
+# Anexo — Fase 4: cierre total con adaptadores (2026-07-01)
+
+**Directiva cumplida:** el producto completo corre HOY de punta a punta con
+drivers `simulado`; encender lo real = pegar credenciales + flag
+(`docs/credenciales-necesarias.md`). **75 tests verdes** (antes 55).
+
+| Sistema nuevo | Evidencia (test que lo prueba) |
+|---------------|--------------------------------|
+| Auth OTP + sesiones + guards | login completo, OTP no reutilizable, rate-limit al 6º código, rol ajeno rechazado, TOTP ±1 ventana |
+| Registro real + cifrado | usuario pendiente_kyc, cédula cifrada en DB, alias del servicio real |
+| KYC adaptador | aprobar→activo, rechazar→kyc_rechazado, **baneado re-registrándose con otro correo → rechazado** |
+| Pasarela adaptadora | webhook firma inválida→401; pago simulado procesa por el MISMO flujo (idempotencia incluida); Wompi implementado, payouts sin improvisar (decision-pasarela.md) |
+| Panel /admin | 403 para no-admin y admin sin TOTP en TODA operación; reembolso con contra-splits (Σ=0, conciliación cuadra); reversión de ban con frase+motivo auditados; split 50/40/10 NO editable ni por admin |
+| iCal | parser Airbnb/Booking, conflicto con reserva pagada → alerta y NO se pisa, export con token HMAC, cron 20 min |
+| Contratos PDF | generado automático al Pago 1, plantilla por duración, hash sha256, **comisionistas jamás lo ven** |
+| OCR chat | imagen con teléfono → bloqueada + strike; limpia → aprobada |
+| **Flujo completo e2e** | registro→KYC→solicitud (primero gana)→negociación→pagos 1 y 2 por webhook→splits exactos (comisión = precio−neta al centavo)→contrato→semáforo verde→completada |

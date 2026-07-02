@@ -1,0 +1,24 @@
+CONTRATO DE ARRENDAMIENTO DE CORTA DURACIÓN — MEDIANO PLAZO
+(Estadías de 30 a 92 noches)
+
+*** BORRADOR PARA REVISIÓN DEL ABOGADO — NO USAR EN PRODUCCIÓN SIN VALIDACIÓN LEGAL ***
+*** ZONA GRIS Ley 820 de 2003: el abogado debe definir el encuadre definitivo ***
+
+Reserva: {{codigo}}
+Fecha de generación: {{fecha_generacion}}
+
+EL ARRENDADOR: {{nombre_propietario}}, titular del inmueble
+"{{nombre_propiedad}}" ubicado en {{municipio}}, Antioquia.
+
+EL ARRENDATARIO: {{nombre_huesped}}.
+
+1. OBJETO. Uso temporal del inmueble del {{fecha_entrada}} al {{fecha_salida}}
+   ({{noches}} noches), máximo {{huespedes}} ocupantes. No constituye
+   arrendamiento de vivienda urbana de largo plazo.
+2. CANON ÚNICO. {{precio_total}} COP en dos cuotas del 50% por links de pago de
+   la plataforma ESTADÍA. La entrega exige pago completo confirmado.
+3. REGLAS DEL INMUEBLE. {{reglas}}
+4. RESTITUCIÓN. Al vencimiento, sin necesidad de requerimiento.
+5. DATOS PERSONALES. Ley 1581 de 2012.
+
+Hash de integridad: {{hash}} · Distribución restringida a las partes legales.

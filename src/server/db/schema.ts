@@ -26,6 +26,7 @@ export const estadoUsuarioEnum = pgEnum("estado_usuario", [
   "pendiente_kyc",
   "activo",
   "baneado",
+  "kyc_rechazado",
 ]);
 export const estadoDiaEnum = pgEnum("estado_dia", [
   "disponible",
@@ -82,6 +83,60 @@ export const usuarios = pgTable("usuarios", {
   estado: estadoUsuarioEnum("estado").notNull().default("pendiente_kyc"),
   kycProveedorId: text("kyc_proveedor_id"), // truora_check_id — jamás biometría cruda
   kycVerificadoEn: timestamp("kyc_verificado_en", { withTimezone: true }),
+  totpSecret: text("totp_secret"), // 2FA obligatorio para rol admin
+});
+
+// ─── Auth (sesiones propias: el modelo de identidad ES el negocio) ───────────
+
+export const otps = pgTable("otps", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  email: text("email").notNull(),
+  codigoHash: text("codigo_hash").notNull(),
+  intentos: smallint("intentos").notNull().default(0),
+  venceEn: timestamp("vence_en", { withTimezone: true }).notNull(),
+  usado: boolean("usado").notNull().default(false),
+  creadoEn: timestamp("creado_en", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const sesiones = pgTable("sesiones", {
+  tokenHash: text("token_hash").primaryKey(), // solo el hash — jamás el token
+  usuarioId: uuid("usuario_id").notNull().references(() => usuarios.id),
+  adminElevada: boolean("admin_elevada").notNull().default(false), // tras TOTP
+  venceEn: timestamp("vence_en", { withTimezone: true }).notNull(),
+  creadaEn: timestamp("creada_en", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Bandeja de notificaciones del driver simulado (visible en /admin/dev). */
+export const notificacionesDev = pgTable("notificaciones_dev", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  canal: text("canal").notNull(), // email | push | sms
+  destinatario: text("destinatario").notNull(),
+  asunto: text("asunto").notNull(),
+  cuerpo: text("cuerpo").notNull(),
+  enviadaEn: timestamp("enviada_en", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const alertasAdmin = pgTable("alertas_admin", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  tipo: text("tipo").notNull(), // conflicto_ical | conciliacion | reserva_baneado
+  detalle: jsonb("detalle").notNull(),
+  resuelta: boolean("resuelta").notNull().default(false),
+  creadaEn: timestamp("creada_en", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Auditoría append-only de TODA acción admin. */
+export const auditoriaAdmin = pgTable("auditoria_admin", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  adminId: uuid("admin_id").notNull().references(() => usuarios.id),
+  accion: text("accion").notNull(),
+  detalle: jsonb("detalle"),
+  creadaEn: timestamp("creada_en", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Bytes de PDFs de contratos (sin blob storage externo todavía). */
+export const contratosBlob = pgTable("contratos_blob", {
+  contratoId: uuid("contrato_id").primaryKey().references(() => contratos.id),
+  bytesBase64: text("bytes_base64").notNull(),
 });
 
 /** Ban perpetuo A LA IDENTIDAD: hash de cédula + id biométrico del proveedor. */

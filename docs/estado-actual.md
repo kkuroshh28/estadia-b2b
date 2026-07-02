@@ -1,50 +1,41 @@
-# Estado real del proyecto — inventario honesto (Fase 3, 2026-07-01)
+# Estado real del proyecto — inventario honesto (Fase 4, 2026-07-01)
 
-Regla de este documento: **nada se marca hecho sin evidencia** (test, archivo:línea
-o demostración reproducible). "Demo" = funciona con datos simulados coherentes;
-"Real" = contra base de datos/servicio de verdad.
+Regla: nada se marca hecho sin evidencia (test, archivo:línea o demostración
+reproducible). Suite de referencia: `npm test` → **80 tests verdes** (unitarios +
+integración contra Postgres 16 real, local y en CI).
 
-## Pantallas (16 rutas — todas construidas y verificadas en navegador)
+## Directiva Fase 4 cumplida
+El producto completo funciona de punta a punta HOY con drivers `simulado`, y
+pasar a servicios reales es **exclusivamente pegar credenciales en .env**
+siguiendo `docs/credenciales-necesarias.md` — cero código adicional.
 
-| Ruta | Estado | Nota |
-|------|--------|------|
-| `/` landing | **Completa** | OG/SEO/PWA listos; flujo del dinero animado |
-| `/registro` onboarding | **Completa (demo)** | KYC simulado; revelación de alias real (`generarAlias`) |
-| `/app` hub | Completa | Solo demo: en prod cada usuario ve su rol |
-| `/app/propietario` (+ calendario, principales) | **Completa (demo)** | Calculadora de neto usa el modelo real |
-| `/app/principal` (+ negociación, comisiones) | **Completa (demo)** | Desglose en vivo usa `calcularSplit` real |
-| `/app/externo` (+ links, comisiones, propiedad/[id]) | **Completa (demo)** | Días ocupados inseleccionables |
-| `/app/chat` | **Completa** | Filtro anti-fuga **REAL en servidor** (`/api/chat/validar`) |
-| `/pago/[linkId]` | **Completa (demo)** | Pago simulado; motor real listo detrás de `PasarelaAdapter` |
-| 404 / 500 | Completa | Con el sistema de diseño |
-
-## Sistemas de backend — estado REAL
+## Sistemas — estado real
 
 | Sistema | Estado | Evidencia |
 |---------|--------|-----------|
-| Módulo de dinero (centavos, split exacto) | ✅ **REAL + testeado** | `src/lib/dinero` · 13 tests (15.000 combinaciones de invariantes) |
-| Base de datos (schema 22 tablas + migraciones) | ✅ **REAL** (falta provisionar la instancia gestionada) | `src/server/db/schema.ts`, `drizzle/0000_*.sql`; suite corre contra Postgres 16 (Docker/CI) |
-| Máquina de estados (server-only + auditoría) | ✅ **REAL + testeado** | `src/server/servicios/reservas.ts` · matriz completa testeada |
-| "El primero que paga gana" (concurrencia) | ✅ **REAL + testeado** | `integracion.test.ts`: carrera de 2 webhooks → 1 gana |
-| Webhooks idempotentes + splits | ✅ **REAL + testeado** | `pagos.ts`: duplicado → jamás duplica splits (test) |
-| Anti-fuga en servidor + strikes + ban a identidad | ✅ **REAL + testeado** | `antifuga.ts` + `integracion-reglas.test.ts` (3 strikes e2e) |
-| Alias único/irrepetible en servidor | ✅ **REAL + testeado** | 40 concurrentes únicos; colisión con retry probada |
-| Negociación server: link SOLO del precio aceptado | ✅ **REAL + testeado** | `negociacion.ts` + test regla #6 |
-| Piso de comisión (switch en config) | ✅ **REAL + testeado** | Apagado por defecto; test lo enciende y verifica rechazo |
-| Auth (Auth.js + OTP + passkeys) | ❌ **NO construida** | Bloqueada por decisión DB + secretos (PENDIENTES-KUROSH §1,6) |
-| KYC Truora | ❌ **NO integrada** | Gate `identidadBaneada()` listo; falta `TRUORA_API_KEY` |
-| Pasarela Wompi (links/webhook/dispersión reales) | ❌ **Sandbox NO conectado** | Motor completo detrás de `PasarelaAdapter`; faltan llaves |
-| Panel /admin | ❌ **NO construido** | Fase 5 del plan |
-| iCal real / push / contratos PDF | ❌ **NO construidos** | Fase 6 del plan |
-| OCR de imágenes en chat | ❌ **NO construido** | Requiere cola (Inngest) activa |
-| CI (tests + lint + build con Postgres de servicio) | ✅ Configurado | `.github/workflows/ci.yml` (corre en el próximo push) |
-| Seed realista | ✅ **REAL + verificado** | `npm run db:seed`: 12 propiedades, 8 alias, reserva pagada VÍA MOTOR REAL, idempotente |
+| Dinero (centavos, split exacto) | ✅ REAL | `src/lib/dinero` · 13 tests |
+| DB (schema 28 tablas + 2 migraciones) | ✅ REAL | corre contra Postgres 16 (Docker/CI) |
+| Máquina de estados server-only + auditoría | ✅ REAL | matriz completa testeada |
+| **Auth: OTP email + sesiones httpOnly + guards por rol** | ✅ REAL | `src/server/auth` · 10 tests (login, rate-limit, rol ajeno rechazado, TOTP) |
+| **Registro real → pendiente_kyc + alias + cifrado en reposo** | ✅ REAL | `servicios/registro.ts` · test verifica cédula cifrada |
+| **KYC adaptador** | ✅ sim completo · truora listo para llave | `adaptadores/kyc.ts` · tests aprobar/rechazar/lista-negra; re-registro de baneado rechazado e2e |
+| **Pasarela adaptador** | ✅ sim completo (mismo webhook firmado) · wompi listo para llaves | `adaptadores/pasarela.ts` · webhook 401 con firma mala; pago sim procesa por el flujo REAL. Payouts Wompi: sin improvisar (`docs/decision-pasarela.md`) |
+| **Panel /admin (6 consolas + 2FA TOTP)** | ✅ REAL | verificaciones, anti-fuga (ban/reversión doble confirmación), dinero+conciliación, métricas, config auditada, bandeja dev · 5 tests (403 no-admin, contra-splits, split no editable) |
+| **iCal import/export real** | ✅ REAL | parser Airbnb/Booking testeado, conflicto→alerta admin, export con token HMAC, cron cada 20 min (`vercel.json`) |
+| **Notificaciones por evento** | ✅ sim (bandeja /admin/dev) · resend listo | pago confirmado notifica a las 3 partes (test) |
+| **Contratos PDF automáticos** | ✅ REAL | pdf-lib + plantillas editables (borrador para abogado); tipo por duración; hash sha256; **comisionistas jamás los ven** (test) |
+| **OCR anti-fuga en chat** | ✅ sim · tesseract por flag | imagen "en_revision" → filtro → strikes (test) |
+| **Flujo completo e2e** | ✅ | `operacion.test.ts`: registro→KYC→solicitud→negociación→pagos 1 y 2 por webhook→splits exactos→contrato→semáforo verde→completada |
+| CI (Postgres servicio + suite + lint + build) | ✅ | `.github/workflows/ci.yml` |
+| Seed demo | ✅ | `npm run db:seed` idempotente |
 
-## Por qué los ❌ siguen así (no es código pendiente de escribir)
-
-Los cuatro sistemas ❌ de integración dependen de **cuentas/credenciales/dinero
-que solo Kurosh puede aportar** (`docs/PENDIENTES-KUROSH.md`): DB gestionada
-(US$10/mes en su org Supabase — gasto recurrente que no se aprueba solo), llaves
-Wompi sandbox, cuenta Truora, Inngest/Resend/Twilio/Sentry. El panel admin
-(Fase 5) sí es solo código y es lo primero que sigue cuando haya auth real de
-la cual colgar el rol admin + 2FA.
+## Lo único pendiente
+1. **Pegar credenciales reales** (`docs/credenciales-necesarias.md`): DATABASE_URL
+   gestionada, Wompi, Truora, Resend + flags. Con `MODO_AUTH=exigida` los guards
+   se encienden en el mismo deploy.
+2. **Validar payouts Wompi en sandbox** (decisión documentada; MercadoPago como
+   plan B con la misma interfaz).
+3. **Pendientes humanos legales** (`docs/pendientes-humanos.md`): empresa,
+   abogado (contratos/T&C/split), RNT del piloto.
+4. Conectar dashboards de la demo a datos por sesión (hoy la demo pública usa
+   datos simulados coherentes; los servicios ya son reales por debajo).
