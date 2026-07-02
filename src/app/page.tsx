@@ -52,24 +52,24 @@ export default function Landing() {
       {/* BANDA TERCIOPELO: nav + hero — la joya Tiffany sobre el fondo profundo */}
       <div className="terciopelo">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
-        <p className="font-display text-2xl text-white">
-          ESTADÍA<span className="text-tiffany-claro">.</span>
+        <p className="font-display text-2xl text-tinta">
+          ESTADÍA<span className="text-white">.</span>
         </p>
-        <div className="hidden items-center gap-8 text-sm text-[#a9c4c2] sm:flex">
-          <a href="#modelo" className="transition hover:text-white">Modelo</a>
-          <a href="#reglas" className="transition hover:text-white">Reglas</a>
-          <a href="#confianza" className="transition hover:text-white">Confianza</a>
+        <div className="hidden items-center gap-8 text-sm text-tinta/75 sm:flex">
+          <a href="#modelo" className="transition hover:text-tinta">Modelo</a>
+          <a href="#reglas" className="transition hover:text-tinta">Reglas</a>
+          <a href="#confianza" className="transition hover:text-tinta">Confianza</a>
         </div>
         <div className="flex items-center gap-3">
           <Link
             href="/app"
-            className="hidden rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-[#cfe0de] transition hover:text-white sm:block"
+            className="hidden rounded-full border border-tinta/30 px-5 py-2 text-sm font-semibold text-tinta transition hover:bg-white/50 sm:block"
           >
             Ver demo
           </Link>
           <Link
             href="/registro"
-            className="rounded-full bg-tiffany px-5 py-2 text-sm font-bold text-tinta transition hover:bg-tiffany-claro"
+            className="rounded-full bg-tinta px-5 py-2 text-sm font-bold text-white transition hover:bg-tinta/85"
           >
             Crear cuenta
           </Link>
@@ -87,13 +87,13 @@ export default function Landing() {
               </div>
             </Reveal>
             <Reveal delay={0.08}>
-              <h1 className="mt-6 font-display text-4xl leading-[1.05] text-white sm:text-6xl">
+              <h1 className="mt-6 font-display text-4xl leading-[1.05] text-tinta sm:text-6xl">
                 La app no te quita tu cliente.{" "}
-                <em className="text-tiffany-claro">Te da inventario.</em>
+                <em className="rounded-xl bg-white/80 px-2 text-tinta">Te da inventario.</em>
               </h1>
             </Reveal>
             <Reveal delay={0.16}>
-              <p className="mt-6 max-w-xl text-lg leading-relaxed text-[#b9cfcd]">
+              <p className="mt-6 max-w-xl text-lg leading-relaxed text-tinta/85">
                 La red que conecta propietarios de rentas cortas en Antioquia con su
                 gremio de comisionistas. Calendario que nunca miente, negociación con
                 las cartas sobre la mesa y split automático en cada pago. El cliente
@@ -104,13 +104,13 @@ export default function Landing() {
               <div className="mt-9 flex flex-wrap items-center gap-4">
                 <Link
                   href="/registro"
-                  className="rounded-full bg-tiffany px-7 py-3.5 text-sm font-bold text-tinta transition hover:bg-tiffany-claro"
+                  className="rounded-full bg-tinta px-7 py-3.5 text-sm font-bold text-white transition hover:bg-tinta/85"
                 >
                   Empezar registro →
                 </Link>
                 <Link
                   href="/app"
-                  className="rounded-full border border-white/25 px-7 py-3.5 text-sm font-semibold text-[#cfe0de] transition hover:border-tiffany-claro hover:text-white"
+                  className="rounded-full border border-tinta/35 px-7 py-3.5 text-sm font-semibold text-tinta transition hover:bg-white/50"
                 >
                   Explorar la demo
                 </Link>
@@ -409,10 +409,10 @@ export default function Landing() {
       <section className="terciopelo">
         <div className="mx-auto max-w-6xl px-6 py-24 text-center">
           <Reveal>
-            <h2 className="mx-auto max-w-3xl font-display text-5xl leading-tight text-white">
-              Fugarse cuesta más <em className="text-tiffany-claro">de lo que ahorra.</em>
+            <h2 className="mx-auto max-w-3xl font-display text-5xl leading-tight text-tinta">
+              Fugarse cuesta más <em className="rounded-xl bg-white/80 px-2">de lo que ahorra.</em>
             </h2>
-            <p className="mx-auto mt-5 max-w-xl text-[#b9cfcd]">
+            <p className="mx-auto mt-5 max-w-xl text-tinta/85">
               Calendario que nunca miente, pago garantizado con split automático,
               contrato autogenerado y una reputación que vale plata. Eso no se
               consigue por WhatsApp.
@@ -420,22 +420,22 @@ export default function Landing() {
             <div className="mt-10 flex flex-wrap justify-center gap-4">
               <Link
                 href="/registro"
-                className="rounded-full bg-tiffany px-8 py-4 text-sm font-bold text-tinta transition hover:bg-tiffany-claro"
+                className="rounded-full bg-tinta px-8 py-4 text-sm font-bold text-white transition hover:bg-tinta/85"
               >
                 Crear mi cuenta →
               </Link>
               <Link
                 href="/app"
-                className="rounded-full border border-white/25 px-8 py-4 text-sm font-semibold text-[#cfe0de] transition hover:text-white"
+                className="rounded-full border border-tinta/35 px-8 py-4 text-sm font-semibold text-tinta transition hover:bg-white/50"
               >
                 Ver la demo
               </Link>
             </div>
           </Reveal>
         </div>
-        <footer className="border-t border-white/10">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-8 text-xs text-[#8fb0ad]">
-            <p className="font-display text-lg text-white">ESTADÍA<span className="text-tiffany-claro">.</span></p>
+        <footer className="border-t border-tinta/15">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-8 text-xs text-tinta/70">
+            <p className="font-display text-lg text-tinta">ESTADÍA<span className="text-white">.</span></p>
             <p>Antioquia, Colombia · Piloto Oriente Antioqueño · Demo de producto — no es asesoría legal</p>
           </div>
         </footer>

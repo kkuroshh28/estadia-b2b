@@ -34,3 +34,25 @@ Ratios WCAG calculados por script (2026-07-01). AA texto normal ≥ 4.5:1.
 #B91C1C: los nombres históricos de tokens se remapearon para que TODO el
 lenguaje del dinero conservara su significado sin tocar la lógica. El Tiffany
 es exclusivamente marca/acción; jamás significa "dinero confirmado".
+
+
+---
+
+## Ajuste: el color EXACTO de Tiffany & Co. (a pedido del fundador, con referencia visual)
+
+**Análisis:** el color de marca de Tiffany & Co. es un Pantone privado y marca
+registrada, **PMS 1837** (año de fundación). Pantone no publica su fórmula; las
+dos aproximaciones que circulan son **#81D8D0** (el *robin's egg blue* de la
+caja/empaques — la aproximación citada para PMS 1837 y la que coincide con la
+referencia visual del logo enviada) y #0ABAB5 (variante digital más profunda).
+
+**Decisión:** `--tiffany = #81D8D0` (primario, bandas de marca y botones) ·
+`--tiffany-profundo = #0ABAB5` (acentos/hover profundos) · `--tiffany-claro =
+#B7EBE6`. La banda del hero pasó de tinta oscura al Tiffany auténtico.
+
+| Par nuevo | Ratio | |
+|-----------|-------|--|
+| tinta / #81D8D0 (banda + botones) | **7.23** | ✓ AA (mejor que el 4.97 anterior) |
+| blanco / tinta (CTA oscuro sobre banda — como el logo de Tiffany) | 11.99 | ✓ |
+| tinta / #B7EBE6 (hover) | 9.16 | ✓ |
+| tinta / #0ABAB5 (profundo) | 4.97 | ✓ |

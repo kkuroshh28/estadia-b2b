@@ -12,10 +12,10 @@
 
 @theme {
   /* Marca */
-  --color-tiffany: #0abab5;
-  --color-tiffany-claro: #81d8d0;
+  --color-tiffany: #81d8d0; /* PMS 1837 aprox. — el color EXACTO de la caja Tiffany & Co. */
+  --color-tiffany-claro: #b7ebe6;
   --color-tiffany-bruma: #e9f8f7;
-  --color-tiffany-profundo: #089e9a;
+  --color-tiffany-profundo: #0abab5; /* variante digital profunda — hovers/acentos */
 
   /* Neutros (física del tema claro) */
   --color-fondo: #f7fafa; /* hueso: el fondo general — las tarjetas blancas flotan */
@@ -88,11 +88,13 @@ body {
 
 /* Banda oscura ("joya sobre terciopelo"): hero y footer en tinta */
 .terciopelo {
+  /* Banda de marca: el Tiffany de la caja (#81D8D0) como protagonista.
+     Texto en tinta (7.23:1 AA). La joya es blanca y flota encima. */
   background:
-    radial-gradient(ellipse 55% 50% at 20% 10%, rgba(10, 186, 181, 0.14), transparent 62%),
-    radial-gradient(ellipse 45% 40% at 85% 20%, rgba(129, 216, 208, 0.1), transparent 60%),
-    #0f3d3b;
-  color: #ffffff;
+    radial-gradient(ellipse 55% 50% at 20% 8%, rgba(255, 255, 255, 0.4), transparent 60%),
+    radial-gradient(ellipse 45% 40% at 85% 18%, rgba(10, 186, 181, 0.22), transparent 60%),
+    #81d8d0;
+  color: var(--color-tinta);
 }
 
 /* Atmósfera clara para páginas públicas (checkout, login, registro) */

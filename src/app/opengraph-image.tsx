@@ -16,19 +16,19 @@ export default function OgImage() {
           flexDirection: "column",
           justifyContent: "space-between",
           padding: 72,
-          background: "linear-gradient(150deg, #ffffff 60%, #e9f8f7 100%)",
+          background: "linear-gradient(150deg, #81d8d0 55%, #a7e4de 100%)",
           color: "#0f3d3b",
           fontFamily: "sans-serif",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", fontSize: 44, fontWeight: 700 }}>
-            ESTADÍA<span style={{ color: "#0abab5" }}>.</span>
+            ESTADÍA<span style={{ color: "#ffffff" }}>.</span>
           </div>
           <div
             style={{
               display: "flex",
-              background: "#0abab5",
+              background: "#ffffff",
               color: "#0f3d3b",
               fontSize: 22,
               fontWeight: 700,
@@ -43,12 +43,12 @@ export default function OgImage() {
           <div style={{ display: "flex", fontSize: 76, fontWeight: 700, lineHeight: 1.05 }}>
             La app no te quita tu cliente.
           </div>
-          <div style={{ display: "flex", fontSize: 76, fontWeight: 700, color: "#089e9a" }}>
+          <div style={{ display: "flex", fontSize: 76, fontWeight: 700, color: "#ffffff" }}>
             Te da inventario.
           </div>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ display: "flex", fontSize: 28, color: "#5a7573" }}>
+          <div style={{ display: "flex", fontSize: 28, color: "#0f3d3b", opacity: 0.75 }}>
             Red B2B de rentas cortas
           </div>
           <div style={{ display: "flex", fontSize: 26, color: "#0f3d3b", fontFamily: "monospace", fontWeight: 700 }}>

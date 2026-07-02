@@ -13,13 +13,13 @@ export default function Icon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(160deg, #0abab5 0%, #089e9a 100%)",
-          color: "#ffffff",
+          background: "linear-gradient(160deg, #81d8d0 0%, #0abab5 100%)",
+          color: "#0f3d3b",
           fontSize: 300,
           fontWeight: 700,
         }}
       >
-        E<span style={{ color: "#0f3d3b" }}>.</span>
+        E<span style={{ color: "#ffffff" }}>.</span>
       </div>
     ),
     size,
