@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: estadia_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://postgres:test@localhost:5432/estadia_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Migraciones contra Postgres de servicio
+        run: npx drizzle-kit migrate
+      - name: Suite completa (unitarios + integración de concurrencia)
+        run: npm test
+      - name: Lint
+        run: npm run lint
+      - name: Build
+        run: npm run build
+
+  # Staging se despliega automático desde Vercel (rama staging → Preview).
+  # Producción: promoción manual (Vercel production branch = main con
+  # "Require approval" en el proyecto). Ver docs/ARQUITECTURA.md §3.

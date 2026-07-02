@@ -19,9 +19,31 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ESTADÍA — La red B2B de rentas cortas de Antioquia",
+  metadataBase: new URL("https://estadia-b2b.vercel.app"),
+  title: {
+    default: "ESTADÍA — La red B2B de rentas cortas de Antioquia",
+    template: "%s · ESTADÍA",
+  },
   description:
     "Plataforma B2B que conecta propietarios de inmuebles de renta corta con su red de comisionistas. El calendario solo se bloquea con dinero. El primero que paga, gana.",
+  openGraph: {
+    title: "ESTADÍA — La red B2B de rentas cortas de Antioquia",
+    description:
+      "La app no te quita tu cliente: te da inventario. Split automático 50/40/10, calendario que nunca miente y pago garantizado por link.",
+    url: "https://estadia-b2b.vercel.app",
+    siteName: "ESTADÍA",
+    locale: "es_CO",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+  applicationName: "ESTADÍA",
+  appleWebApp: { capable: true, title: "ESTADÍA", statusBarStyle: "black-translucent" },
+};
+
+export const viewport = {
+  themeColor: "#0b0f14",
 };
 
 export default function RootLayout({

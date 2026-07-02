@@ -55,23 +55,20 @@ export function MoneyAnimado({
   const reducido = useReducedMotion();
   const mv = useMotionValue(0);
   const spring = useSpring(mv, { stiffness: 90, damping: 22 });
-  const [texto, setTexto] = useState(formatearCOP(reducido ? valor : 0));
+  const [texto, setTexto] = useState(() => formatearCOP(0));
 
   useEffect(() => {
     if (enVista) mv.set(valor);
   }, [enVista, valor, mv]);
 
-  useEffect(() => {
-    if (reducido) {
-      setTexto(formatearCOP(valor));
-      return;
-    }
-    return spring.on("change", (v) => setTexto(formatearCOP(Math.round(v))));
-  }, [spring, reducido, valor]);
+  useEffect(
+    () => spring.on("change", (v) => setTexto(formatearCOP(Math.round(v)))),
+    [spring],
+  );
 
   return (
     <span ref={ref} className={`cifra ${className}`}>
-      {texto}
+      {reducido ? formatearCOP(valor) : texto}
     </span>
   );
 }
