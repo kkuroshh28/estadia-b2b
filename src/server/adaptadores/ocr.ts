@@ -1,7 +1,8 @@
 /**
  * Adaptador OCR para imágenes del chat. Driver por env OCR_DRIVER:
  * "simulado" (default — trata los bytes como texto UTF-8: suficiente para
- * tests y desarrollo) | "tesseract" (local, real).
+ * tests y desarrollo) | "tesseract" (real, local; tesseract.js ya está en
+ * package.json — activar es solo OCR_DRIVER=tesseract).
  */
 export interface AdaptadorOcr {
   extraerTexto(imagen: Buffer): Promise<string>;
@@ -15,9 +16,8 @@ const simulado: AdaptadorOcr = {
 
 const tesseract: AdaptadorOcr = {
   async extraerTexto(imagen) {
-    // Import dinámico con especificador variable: tesseract.js es dependencia
-    // OPCIONAL (solo se instala si se activa este driver) y el bundler no debe
-    // intentar resolverla en build.
+    // Import dinámico con especificador variable: el bundler de Next no debe
+    // resolverla en build (el worker WASM solo se carga si el driver está activo).
     const nombreModulo = ["tesseract", "js"].join(".");
     const mod = (await import(nombreModulo).catch(() => null)) as
       | { recognize: (i: Buffer, lang: string) => Promise<{ data: { text: string } }> }

@@ -15,6 +15,10 @@ describe("anti-fuga — bloquea", () => {
     ["wa.me/573105551234", "URL de contacto"],
     ["llámame y cuadramos", "solicitud de contacto"],
     ["te paso el dato y hablamos", "solicitud de contacto"],
+    // Texto degradado por OCR (espacios comidos, dígitos mal leídos): el canal
+    // debe seguir detectándose aunque el número se pierda.
+    ["miwhatsappes 10655 1234", "OCR degradado — canal pegado a palabras"],
+    ["mi wsp3105551234 listo", "OCR degradado — canal y número pegados"],
   ];
   for (const [texto, caso] of casos) {
     it(caso, () => {
