@@ -15,12 +15,17 @@ import { linksDePago } from "@/server/db/schema";
 export async function POST(req: Request) {
   const cuerpoCrudo = await req.text();
   const firma =
-    req.headers.get("x-firma-estadia") ?? req.headers.get("x-event-checksum") ?? "";
+    req.headers.get("x-firma-estadia") ??
+    req.headers.get("x-event-checksum") ??
+    req.headers.get("x-signature") ?? // MercadoPago
+    "";
 
   const db = obtenerDb();
   let evento;
   try {
-    evento = obtenerPasarela().verificarFirma(cuerpoCrudo, firma);
+    evento = await obtenerPasarela().verificarFirma(cuerpoCrudo, firma, {
+      "x-request-id": req.headers.get("x-request-id"),
+    });
   } catch (e) {
     if (e instanceof FirmaInvalidaError) {
       return NextResponse.json({ error: "firma inválida" }, { status: 401 });

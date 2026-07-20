@@ -32,6 +32,16 @@ validarla en sandbox real.**
 
 ## Recomendación
 1. Validar payouts de Wompi con la cuenta sandbox (1 día de trabajo con llaves).
-2. Si Wompi NO habilita dispersión a terceros para el comercio → implementar
-   driver `mercadopago` (interfaz ya definida) y usar Wompi solo si algún día
-   habilita el producto. La decisión es reversible por diseño (flag de entorno).
+2. Si Wompi NO habilita dispersión a terceros para el comercio → encender el
+   driver `mercadopago` y usar Wompi solo si algún día habilita el producto.
+   La decisión es reversible por diseño (flag de entorno).
+
+## Estado del driver mercadopago (2026-07-20)
+**YA IMPLEMENTADO** en `src/server/adaptadores/pasarela.ts`
+(`PASARELA_DRIVER=mercadopago` + `MP_ACCESS_TOKEN` + `MP_WEBHOOK_SECRET`):
+- Checkout Pro (preferences) con `external_reference` = id del link en DB.
+- Webhook con verificación x-signature (manifiesto id/request-id/ts + HMAC,
+  4 tests) y consulta del pago al API antes de aceptar el evento.
+- Reembolsos con X-Idempotency-Key.
+- `dispersar()` LANZA a propósito en ambos drivers: los payouts multi-
+  beneficiario se validan en sandbox ANTES de escribir un peso — regla de oro.
