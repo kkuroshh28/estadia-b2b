@@ -40,6 +40,32 @@ export function Reveal({
 }
 
 /**
+ * Variante del hero (above the fold): el contenido está SIEMPRE visible desde
+ * el primer paint del servidor — el LCP no espera hidratación ni animación —
+ * y solo la traslación anima al montar.
+ */
+export function RevealHero({
+  children,
+  delay = 0,
+  className = "",
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  className?: string;
+}) {
+  return (
+    <motion.div
+      className={className}
+      initial={{ y: 18 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.55, delay, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/**
  * Cifra de dinero animada: cuenta hacia arriba al entrar en viewport y
  * transiciona con spring cuando el valor cambia (desglose en vivo).
  */

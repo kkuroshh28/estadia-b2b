@@ -1,4 +1,28 @@
-# Estado real del proyecto — inventario honesto (Fase 4, 2026-07-01)
+# Estado real del proyecto — inventario honesto (2026-07-20)
+
+## Novedades 2026-07-20 (sesión de mejoras sin credenciales)
+- **Dashboards /app conectados a datos por sesión** (`src/server/datos/`):
+  con DATABASE_URL las 11 vistas leen Postgres real scoped al usuario (o al
+  usuario semilla en dev); sin DB, la demo pública intacta. Con MODO_AUTH un
+  error de DB jamás degrada a datos falsos. Verificado en navegador con seed.
+- **Calendario con escritura REAL**: `bloquearDias/liberarDias` + endpoint
+  `/api/calendario` — la regla #14 vive en el WHERE (jamás toca reservado_app
+  ni bloqueado_ical). 5 tests de integración; clic verificado persistiendo.
+- **FIX motor de pagos**: split `tarifa_neta` ahora lleva `beneficiario_id`
+  del propietario (antes NULL; la dispersión no sabría a quién pagar).
+- **FIX pool de conexiones**: `obtenerDb()` cachea el pool en globalThis.
+- **OCR real**: tesseract.js 7 instalado y verificado (activar =
+  `OCR_DRIVER=tesseract`); anti-fuga probado contra texto degradado por OCR.
+- **Driver MercadoPago** (plan B): preferences + webhook x-signature
+  verificado + reembolsos idempotentes; `dispersar()` lanza hasta validar
+  payouts en sandbox (igual que Wompi — regla de no improvisar con dinero).
+- **Seguridad HTTP**: CSP sin orígenes externos, HSTS preload, X-Frame-Options
+  DENY, nosniff, Permissions-Policy + rate limiting por IP en registro (5/min),
+  chat (30/min) y calendario (60/min).
+- **Performance**: LCP del hero pinta desde el primer byte (RevealHero solo
+  anima traslación). Lighthouse local: 94 / 100 / 100 / 100.
+- Suite: **89 tests** (todos verdes contra Postgres 16 real).
+
 
 Regla: nada se marca hecho sin evidencia (test, archivo:línea o demostración
 reproducible). Suite de referencia: `npm test` → **80 tests verdes** (unitarios +

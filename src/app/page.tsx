@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Badge, Money } from "@/components/ui";
-import { Reveal } from "@/components/motion";
+import { Reveal, RevealHero } from "@/components/motion";
 import { FlujoDinero } from "@/components/flujo-dinero";
 import { calcularSplit } from "@/lib/domain/split";
 
@@ -80,27 +80,27 @@ export default function Landing() {
       <header className="mx-auto max-w-6xl px-6 pb-20 pt-12 sm:pt-16">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
-            <Reveal>
+            <RevealHero>
               <div className="flex flex-wrap items-center gap-2">
                 <Badge tono="esmeralda" vivo>Piloto · Oriente Antioqueño</Badge>
                 <Badge tono="oro">100% B2B</Badge>
               </div>
-            </Reveal>
-            <Reveal delay={0.08}>
+            </RevealHero>
+            <RevealHero delay={0.08}>
               <h1 className="mt-6 font-display text-4xl leading-[1.05] text-tinta sm:text-6xl">
                 La app no te quita tu cliente.{" "}
                 <em className="rounded-xl bg-white/80 px-2 text-tinta">Te da inventario.</em>
               </h1>
-            </Reveal>
-            <Reveal delay={0.16}>
+            </RevealHero>
+            <RevealHero delay={0.16}>
               <p className="mt-6 max-w-xl text-lg leading-relaxed text-tinta/85">
                 La red que conecta propietarios de rentas cortas en Antioquia con su
                 gremio de comisionistas. Calendario que nunca miente, negociación con
                 las cartas sobre la mesa y split automático en cada pago. El cliente
                 final nunca entra: solo recibe un link.
               </p>
-            </Reveal>
-            <Reveal delay={0.24}>
+            </RevealHero>
+            <RevealHero delay={0.24}>
               <div className="mt-9 flex flex-wrap items-center gap-4">
                 <Link
                   href="/registro"
@@ -115,14 +115,14 @@ export default function Landing() {
                   Explorar la demo
                 </Link>
               </div>
-            </Reveal>
+            </RevealHero>
           </div>
-          <Reveal delay={0.2}>
+          <RevealHero delay={0.2}>
             <FlujoDinero />
-          </Reveal>
+          </RevealHero>
         </div>
 
-        <Reveal delay={0.1}>
+        <RevealHero delay={0.1}>
           <div className="mt-16 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-borde bg-borde sm:grid-cols-4">
             {[
               ["50 / 40 / 10", "split de la comisión"],
@@ -136,7 +136,7 @@ export default function Landing() {
               </div>
             ))}
           </div>
-        </Reveal>
+        </RevealHero>
       </header>
       </div>
       {/* fin banda terciopelo */}
