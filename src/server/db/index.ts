@@ -9,14 +9,23 @@ import * as schema from "./schema";
  */
 const url = process.env.DATABASE_URL;
 
+// Pool ÚNICO por proceso, cacheado en globalThis: sobrevive el hot-reload de
+// dev y evita crear un pool por petición (agotaría las conexiones de Postgres).
+const globalPool = globalThis as unknown as { __estadiaDb?: ReturnType<typeof crearDb> };
+
+function crearDb() {
+  const cliente = postgres(url!, { prepare: false, max: 10 });
+  return drizzle(cliente, { schema });
+}
+
 export function obtenerDb() {
   if (!url) {
     throw new Error(
       "DATABASE_URL no configurada — ver docs/PENDIENTES-KUROSH.md y .env.example",
     );
   }
-  const cliente = postgres(url, { prepare: false, max: 10 });
-  return drizzle(cliente, { schema });
+  globalPool.__estadiaDb ??= crearDb();
+  return globalPool.__estadiaDb;
 }
 
 export type Db = ReturnType<typeof obtenerDb>;

@@ -1,5 +1,6 @@
 import { PanelComisiones } from "@/components/comisiones";
+import { datosComisiones } from "@/server/datos/paneles";
 
-export default function ComisionesPrincipal() {
-  return <PanelComisiones rol="principal" />;
+export default async function ComisionesPrincipal() {
+  return <PanelComisiones rol="principal" datos={await datosComisiones("principal")} />;
 }

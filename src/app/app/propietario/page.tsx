@@ -3,12 +3,15 @@ import { Badge, Card, Cover, Money, Stat } from "@/components/ui";
 import { MoneyAnimado } from "@/components/motion";
 import { Semaforo } from "@/components/semaforo";
 import { GraficaIngresos } from "@/components/grafica-ingresos";
-import { PROPIEDADES, RESERVAS, propiedadPorId } from "@/lib/data/demo";
+import { datosPropietario } from "@/server/datos/paneles";
 import { calcularNetoPropietario } from "@/lib/domain/split";
+import { formatearFechaCO } from "@/lib/fechas";
 
-export default function PanelPropietario() {
-  const activas = RESERVAS.filter((r) => r.estado !== "COMPLETADA");
-  const netoJulio = 8_960_000;
+export default async function PanelPropietario() {
+  const datos = await datosPropietario();
+  const activas = datos.reservas.filter(
+    (r) => !["COMPLETADA", "EXPIRADA", "INVALIDADA", "RECHAZADA", "CANCELADA"].includes(r.estado),
+  );
 
   return (
     <div className="mx-auto max-w-5xl space-y-10">
@@ -21,20 +24,28 @@ export default function PanelPropietario() {
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Stat
-          etiqueta="Neto recibido · julio"
-          valor={<MoneyAnimado valor={netoJulio} />}
+          etiqueta="Neto recibido · este mes"
+          valor={<MoneyAnimado valor={datos.netoMes} />}
           detalle="Dispersión directa a tu cuenta certificada"
           tono="esmeralda"
         />
         <Stat
           etiqueta="Reservas activas"
           valor={activas.length}
-          detalle="2 con pago en curso · 1 esperando anticipo"
+          detalle={
+            activas.length > 0
+              ? `${activas.filter((r) => r.estado === "PAGO_COMPLETO").length} con pago completo`
+              : "Aún sin reservas en curso"
+          }
         />
         <Stat
           etiqueta="Suscripción"
-          valor="Activa"
-          detalle="Renueva el 1 de agosto · tus propiedades están visibles"
+          valor={datos.suscripcion?.estado === "activa" ? "Activa" : datos.suscripcion ? "Vencida" : "—"}
+          detalle={
+            datos.suscripcion
+              ? `Renueva el ${formatearFechaCO(datos.suscripcion.renuevaEn, { day: "numeric", month: "long" })} · tus propiedades están visibles`
+              : "Sin suscripción registrada"
+          }
           tono="oro"
         />
       </div>
@@ -45,7 +56,7 @@ export default function PanelPropietario() {
           <Badge tono="esmeralda">Tarifa neta completa · −3% pasarela</Badge>
         </div>
         <div className="mt-4">
-          <GraficaIngresos />
+          <GraficaIngresos datos={datos.ingresosPorMes} />
         </div>
       </Card>
 
@@ -58,7 +69,7 @@ export default function PanelPropietario() {
           </Link>
         </div>
         <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {PROPIEDADES.slice(0, 6).map((p) => {
+          {datos.propiedades.slice(0, 6).map((p) => {
             const neto = calcularNetoPropietario(p.tarifaNetaNoche);
             return (
               <Card key={p.id} className="overflow-hidden">
@@ -104,11 +115,18 @@ export default function PanelPropietario() {
         <p className="mt-1 text-sm text-bruma">
           Sin &ldquo;Pago completo ✓&rdquo; no hay entrega de llaves ni códigos. Regla absoluta.
         </p>
-        <div className="mt-5 grid gap-4 lg:grid-cols-2">
-          {RESERVAS.map((r) => (
-            <Semaforo key={r.id} reserva={r} propiedadNombre={propiedadPorId(r.propiedadId).nombre} />
-          ))}
-        </div>
+        {datos.reservas.length === 0 ? (
+          <Card className="mt-5 p-6 text-sm text-bruma">
+            Aún no hay reservas. Cuando un externo venda tus fechas, aparecerán aquí
+            con su semáforo en vivo.
+          </Card>
+        ) : (
+          <div className="mt-5 grid gap-4 lg:grid-cols-2">
+            {datos.reservas.map((r) => (
+              <Semaforo key={r.id} reserva={r} propiedadNombre={r.propiedadNombre} />
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

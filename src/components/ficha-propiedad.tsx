@@ -5,15 +5,21 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { Badge, Card, Cover, Money } from "@/components/ui";
 import { MoneyAnimado } from "@/components/motion";
-import { DIAS_OCUPADOS_JULIO } from "@/lib/data/demo";
 import type { Propiedad } from "@/lib/domain/tipos";
 
 /**
  * Ficha técnica + selector de fechas para solicitar renta.
  * Regla #4: los días ocupados están deshabilitados — ni siquiera clickeables.
  */
-export function FichaPropiedad({ propiedad }: { propiedad: Propiedad }) {
-  const ocupados = DIAS_OCUPADOS_JULIO[propiedad.id] ?? [];
+interface Props {
+  propiedad: Propiedad;
+  mesTitulo: string;
+  diasDelMes: number;
+  offsetLunes: number;
+  ocupados: number[];
+}
+
+export function FichaPropiedad({ propiedad, mesTitulo, diasDelMes, offsetLunes, ocupados }: Props) {
   const [rango, setRango] = useState<{ desde: number | null; hasta: number | null }>({
     desde: null,
     hasta: null,
@@ -44,8 +50,6 @@ export function FichaPropiedad({ propiedad }: { propiedad: Propiedad }) {
   const netaTotal = noches * propiedad.tarifaNetaNoche;
   const enRango = (d: number) =>
     rango.desde !== null && rango.hasta !== null && d >= rango.desde && d <= rango.hasta;
-
-  const offsetJulio2026 = 2; // 1 jul 2026 = miércoles
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
@@ -108,7 +112,7 @@ export function FichaPropiedad({ propiedad }: { propiedad: Propiedad }) {
         {/* FECHAS */}
         <Card className="p-6 lg:col-span-3">
           <div className="flex items-center justify-between">
-            <h2 className="font-display text-xl text-tinta">Julio 2026 · elige fechas</h2>
+            <h2 className="font-display text-xl text-tinta">{mesTitulo} · elige fechas</h2>
             <Badge tono="azul">Disponibilidad real</Badge>
           </div>
           <p className="mt-1 text-xs text-bruma">
@@ -120,10 +124,10 @@ export function FichaPropiedad({ propiedad }: { propiedad: Propiedad }) {
             ))}
           </div>
           <div className="mt-2 grid grid-cols-7 gap-1.5">
-            {Array.from({ length: offsetJulio2026 }).map((_, i) => (
+            {Array.from({ length: offsetLunes }).map((_, i) => (
               <div key={`v-${i}`} />
             ))}
-            {Array.from({ length: 31 }, (_, i) => i + 1).map((dia) => {
+            {Array.from({ length: diasDelMes }, (_, i) => i + 1).map((dia) => {
               const ocupado = ocupados.includes(dia);
               const seleccionado = enRango(dia) || rango.desde === dia;
               return (
@@ -156,7 +160,7 @@ export function FichaPropiedad({ propiedad }: { propiedad: Propiedad }) {
               >
                 <div>
                   <p className="text-sm font-semibold text-tinta">
-                    {rango.desde} → {rango.hasta} jul · {noches} {noches === 1 ? "noche" : "noches"}
+                    {rango.desde} → {rango.hasta} · {noches} {noches === 1 ? "noche" : "noches"}
                   </p>
                   <p className="text-xs text-bruma">
                     Tarifa neta total <MoneyAnimado valor={netaTotal} className="font-bold text-esmeralda" /> — tu precio al cliente lo negocias con el principal.

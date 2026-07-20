@@ -4,6 +4,7 @@ import {
   calendarioDias,
   eventosPasarela,
   linksDePago,
+  propiedades,
   reservas,
   splits,
   transacciones,
@@ -180,13 +181,20 @@ async function procesarUnaVez(db: Db, evento: EventoPago): Promise<ResultadoPago
       })
       .returning({ id: transacciones.id });
 
+    // Beneficiario de la tarifa neta = el propietario de la propiedad (la
+    // dispersión necesita saber a QUIÉN pagarle; NULL es solo la plataforma).
+    const [prop] = await tx
+      .select({ propietarioId: propiedades.propietarioId })
+      .from(propiedades)
+      .where(eq(propiedades.id, reserva.propiedadId));
+
     await tx.insert(splits).values([
       { transaccionId: trx.id, beneficiarioId: null, concepto: "comision_app", montoCentavos: mitad.split.app },
       { transaccionId: trx.id, beneficiarioId: reserva.principalId, concepto: "comision_principal", montoCentavos: mitad.split.principal },
       { transaccionId: trx.id, beneficiarioId: reserva.externoId, concepto: "comision_externo", montoCentavos: mitad.split.externo },
       // El propietario recibe tarifa neta; el fee de pasarela se descuenta en la
       // dispersión y se concilia contra el fee real reportado por la pasarela.
-      { transaccionId: trx.id, beneficiarioId: null, concepto: "tarifa_neta", montoCentavos: mitad.tarifaNeta },
+      { transaccionId: trx.id, beneficiarioId: prop?.propietarioId ?? null, concepto: "tarifa_neta", montoCentavos: mitad.tarifaNeta },
     ]);
 
     await tx

@@ -4,10 +4,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AvatarAlias, Badge } from "./ui";
 
-const SECCIONES = [
+interface AliasShell {
+  principal: string | null;
+  externo: string | null;
+}
+
+const SECCIONES = (alias: AliasShell) => [
   {
     rol: "Propietario",
-    alias: null,
+    alias: null as string | null,
     items: [
       { href: "/app/propietario", label: "Panel y reservas" },
       { href: "/app/propietario/calendario", label: "Calendario y tarifa" },
@@ -16,7 +21,7 @@ const SECCIONES = [
   },
   {
     rol: "C. Principal",
-    alias: "CONDOR-472",
+    alias: alias.principal,
     items: [
       { href: "/app/principal", label: "Solicitudes entrantes" },
       { href: "/app/negociacion", label: "Módulo de negociación" },
@@ -25,7 +30,7 @@ const SECCIONES = [
   },
   {
     rol: "C. Externo",
-    alias: "GUACAMAYA-256",
+    alias: alias.externo,
     items: [
       { href: "/app/externo", label: "Buscar disponibilidad" },
       { href: "/app/externo/links", label: "Links de pago" },
@@ -47,9 +52,16 @@ const NAV_MOVIL = [
   { href: "/app/externo/links", label: "Links", icono: "⛓" },
 ];
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({
+  children,
+  alias = { principal: "CONDOR-472", externo: "GUACAMAYA-256" },
+}: {
+  children: React.ReactNode;
+  alias?: AliasShell;
+}) {
   const pathname = usePathname();
-  const seccionActiva = SECCIONES.find((s) =>
+  const secciones = SECCIONES(alias);
+  const seccionActiva = secciones.find((s) =>
     s.items.some((i) => pathname.startsWith(i.href)),
   );
 
@@ -66,7 +78,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </p>
         </Link>
         <div className="flex-1 space-y-6 overflow-y-auto px-3 py-6">
-          {SECCIONES.map((s) => (
+          {secciones.map((s) => (
             <div key={s.rol}>
               <div className="flex items-center gap-2 px-3 pb-2">
                 <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-bruma-osc">

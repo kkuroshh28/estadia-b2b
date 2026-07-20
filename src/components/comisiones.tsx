@@ -4,15 +4,16 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { Badge, Card, Stat } from "@/components/ui";
 import { MoneyAnimado } from "@/components/motion";
 import { FlujoDinero } from "@/components/flujo-dinero";
-import { COMISIONES_POR_MES, SPLITS_LIQUIDADOS } from "@/lib/data/demo";
 import { formatearCOP } from "@/lib/domain/split";
+import type { DatosComisiones } from "@/lib/domain/paneles";
 
 /** Panel "Mis comisiones" compartido entre Principal (50%) y Externo (40%). */
-export function PanelComisiones({ rol }: { rol: "principal" | "externo" }) {
-  const alias = rol === "principal" ? "CONDOR-472" : "GUACAMAYA-256";
+export function PanelComisiones({ rol, datos }: { rol: "principal" | "externo"; datos: DatosComisiones }) {
+  const alias = datos.alias ?? "—";
   const pct = rol === "principal" ? "50%" : "40%";
-  const totalAno = COMISIONES_POR_MES.reduce((a, m) => a + m[rol], 0);
-  const esteMes = COMISIONES_POR_MES[COMISIONES_POR_MES.length - 1][rol];
+  const totalAno = datos.porMes.reduce((a, m) => a + m.monto, 0);
+  const esteMes = datos.porMes.length ? datos.porMes[datos.porMes.length - 1].monto : 0;
+  const promedio = datos.reservasCompletadas > 0 ? Math.round(totalAno / datos.reservasCompletadas) : 0;
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
@@ -25,9 +26,9 @@ export function PanelComisiones({ rol }: { rol: "principal" | "externo" }) {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Stat etiqueta="Acumulado 2026" valor={<MoneyAnimado valor={totalAno} />} detalle="6 meses en la red" tono="esmeralda" />
-        <Stat etiqueta="Julio (en curso)" valor={<MoneyAnimado valor={esteMes} />} detalle="Crece con cada split confirmado" tono="oro" />
-        <Stat etiqueta="Promedio por reserva" valor={<MoneyAnimado valor={Math.round(totalAno / 14)} />} detalle="14 reservas completadas" />
+        <Stat etiqueta="Acumulado 2026" valor={<MoneyAnimado valor={totalAno} />} detalle="Total liquidado en la red" tono="esmeralda" />
+        <Stat etiqueta="Mes en curso" valor={<MoneyAnimado valor={esteMes} />} detalle="Crece con cada split confirmado" tono="oro" />
+        <Stat etiqueta="Promedio por reserva" valor={<MoneyAnimado valor={promedio} />} detalle={`${datos.reservasCompletadas} reservas completadas`} />
       </div>
 
       {/* GRÁFICA */}
@@ -38,7 +39,7 @@ export function PanelComisiones({ rol }: { rol: "principal" | "externo" }) {
         </div>
         <div className="mt-5 h-56">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={COMISIONES_POR_MES} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
+            <BarChart data={datos.porMes} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
               <CartesianGrid stroke="var(--color-borde)" strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="mes" stroke="var(--color-bruma-osc)" fontSize={11} tickLine={false} axisLine={false} />
               <YAxis
@@ -60,7 +61,7 @@ export function PanelComisiones({ rol }: { rol: "principal" | "externo" }) {
                 labelStyle={{ color: "var(--color-bruma)" }}
                 formatter={(v) => [formatearCOP(Number(v)), "Comisión"]}
               />
-              <Bar dataKey={rol} radius={[6, 6, 0, 0]} fill="var(--color-tiffany)" opacity={0.9} maxBarSize={44} />
+              <Bar dataKey="monto" radius={[6, 6, 0, 0]} fill="var(--color-tiffany)" opacity={0.9} maxBarSize={44} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -86,7 +87,14 @@ export function PanelComisiones({ rol }: { rol: "principal" | "externo" }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-borde">
-              {SPLITS_LIQUIDADOS.map((s) => (
+              {datos.splits.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-6 py-8 text-center text-xs text-bruma">
+                    Tus liquidaciones aparecerán aquí con cada pago confirmado.
+                  </td>
+                </tr>
+              )}
+              {datos.splits.map((s) => (
                 <tr key={`${s.codigo}-${s.mitad}`} className="text-bruma transition hover:bg-tarjeta-alta">
                   <td className="cifra px-6 py-3 text-xs">{s.fecha}</td>
                   <td className="cifra px-4 py-3 text-xs text-bruma-osc">{s.codigo}</td>
@@ -97,7 +105,11 @@ export function PanelComisiones({ rol }: { rol: "principal" | "externo" }) {
                     {formatearCOP(rol === "principal" ? s.principal : s.externo)}
                   </td>
                   <td className="px-6 py-3">
-                    <Badge tono="esmeralda">Dispersado</Badge>
+                    {s.dispersado ? (
+                      <Badge tono="esmeralda">Dispersado</Badge>
+                    ) : (
+                      <Badge tono="oro">En dispersión</Badge>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -106,11 +118,13 @@ export function PanelComisiones({ rol }: { rol: "principal" | "externo" }) {
         </div>
       </Card>
 
-      <FlujoDinero
-        precioFinal={2_280_000}
-        tarifaNeta={1_960_000}
-        titulo="Tu última liquidación · EST-2026-00341 · mitad 2"
-      />
+      {datos.esDemo && (
+        <FlujoDinero
+          precioFinal={2_280_000}
+          tarifaNeta={1_960_000}
+          titulo="Tu última liquidación · EST-2026-00341 · mitad 2"
+        />
+      )}
     </div>
   );
 }

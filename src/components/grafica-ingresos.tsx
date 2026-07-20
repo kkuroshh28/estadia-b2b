@@ -13,11 +13,18 @@ const NETO_MENSUAL = [
 ];
 
 /** Neto mensual del propietario — dispersión directa, tarifa neta completa. */
-export function GraficaIngresos() {
+export function GraficaIngresos({ datos = NETO_MENSUAL }: { datos?: { mes: string; neto: number }[] }) {
+  if (datos.length === 0) {
+    return (
+      <div className="flex h-52 items-center justify-center text-sm text-bruma">
+        Tus primeros netos dispersados dibujarán esta gráfica.
+      </div>
+    );
+  }
   return (
     <div className="h-52">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={NETO_MENSUAL} margin={{ top: 6, right: 4, left: 4, bottom: 0 }}>
+        <AreaChart data={datos} margin={{ top: 6, right: 4, left: 4, bottom: 0 }}>
           <defs>
             <linearGradient id="netoGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="var(--color-esmeralda)" stopOpacity={0.28} />

@@ -303,16 +303,8 @@ export const DIAS_OCUPADOS_JULIO: Record<string, number[]> = {
 };
 
 /** Historial de splits liquidados (para "Mis comisiones"). */
-export interface SplitLiquidado {
-  fecha: string;
-  codigo: string;
-  propiedad: string;
-  mitad: 1 | 2;
-  comisionTotal: number;
-  principal: number;
-  externo: number;
-  dispersado: boolean;
-}
+import type { SplitLiquidado } from "@/lib/domain/paneles";
+export type { SplitLiquidado };
 
 export const SPLITS_LIQUIDADOS: SplitLiquidado[] = [
   { fecha: "01 jul", codigo: "EST-2026-00341", propiedad: "Penthouse Provenza 1102", mitad: 2, comisionTotal: 320_000, principal: 160_000, externo: 128_000, dispersado: true },

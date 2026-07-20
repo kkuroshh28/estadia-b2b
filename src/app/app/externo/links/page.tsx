@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Badge, Card, Money, Stat } from "@/components/ui";
-import { LINKS_DE_PAGO } from "@/lib/data/demo";
+import { datosLinksExterno } from "@/server/datos/paneles";
 import type { EstadoLink } from "@/lib/domain/tipos";
 
 const TONO_LINK: Record<EstadoLink, { tono: "esmeralda" | "oro" | "rojo" | "neutro"; label: string }> = {
@@ -10,7 +10,8 @@ const TONO_LINK: Record<EstadoLink, { tono: "esmeralda" | "oro" | "rojo" | "neut
   invalidado: { tono: "rojo", label: "Invalidado — otro pagó primero" },
 };
 
-export default function LinksDePago() {
+export default async function LinksDePago() {
+  const datos = await datosLinksExterno();
   return (
     <div className="mx-auto max-w-4xl space-y-8">
       <div>
@@ -23,13 +24,24 @@ export default function LinksDePago() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Stat etiqueta="Tasa de pago de tus links" valor="92%" detalle="Parte de tu reputación como GUACAMAYA-256" tono="esmeralda" />
-        <Stat etiqueta="Comisiones · julio" valor={<Money valor={1_872_000} />} detalle="40% de cada comisión acordada" tono="oro" />
-        <Stat etiqueta="Links activos" valor={LINKS_DE_PAGO.filter((l) => l.estado === "activo").length} detalle="Con vigencia corriendo" />
+        <Stat
+          etiqueta="Tasa de pago de tus links"
+          valor={datos.tasaPago === null ? "—" : `${Math.round(datos.tasaPago * 100)}%`}
+          detalle={`Parte de tu reputación como ${datos.aliasYo ?? "comisionista"}`}
+          tono="esmeralda"
+        />
+        <Stat etiqueta="Comisiones · este mes" valor={<Money valor={datos.comisionesMes} />} detalle="40% de cada comisión acordada" tono="oro" />
+        <Stat etiqueta="Links activos" valor={datos.links.filter((l) => l.estado === "activo").length} detalle="Con vigencia corriendo" />
       </div>
 
       <div className="space-y-4">
-        {LINKS_DE_PAGO.map((l) => {
+        {datos.links.length === 0 && (
+          <Card className="p-6 text-sm text-bruma">
+            Aún no tienes links de pago. Cuando cierres una negociación, el link se
+            genera solo — con el precio acordado, imposible de digitar distinto.
+          </Card>
+        )}
+        {datos.links.map((l) => {
           const cfg = TONO_LINK[l.estado];
           return (
             <Card key={l.id} className="p-5">
