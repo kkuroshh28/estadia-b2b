@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { obtenerDb } from "@/server/db";
 import { registrarUsuario, RegistroError } from "@/server/servicios/registro";
+import { limitar } from "@/server/rate-limit";
 
 const Cuerpo = z.object({
   nombreReal: z.string().min(5).max(120),
@@ -12,6 +13,8 @@ const Cuerpo = z.object({
 });
 
 export async function POST(req: Request) {
+  const excedido = limitar(req, "registro", 5);
+  if (excedido) return excedido;
   const parseado = Cuerpo.safeParse(await req.json().catch(() => null));
   if (!parseado.success) {
     return NextResponse.json({ error: "Datos de registro inválidos" }, { status: 400 });

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { validarContenidoServidor } from "@/server/servicios/antifuga";
+import { limitar } from "@/server/rate-limit";
 
 /**
  * Validación anti-fuga EN SERVIDOR. El cliente muestra el resultado como UX,
@@ -14,6 +15,8 @@ const Cuerpo = z.object({
 });
 
 export async function POST(req: Request) {
+  const excedido = limitar(req, "chat-validar", 30);
+  if (excedido) return excedido;
   const json = await req.json().catch(() => null);
   const parseado = Cuerpo.safeParse(json);
   if (!parseado.success) {

@@ -5,6 +5,7 @@ import { authExigida } from "@/server/auth";
 import { usuarioDePeticion } from "@/server/auth/guardia";
 import { hayDb, usuarioDelPanel } from "@/server/datos/fuente";
 import { bloquearDias, CalendarioError, liberarDias } from "@/server/servicios/calendario";
+import { limitar } from "@/server/rate-limit";
 
 /**
  * Escritura del calendario del propietario (regla #14). La autorización y la
@@ -21,6 +22,8 @@ const Cuerpo = z.object({
 });
 
 export async function POST(req: Request) {
+  const excedido = limitar(req, "calendario", 60);
+  if (excedido) return excedido;
   if (!hayDb()) {
     return NextResponse.json({ error: "Demo sin base de datos" }, { status: 503 });
   }
