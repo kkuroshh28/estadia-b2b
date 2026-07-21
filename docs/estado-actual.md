@@ -41,6 +41,22 @@
   activa del propietario obligatoria (regla #3); turnos de oferta; capacidad.
 - Suite: **91 tests** verdes.
 
+## Novedades 2026-07-21 (4ª): meses navegables, campanita e iCal en la UI
+- **Navegación de meses** en la ficha del externo y el calendario del
+  propietario (`?mes=YYYY-MM`, flechas ‹ ›, clamp a +18 meses): ya se pueden
+  pedir/bloquear fechas de cualquier mes futuro.
+- **Notificaciones IN-APP** (tabla `notificaciones`, migración 0002):
+  campanita en el shell con badge de no-leídas, dropdown y marcar-leído.
+  Emisión real en: solicitud entrante (a TODOS los principales vinculados),
+  solicitud aceptada (al externo), contraoferta (a la contraparte), precio
+  acordado (al emisor) y pagos (a las 3 partes). Verificado en navegador con
+  el evento real. Falla en silencio: jamás tumba la operación que la origina.
+- **iCal en la UI del calendario**: URL de exportación copiable (token HMAC,
+  para pegar en Airbnb/Booking) + conectar/quitar calendarios externos que
+  el cron importa cada 20 min. Verificado en navegador.
+- Pase móvil de las pantallas nuevas (390px) OK.
+- Suite: **95 tests** verdes.
+
 ## Novedades 2026-07-21 (3ª): vigencias duras, cierre del ciclo, admin y auth
 - **Vigencias DURAS**: un link vencido JAMÁS se cobra (el webhook lo marca
   expirado sin mover un peso) y una oferta vencida no se acepta. Cron

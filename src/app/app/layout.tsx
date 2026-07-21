@@ -28,7 +28,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     }
   }
   return (
-    <AppShell alias={alias} roles={roles}>
+    <AppShell alias={alias} roles={roles} conDatos={hayDb()}>
       {children}
     </AppShell>
   );

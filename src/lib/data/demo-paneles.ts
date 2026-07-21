@@ -63,7 +63,7 @@ export function demoPrincipales(): DatosPrincipales {
 
 export function demoCalendario(): DatosCalendario {
   const mes = hoyEnBogota().slice(0, 7);
-  return { esDemo: true, mes: { iso: mes, ...infoMes(mes) }, propiedades: [], estados: {} };
+  return { esDemo: true, mes: { iso: mes, ...infoMes(mes) }, propiedades: [], estados: {}, ical: {} };
 }
 
 export function demoChat(): DatosChat {

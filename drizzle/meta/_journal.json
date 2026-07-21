@@ -15,6 +15,13 @@
       "when": 1782961241265,
       "tag": "0001_sparkling_ben_parker",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784614362825,
+      "tag": "0002_notificaciones_inapp",
+      "breakpoints": true
     }
   ]
 }

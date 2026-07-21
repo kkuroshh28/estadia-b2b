@@ -103,6 +103,11 @@ export interface DatosPrincipales {
   vinculos: Record<string, VinculoPanel[]>;
 }
 
+export interface IcalPropiedad {
+  exportUrl: string;
+  imports: { id: string; url: string; ultimaSync: string | null }[];
+}
+
 export interface DatosCalendario {
   esDemo: boolean;
   /** Mes mostrado: { iso: "2026-08", titulo: "Agosto 2026", dias: 31, offsetLunes: n } */
@@ -110,6 +115,8 @@ export interface DatosCalendario {
   propiedades: Propiedad[];
   /** Estado por propiedad y día del mes (solo días NO disponibles). */
   estados: Record<string, Partial<Record<number, EstadoDia>>>;
+  /** Sincronización iCal por propiedad. */
+  ical: Record<string, IcalPropiedad>;
 }
 
 export interface MensajeChatPanel {
@@ -138,6 +145,23 @@ export interface DatosFicha {
   diasDelMes: number;
   offsetLunes: number;
   ocupados: number[];
+}
+
+/** Mes anterior/siguiente de un iso YYYY-MM. */
+export function mesVecino(iso: string, delta: 1 | -1): string {
+  const [a, m] = iso.split("-").map(Number);
+  const d = new Date(Date.UTC(a, m - 1 + delta, 1));
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+/** Clampa un mes al rango operable [mesActual, mesActual + 18]. */
+export function clamparMes(iso: string | undefined, mesActual: string): string {
+  if (!iso || !/^\d{4}-\d{2}$/.test(iso)) return mesActual;
+  let max = mesActual;
+  for (let i = 0; i < 18; i++) max = mesVecino(max, 1);
+  if (iso < mesActual) return mesActual;
+  if (iso > max) return max;
+  return iso;
 }
 
 /** Utilidades de calendario compartidas servidor/cliente (sin dependencias). */

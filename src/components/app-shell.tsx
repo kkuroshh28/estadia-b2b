@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AvatarAlias, Badge } from "./ui";
+import { Campanita } from "./campanita";
 
 interface AliasShell {
   principal: string | null;
@@ -63,11 +64,14 @@ export function AppShell({
   children,
   alias = { principal: null, externo: null },
   roles = null,
+  conDatos = false,
 }: {
   children: React.ReactNode;
   alias?: AliasShell;
   /** Con sesión real: solo se muestran las secciones de estos roles. */
   roles?: string[] | null;
+  /** true cuando hay base de datos: enciende la campanita. */
+  conDatos?: boolean;
 }) {
   const pathname = usePathname();
   const secciones = SECCIONES(alias).filter((s) => {
@@ -144,6 +148,16 @@ export function AppShell({
             </span>
           </div>
           <div className="flex items-center gap-3">
+            {conDatos && (
+              <Campanita
+                rol={
+                  (ROL_DE_SECCION[seccionActiva?.rol ?? "Propietario"] ?? "propietario") as
+                    | "propietario"
+                    | "principal"
+                    | "externo"
+                }
+              />
+            )}
             <Badge tono="esmeralda" vivo>Piloto</Badge>
             {seccionActiva?.alias ? (
               <div className="flex items-center gap-2">

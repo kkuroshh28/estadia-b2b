@@ -15,6 +15,18 @@ import { nochesEntre, validarDuracion } from "@/lib/domain/reglas";
 import { centavos } from "@/lib/dinero";
 import { aceptarOfertaYGenerarLink, obtenerPisoComision, validarPropuestaServidor } from "./negociacion";
 import { aceptarSolicitud, transicionarReserva } from "./reservas";
+import { notificarEnApp } from "./notificaciones";
+import { alias as tablaAlias, vinculosComisionista as vinculos } from "../db/schema";
+import { formatear, centavos as aCentavos } from "@/lib/dinero";
+
+/** Alias activo de un usuario (para los textos de notificación). */
+async function aliasDeUsuario(db: Db, usuarioId: string): Promise<string> {
+  const [a] = await db
+    .select({ alias: tablaAlias.alias })
+    .from(tablaAlias)
+    .where(and(eq(tablaAlias.usuarioId, usuarioId), sql`NOT ${tablaAlias.retirado}`));
+  return a?.alias ?? "un comisionista";
+}
 
 /**
  * Ciclo operativo solicitud → negociación, con TODAS las reglas en servidor:
@@ -90,6 +102,25 @@ export async function crearSolicitud(
       venceEn: sql`now() + (${solicitudMin} * interval '1 minute')` as unknown as Date,
     })
     .returning({ id: solicitudes.id, venceEn: solicitudes.venceEn });
+
+  // Campanita a TODOS los principales vinculados: el primero que acepta gana.
+  const [nombreProp] = await db
+    .select({ nombre: propiedades.nombre })
+    .from(propiedades)
+    .where(eq(propiedades.id, datos.propiedadId));
+  const aliasExterno = await aliasDeUsuario(db, datos.externoId);
+  const principales = await db
+    .select({ principalId: vinculos.principalId })
+    .from(vinculos)
+    .where(and(eq(vinculos.propiedadId, datos.propiedadId), eq(vinculos.estado, "activo")));
+  for (const p of principales) {
+    await notificarEnApp(db, p.principalId, {
+      tipo: "solicitud",
+      titulo: "Nueva solicitud entrante",
+      cuerpo: `${aliasExterno} pide ${nombreProp?.nombre ?? "una propiedad"} (${datos.desde} → ${datos.hasta}). El primero que acepte se la queda.`,
+      url: "/app/principal",
+    });
+  }
   return { solicitudId: fila.id, venceEn: fila.venceEn };
 }
 
@@ -153,6 +184,12 @@ export async function aceptarYAbrirNegociacion(
           .values({ solicitudId, tarifaNetaCentavos: neta })
           .returning({ id: negociaciones.id });
         return { reservaId: res.id, negociacionId: neg.id };
+      });
+      await notificarEnApp(db, sol.externoId, {
+        tipo: "aceptada",
+        titulo: "Tu solicitud fue aceptada",
+        cuerpo: `${await aliasDeUsuario(db, principalId)} tomó tu solicitud. La negociación formal está abierta.`,
+        url: "/app/negociacion",
       });
       return { gano: true, ...resultado };
     } catch (e) {
@@ -225,7 +262,18 @@ export async function contraofertar(
         venceEn: sql`now() + (${ofertaHoras} * interval '1 hour')` as unknown as Date,
       })
       .returning({ id: ofertas.id });
-    return { ofertaId: nueva.id };
+    const contraparte = sol!.externoId === emisorId ? sol!.principalAceptanteId : sol!.externoId;
+    return { ofertaId: nueva.id, contraparte };
+  }).then(async (r) => {
+    if (r.contraparte) {
+      await notificarEnApp(db, r.contraparte, {
+        tipo: "oferta",
+        titulo: "Tienes una oferta nueva",
+        cuerpo: `${await aliasDeUsuario(db, emisorId)} propone ${formatear(aCentavos(montoCentavos))}. Vence en horas: responde.`,
+        url: "/app/negociacion",
+      });
+    }
+    return { ofertaId: r.ofertaId };
   });
 }
 
@@ -249,5 +297,11 @@ export async function aceptarOferta(
 
   await transicionarReserva(db, res.id, "PRECIO_ACORDADO", aceptanteId);
   await transicionarReserva(db, res.id, "LINK_1_ENVIADO", "sistema");
+  await notificarEnApp(db, of.emisorId, {
+    tipo: "acuerdo",
+    titulo: "Precio acordado — link del anticipo generado",
+    cuerpo: `${await aliasDeUsuario(db, aceptanteId)} aceptó tu oferta de ${formatear(aCentavos(of.montoCentavos))}. Reenvía el link a tu cliente: el primero que paga gana.`,
+    url: "/app/externo/links",
+  });
   return { ...r, reservaId: res.id };
 }

@@ -1,11 +1,13 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { Badge, Card } from "@/components/ui";
 import { MoneyAnimado } from "@/components/motion";
 import { calcularNetoPropietario } from "@/lib/domain/split";
-import type { DatosCalendario } from "@/lib/domain/paneles";
+import { mesVecino, type DatosCalendario } from "@/lib/domain/paneles";
+import { SincronizacionIcal } from "./ical-cliente";
 import type { EstadoDia } from "@/lib/domain/tipos";
 
 /**
@@ -25,7 +27,10 @@ const ESTILO_DIA: Record<EstadoDia, string> = {
 };
 
 export function CalendarioCliente({ datos }: { datos: DatosCalendario }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [propId, setPropId] = useState(datos.propiedades[0]?.id ?? "");
+  const irAlMes = (delta: 1 | -1) => router.push(`${pathname}?mes=${mesVecino(datos.mes.iso, delta)}`);
   // Overlay local sobre los estados del servidor (optimista).
   const [cambios, setCambios] = useState<Record<string, Partial<Record<number, "bloqueado_manual" | "disponible">>>>({});
   const [recientes, setRecientes] = useState<number[]>([]);
@@ -161,8 +166,24 @@ export function CalendarioCliente({ datos }: { datos: DatosCalendario }) {
       <div className="grid gap-6 lg:grid-cols-5">
         {/* CALENDARIO */}
         <Card className="p-6 lg:col-span-3">
-          <div className="flex items-center justify-between">
-            <h2 className="font-display text-xl text-tinta">{datos.mes.titulo}</h2>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => irAlMes(-1)}
+                aria-label="Mes anterior"
+                className="flex size-8 items-center justify-center rounded-full border border-borde text-bruma transition hover:border-tiffany hover:text-tinta"
+              >
+                ‹
+              </button>
+              <h2 className="min-w-40 text-center font-display text-xl text-tinta">{datos.mes.titulo}</h2>
+              <button
+                onClick={() => irAlMes(1)}
+                aria-label="Mes siguiente"
+                className="flex size-8 items-center justify-center rounded-full border border-borde text-bruma transition hover:border-tiffany hover:text-tinta"
+              >
+                ›
+              </button>
+            </div>
             <Badge tono="esmeralda">iCal sincronizado</Badge>
           </div>
           {error && (
@@ -269,6 +290,10 @@ export function CalendarioCliente({ datos }: { datos: DatosCalendario }) {
           </p>
         </Card>
       </div>
+
+      {!datos.esDemo && datos.ical[propId] && (
+        <SincronizacionIcal propiedadId={propId} ical={datos.ical[propId]} />
+      )}
     </div>
   );
 }

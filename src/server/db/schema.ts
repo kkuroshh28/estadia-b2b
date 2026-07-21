@@ -107,6 +107,22 @@ export const sesiones = pgTable("sesiones", {
 });
 
 /** Bandeja de notificaciones del driver simulado (visible en /admin/dev). */
+/** Notificaciones IN-APP por usuario (la campanita). */
+export const notificaciones = pgTable(
+  "notificaciones",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    usuarioId: uuid("usuario_id").notNull().references(() => usuarios.id),
+    tipo: text("tipo").notNull(), // solicitud | aceptada | oferta | acuerdo | pago
+    titulo: text("titulo").notNull(),
+    cuerpo: text("cuerpo").notNull(),
+    url: text("url"),
+    leida: boolean("leida").notNull().default(false),
+    creadaEn: timestamp("creada_en", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("notificaciones_por_usuario").on(t.usuarioId, t.leida)],
+);
+
 export const notificacionesDev = pgTable("notificaciones_dev", {
   id: uuid("id").primaryKey().defaultRandom(),
   canal: text("canal").notNull(), // email | push | sms

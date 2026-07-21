@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import type { Db } from "../db";
-import { propiedades, reservas, usuarios } from "../db/schema";
+import { notificaciones, propiedades, reservas, usuarios } from "../db/schema";
 import { obtenerEmail } from "../adaptadores/email";
 import { formatear, centavos } from "@/lib/dinero";
 
@@ -49,6 +49,28 @@ export async function notificar(
   await obtenerEmail().enviar(db, destinatarioEmail, asunto, cuerpo);
 }
 
+/**
+ * Notificación IN-APP (la campanita). Falla en silencio: una notificación
+ * jamás debe tumbar la operación que la origina.
+ */
+export async function notificarEnApp(
+  db: Db,
+  usuarioId: string,
+  n: { tipo: string; titulo: string; cuerpo: string; url?: string },
+): Promise<void> {
+  try {
+    await db.insert(notificaciones).values({
+      usuarioId,
+      tipo: n.tipo,
+      titulo: n.titulo,
+      cuerpo: n.cuerpo,
+      url: n.url ?? null,
+    });
+  } catch (e) {
+    console.error("[notificaciones] in-app falló:", e);
+  }
+}
+
 /** Notifica a las 3 partes internas cuando entra un pago. */
 export async function notificarPagoConfirmado(db: Db, reservaId: string, mitad: number): Promise<void> {
   const [r] = await db.select().from(reservas).where(eq(reservas.id, reservaId));
@@ -70,4 +92,11 @@ export async function notificarPagoConfirmado(db: Db, reservaId: string, mitad: 
   for (const p of [...partes, principal, externo].filter(Boolean)) {
     await notificar(db, "pago_confirmado", p.email, datos);
   }
+
+  // Campanita para las 3 partes.
+  const titulo = `Pago ${datos.mitad} confirmado ✓`;
+  const cuerpo = `${prop.nombre} · ${r.codigo} · ${datos.monto}. Split dispersado automáticamente.`;
+  await notificarEnApp(db, prop.propietarioId, { tipo: "pago", titulo, cuerpo, url: "/app/propietario" });
+  await notificarEnApp(db, r.principalId, { tipo: "pago", titulo, cuerpo, url: "/app/principal" });
+  await notificarEnApp(db, r.externoId, { tipo: "pago", titulo, cuerpo, url: "/app/externo/links" });
 }

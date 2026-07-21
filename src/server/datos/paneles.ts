@@ -3,6 +3,7 @@ import type { Db } from "../db";
 import {
   alias as tablaAlias,
   calendarioDias,
+  sincronizacionesIcal,
   linksDePago,
   mensajesChat,
   intentosFuga,
@@ -18,7 +19,7 @@ import {
   vinculosComisionista,
 } from "../db/schema";
 import { hoyEnBogota, ZONA } from "@/lib/fechas";
-import { infoMes } from "@/lib/domain/paneles";
+import { clamparMes, infoMes } from "@/lib/domain/paneles";
 import type {
   DatosBusquedaExterno,
   DatosCalendario,
@@ -219,7 +220,7 @@ export function datosPropietario(): Promise<DatosPropietario> {
   });
 }
 
-export function datosCalendario(): Promise<DatosCalendario> {
+export function datosCalendario(mesPedido?: string): Promise<DatosCalendario> {
   return resolverPanel("propietario", demoCalendario, async (db, u) => {
     const misProps = await db
       .select()
@@ -229,24 +230,9 @@ export function datosCalendario(): Promise<DatosCalendario> {
     const props = await propiedadesUI(db, misProps);
     const ids = misProps.map((p) => p.id);
 
-    // Mes a mostrar: el primero (>= mes actual) con actividad; si no, el actual.
+    // Mes pedido por el usuario (clampado al rango operable) o el actual.
     const mesActual = hoyEnBogota().slice(0, 7);
-    let mesIso = mesActual;
-    if (ids.length) {
-      const m = await db
-        .select({ m: sql<string>`to_char(${calendarioDias.fecha}::date, 'YYYY-MM')` })
-        .from(calendarioDias)
-        .where(
-          and(
-            inArray(calendarioDias.propiedadId, ids),
-            sql`${calendarioDias.estado} <> 'disponible'`,
-            sql`to_char(${calendarioDias.fecha}::date, 'YYYY-MM') >= ${mesActual}`,
-          ),
-        )
-        .orderBy(asc(sql`to_char(${calendarioDias.fecha}::date, 'YYYY-MM')`))
-        .limit(1);
-      if (m[0]?.m) mesIso = m[0].m;
-    }
+    const mesIso = clamparMes(mesPedido, mesActual);
 
     const dias = ids.length
       ? await db
@@ -267,7 +253,30 @@ export function datosCalendario(): Promise<DatosCalendario> {
       (estados[d.propiedadId] ??= {})[dia] = d.estado;
     }
 
-    return { esDemo: false, mes: { iso: mesIso, ...infoMes(mesIso) }, propiedades: props, estados };
+    // iCal por propiedad: URL de export con token + imports configurados.
+    const { tokenIcal } = await import("../servicios/ical");
+    const importsFilas = ids.length
+      ? await db
+          .select()
+          .from(sincronizacionesIcal)
+          .where(inArray(sincronizacionesIcal.propiedadId, ids))
+      : [];
+    const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
+    const ical: DatosCalendario["ical"] = {};
+    for (const p of props) {
+      ical[p.id] = {
+        exportUrl: `${base}/api/ical/${p.id}?token=${tokenIcal(p.id)}`,
+        imports: importsFilas
+          .filter((f) => f.propiedadId === p.id && f.direccion === "import")
+          .map((f) => ({
+            id: f.id,
+            url: f.url,
+            ultimaSync: f.ultimaSync ? f.ultimaSync.toISOString() : null,
+          })),
+      };
+    }
+
+    return { esDemo: false, mes: { iso: mesIso, ...infoMes(mesIso) }, propiedades: props, estados, ical };
   });
 }
 
@@ -739,29 +748,29 @@ export function datosChat(): Promise<DatosChat> {
 
 // ─── Ficha de propiedad (externo) ────────────────────────────────────────────
 
-export function datosFicha(id: string): Promise<DatosFicha | null> {
+export function datosFicha(id: string, mesPedido?: string): Promise<DatosFicha | null> {
   return resolverPanel("externo", () => demoFicha(), async (db) => {
     const [fila] = await db.select().from(propiedades).where(eq(propiedades.id, id)).limit(1);
     if (!fila || !fila.publicada) return null;
     const [prop] = await propiedadesUI(db, [fila]);
 
-    const mesActual = hoyEnBogota().slice(0, 7);
+    const mesIso = clamparMes(mesPedido, hoyEnBogota().slice(0, 7));
     const dias = await db
       .select({ fecha: calendarioDias.fecha })
       .from(calendarioDias)
       .where(
         and(
           eq(calendarioDias.propiedadId, id),
-          sql`to_char(${calendarioDias.fecha}::date, 'YYYY-MM') = ${mesActual}`,
+          sql`to_char(${calendarioDias.fecha}::date, 'YYYY-MM') = ${mesIso}`,
           sql`${calendarioDias.estado} <> 'disponible'`,
         ),
       );
 
-    const info = infoMes(mesActual);
+    const info = infoMes(mesIso);
     return {
       propiedad: prop,
       esDemo: false,
-      mesIso: mesActual,
+      mesIso,
       mesTitulo: info.titulo,
       diasDelMes: info.dias,
       offsetLunes: info.offsetLunes,
