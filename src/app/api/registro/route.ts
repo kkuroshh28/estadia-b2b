@@ -10,6 +10,9 @@ const Cuerpo = z.object({
   email: z.string().email(),
   telefono: z.string().min(10).max(15),
   rol: z.enum(["propietario", "principal", "externo"]),
+  cuentaBancaria: z
+    .object({ banco: z.string().min(2).max(60), numero: z.string().min(6).max(30) })
+    .optional(),
 });
 
 export async function POST(req: Request) {

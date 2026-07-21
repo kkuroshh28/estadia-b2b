@@ -35,7 +35,7 @@ export function demoPrincipal(): DatosPrincipal {
 }
 
 export function demoBusquedaExterno(): DatosBusquedaExterno {
-  return { esDemo: true, aliasYo: null, propiedades: [] };
+  return { esDemo: true, aliasYo: null, propiedades: [], fechas: null };
 }
 
 export function demoLinksExterno(): DatosLinksExterno {

@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, lte, sql } from "drizzle-orm";
 import type { Db } from "../db";
 import {
   alias as tablaAlias,
@@ -131,6 +131,7 @@ async function propiedadesUI(
     banos: f.banos,
     tarifaNetaNoche: pesos(tarifaDe.get(f.id) ?? 0),
     verificada: f.verificada,
+    publicada: f.publicada,
     amenidades: f.amenidades,
     reglas: f.reglas,
     matiz: matizDeId(f.id),
@@ -394,17 +395,54 @@ export function datosPrincipal(): Promise<DatosPrincipal> {
 
 // ─── Externo ─────────────────────────────────────────────────────────────────
 
-export function datosBusquedaExterno(): Promise<DatosBusquedaExterno> {
+export function datosBusquedaExterno(
+  desde?: string,
+  hasta?: string,
+): Promise<DatosBusquedaExterno> {
   return resolverPanel("externo", demoBusquedaExterno, async (db, u) => {
+    // Rango válido: fechas bien formadas, futuro, 1–92 noches.
+    const RE = /^\d{4}-\d{2}-\d{2}$/;
+    let fechas: { desde: string; hasta: string; noches: number } | null = null;
+    if (desde && hasta && RE.test(desde) && RE.test(hasta) && desde < hasta) {
+      const n = noches(desde, hasta);
+      if (n >= 1 && n <= 92 && desde >= hoyEnBogota()) {
+        fechas = { desde, hasta, noches: n };
+      }
+    }
+
     const publicadas = await db
       .select()
       .from(propiedades)
       .where(eq(propiedades.publicada, true))
       .orderBy(asc(propiedades.creadaEn));
+
+    let filtradas = publicadas;
+    if (fechas) {
+      // Disponibilidad REAL: fuera toda propiedad con ALGÚN día no-disponible
+      // en el rango (incluida la salida — mismo criterio del lock del webhook).
+      const ocupadas = publicadas.length
+        ? await db
+            .select({ propiedadId: calendarioDias.propiedadId })
+            .from(calendarioDias)
+            .where(
+              and(
+                inArray(calendarioDias.propiedadId, publicadas.map((p) => p.id)),
+                gte(calendarioDias.fecha, fechas.desde),
+                lte(calendarioDias.fecha, fechas.hasta),
+                sql`${calendarioDias.estado} <> 'disponible'`,
+              ),
+            )
+            .groupBy(calendarioDias.propiedadId)
+        : [];
+      const bloqueadas = new Set(ocupadas.map((o) => o.propiedadId));
+      filtradas = publicadas.filter((p) => !bloqueadas.has(p.id));
+    }
+
     return {
       esDemo: false,
       aliasYo: u.alias,
-      propiedades: await propiedadesUI(db, publicadas),
+      propiedades: await propiedadesUI(db, filtradas),
+      fechas,
     };
   });
 }

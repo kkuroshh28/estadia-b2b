@@ -41,6 +41,23 @@
   activa del propietario obligatoria (regla #3); turnos de oferta; capacidad.
 - Suite: **91 tests** verdes.
 
+## Novedades 2026-07-21 (5ª): búsqueda real por fechas, tarifa editable, banco y contratos
+- **Búsqueda con disponibilidad REAL**: rango desde/hasta en la búsqueda del
+  externo; el servidor excluye toda propiedad con algún día no-disponible en
+  el rango (mismo criterio del lock del webhook). Verificado: la reserva
+  pagada 27–30 jul desaparece del resultado; una solicitud sin pagar NO
+  bloquea (sin holds). La ficha abre en el mes buscado.
+- **Tarifa editable por TEMPORADAS**: "Guardar tarifa" en la calculadora
+  (cierra la vigencia actual y abre una desde hoy — histórico intacto) +
+  publicar/despublicar desde la tarjeta del panel. PATCH /api/propiedades
+  con edición parcial de todos los campos.
+- **Cuenta bancaria del registro**: el paso Banco del wizard ya PERSISTE
+  (AES-GCM en reposo, certificada=false hasta que el equipo la valide).
+- **Contrato PDF descargable**: GET /api/contratos/[reservaId] con
+  puedeVerContrato (solo propietario/admin) + botón "Contrato PDF ↓" en el
+  semáforo desde el anticipo. Verificado: PDF 1.7 real.
+- Suite: **95 tests** verdes.
+
 ## Novedades 2026-07-21 (4ª): meses navegables, campanita e iCal en la UI
 - **Navegación de meses** en la ficha del externo y el calendario del
   propietario (`?mes=YYYY-MM`, flechas ‹ ›, clamp a +18 meses): ya se pueden

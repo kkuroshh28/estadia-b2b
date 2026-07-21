@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { Badge, Card, Cover, Money } from "@/components/ui";
 import type { DatosBusquedaExterno } from "@/lib/domain/paneles";
 
@@ -11,6 +12,14 @@ import type { DatosBusquedaExterno } from "@/lib/domain/paneles";
  * muestra al cliente final).
  */
 export function BusquedaExternoCliente({ datos }: { datos: DatosBusquedaExterno }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [desde, setDesde] = useState(datos.fechas?.desde ?? "");
+  const [hasta, setHasta] = useState(datos.fechas?.hasta ?? "");
+  const buscarFechas = (d: string, h: string) => {
+    if (d && h && d < h) router.push(`${pathname}?desde=${d}&hasta=${h}`);
+    if (!d && !h) router.push(pathname);
+  };
   const [zona, setZona] = useState("todas");
   const [capacidad, setCapacidad] = useState(2);
   const [maxNoche, setMaxNoche] = useState(3_000_000);
@@ -44,11 +53,34 @@ export function BusquedaExternoCliente({ datos }: { datos: DatosBusquedaExterno 
         <div className="grid gap-5 sm:grid-cols-4">
           <div>
             <label className="text-[10px] font-bold uppercase tracking-wider text-bruma-osc">
-              Fechas (obligatorio)
+              Fechas
             </label>
-            <div className="mt-2 rounded-lg border border-tiffany bg-tiffany-bruma px-3 py-2 text-xs font-semibold text-tinta">
-              17 jul → 20 jul · 3 noches
+            <div className="mt-2 flex items-center gap-1.5">
+              <input
+                type="date"
+                value={desde}
+                onChange={(e) => {
+                  setDesde(e.target.value);
+                  buscarFechas(e.target.value, hasta);
+                }}
+                className="min-w-0 flex-1 rounded-lg border border-borde bg-panel px-2 py-2 text-[11px] text-tinta"
+              />
+              <span className="text-bruma-osc">→</span>
+              <input
+                type="date"
+                value={hasta}
+                onChange={(e) => {
+                  setHasta(e.target.value);
+                  buscarFechas(desde, e.target.value);
+                }}
+                className="min-w-0 flex-1 rounded-lg border border-borde bg-panel px-2 py-2 text-[11px] text-tinta"
+              />
             </div>
+            {datos.fechas && (
+              <p className="mt-1 text-[10px] font-semibold text-esmeralda">
+                {datos.fechas.noches} {datos.fechas.noches === 1 ? "noche" : "noches"} · solo propiedades 100% libres
+              </p>
+            )}
           </div>
           <div>
             <label className="text-[10px] font-bold uppercase tracking-wider text-bruma-osc">Zona</label>
@@ -114,7 +146,7 @@ export function BusquedaExternoCliente({ datos }: { datos: DatosBusquedaExterno 
                   {p.amenidades.slice(0, 3).join(" · ")}
                 </p>
                 <Link
-                  href={`/app/externo/propiedad/${p.id}`}
+                  href={`/app/externo/propiedad/${p.id}${datos.fechas ? `?mes=${datos.fechas.desde.slice(0, 7)}` : ""}`}
                   className="mt-2 text-[11px] font-semibold text-esmeralda hover:underline"
                 >
                   Ver ficha técnica y fechas →
@@ -128,7 +160,7 @@ export function BusquedaExternoCliente({ datos }: { datos: DatosBusquedaExterno 
                     <p className="text-[10px] text-oro">tu margen va por encima</p>
                   </div>
                   <Link
-                    href={`/app/externo/propiedad/${p.id}`}
+                    href={`/app/externo/propiedad/${p.id}${datos.fechas ? `?mes=${datos.fechas.desde.slice(0, 7)}` : ""}`}
                     className="rounded-full bg-tiffany px-4 py-2 text-[11px] font-bold text-tinta transition hover:bg-tiffany-claro"
                   >
                     Elegir fechas →
@@ -142,7 +174,9 @@ export function BusquedaExternoCliente({ datos }: { datos: DatosBusquedaExterno 
       {resultados.length === 0 && (
         <Card className="p-10 text-center text-sm text-bruma">
           {datos.propiedades.length === 0
-            ? "Aún no hay propiedades publicadas en la red. Los propietarios del piloto están registrando su inventario."
+            ? datos.fechas
+              ? "Ninguna propiedad está 100% libre en esas fechas. Prueba otro rango."
+              : "Aún no hay propiedades publicadas en la red. Los propietarios del piloto están registrando su inventario."
             : "Ninguna propiedad verificada cumple esos filtros. Ajusta zona, capacidad o precio."}
         </Card>
       )}

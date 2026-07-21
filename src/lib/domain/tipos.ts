@@ -43,6 +43,8 @@ export interface Propiedad {
   /** Tarifa neta por noche en COP — el propietario SIEMPRE la recibe completa. */
   tarifaNetaNoche: number;
   verificada: boolean;
+  /** Solo en la vista del dueño: visible u oculta para el gremio. */
+  publicada?: boolean;
   amenidades: string[];
   reglas: string[];
   /** Semilla determinista para la carátula generada (sin fotos externas). */

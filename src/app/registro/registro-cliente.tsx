@@ -91,6 +91,7 @@ function Registro({ real }: { real: boolean }) {
   const [aceptaBan, setAceptaBan] = useState(false);
   const [aceptaInterno, setAceptaInterno] = useState(false);
   const [datos, setDatos] = useState({ nombre: "", cedula: "", celular: "", correo: "" });
+  const [banco, setBanco] = useState({ nombre: "", numero: "" });
   const [enviando, setEnviando] = useState(false);
   const [errorRegistro, setErrorRegistro] = useState<string | null>(null);
   const [aliasReal, setAliasReal] = useState<string | null>(null);
@@ -127,6 +128,9 @@ function Registro({ real }: { real: boolean }) {
           telefono: datos.celular,
           email: datos.correo,
           rol: ROL_API[rol ?? "Comisionista Externo"],
+          ...(banco.nombre && banco.numero
+            ? { cuentaBancaria: { banco: banco.nombre, numero: banco.numero } }
+            : {}),
         }),
       });
       const json = await r.json();
@@ -239,8 +243,8 @@ function Registro({ real }: { real: boolean }) {
                   Aquí llegan tus dispersiones automáticas. La certificación evita fraudes de suplantación.
                 </p>
                 <div className="mt-6 space-y-4">
-                  <Campo etiqueta="Banco" placeholder="Bancolombia" />
-                  <Campo etiqueta="Número de cuenta" placeholder="000-000000-00" />
+                  <Campo etiqueta="Banco" placeholder="Bancolombia" valor={banco.nombre} onCambio={(v) => setBanco((b) => ({ ...b, nombre: v }))} />
+                  <Campo etiqueta="Número de cuenta" placeholder="000-000000-00" valor={banco.numero} onCambio={(v) => setBanco((b) => ({ ...b, numero: v }))} />
                   <div className="rounded-xl border border-dashed border-borde-claro bg-panel p-4 text-center text-xs text-bruma">
                     Arrastra aquí tu certificación bancaria (PDF)
                   </div>

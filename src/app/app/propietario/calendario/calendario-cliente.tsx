@@ -41,6 +41,28 @@ export function CalendarioCliente({ datos }: { datos: DatosCalendario }) {
   const prop = datos.propiedades.find((p) => p.id === propId);
   const [tarifa, setTarifa] = useState(prop?.tarifaNetaNoche || 1_450_000);
   const neto = useMemo(() => calcularNetoPropietario(tarifa), [tarifa]);
+  const [guardandoTarifa, setGuardandoTarifa] = useState(false);
+  const [tarifaGuardada, setTarifaGuardada] = useState(false);
+
+  const guardarTarifa = async () => {
+    setGuardandoTarifa(true);
+    setError(null);
+    try {
+      const r = await fetch("/api/propiedades", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ propiedadId: propId, tarifaNetaNochePesos: tarifa }),
+      });
+      if (!r.ok) throw new Error((await r.json()).error ?? "No se pudo guardar la tarifa");
+      setTarifaGuardada(true);
+      setTimeout(() => setTarifaGuardada(false), 2500);
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo guardar la tarifa");
+    } finally {
+      setGuardandoTarifa(false);
+    }
+  };
 
   if (!prop) {
     return (
@@ -283,10 +305,24 @@ export function CalendarioCliente({ datos }: { datos: DatosCalendario }) {
               <MoneyAnimado valor={neto.recibe} className="text-lg font-bold text-esmeralda" />
             </div>
           </div>
+          {!datos.esDemo && (
+            <button
+              onClick={guardarTarifa}
+              disabled={guardandoTarifa || tarifa === prop.tarifaNetaNoche}
+              className="mt-4 w-full rounded-full bg-tiffany py-3 text-xs font-bold text-tinta transition hover:bg-tiffany-claro disabled:opacity-50"
+            >
+              {tarifaGuardada
+                ? "Tarifa guardada ✓"
+                : guardandoTarifa
+                  ? "Guardando…"
+                  : `Guardar tarifa (desde hoy)`}
+            </button>
+          )}
           <p className="mt-4 text-[11px] leading-relaxed text-bruma-osc">
             Si el cliente paga más (comisión negociada por encima), la pasarela cobra
             sobre el total procesado; tu neto puede variar unos pesos. Siempre lo ves
-            antes de confirmar.
+            antes de confirmar. Cambiarla abre una nueva temporada desde hoy — las
+            reservas ya negociadas conservan la suya.
           </p>
         </Card>
       </div>

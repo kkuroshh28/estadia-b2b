@@ -52,6 +52,8 @@ export interface DatosBusquedaExterno {
   esDemo: boolean;
   aliasYo: string | null;
   propiedades: Propiedad[];
+  /** Rango buscado (válido) o null: sin filtro de fechas. */
+  fechas: { desde: string; hasta: string; noches: number } | null;
 }
 
 export interface SaldoPendiente {

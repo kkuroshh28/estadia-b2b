@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { obtenerDb } from "@/server/db";
 import { actorDePeticion, hayDb } from "@/server/datos/fuente";
-import { crearPropiedad, PropiedadError } from "@/server/servicios/propiedades";
+import { crearPropiedad, editarPropiedad, PropiedadError } from "@/server/servicios/propiedades";
 import { limitar } from "@/server/rate-limit";
 
 /** Alta real de propiedad (con tarifa y suscripción piloto automática). */
@@ -35,6 +35,45 @@ export async function POST(req: Request) {
   try {
     const r = await crearPropiedad(db, actor.id, parseado.data);
     return NextResponse.json({ ok: true, propiedadId: r.propiedadId });
+  } catch (e) {
+    if (e instanceof PropiedadError) {
+      return NextResponse.json({ error: e.message }, { status: 422 });
+    }
+    throw e;
+  }
+}
+
+/** Edición parcial (campos y/o tarifa — la tarifa abre nueva temporada). */
+const CuerpoPatch = z.object({
+  propiedadId: z.uuid(),
+  nombre: z.string().min(3).max(80).optional(),
+  municipio: z.string().min(2).max(60).optional(),
+  zona: z.string().min(2).max(60).optional(),
+  capacidad: z.number().int().min(1).max(50).optional(),
+  habitaciones: z.number().int().min(1).max(30).optional(),
+  banos: z.number().int().min(1).max(30).optional(),
+  amenidades: z.array(z.string().max(60)).max(12).optional(),
+  reglas: z.array(z.string().max(80)).max(12).optional(),
+  publicada: z.boolean().optional(),
+  tarifaNetaNochePesos: z.number().int().min(50_000).max(50_000_000).optional(),
+});
+
+export async function PATCH(req: Request) {
+  const excedido = limitar(req, "propiedades-editar", 30);
+  if (excedido) return excedido;
+  if (!hayDb()) return NextResponse.json({ error: "Sin base de datos" }, { status: 503 });
+
+  const parseado = CuerpoPatch.safeParse(await req.json().catch(() => null));
+  if (!parseado.success) return NextResponse.json({ error: "Cuerpo inválido" }, { status: 400 });
+
+  const db = obtenerDb();
+  const actor = await actorDePeticion(db, "propietario");
+  if (!actor) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+
+  const { propiedadId, ...cambios } = parseado.data;
+  try {
+    await editarPropiedad(db, actor.id, propiedadId, cambios);
+    return NextResponse.json({ ok: true });
   } catch (e) {
     if (e instanceof PropiedadError) {
       return NextResponse.json({ error: e.message }, { status: 422 });

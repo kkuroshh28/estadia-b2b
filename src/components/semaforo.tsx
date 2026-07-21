@@ -27,6 +27,15 @@ export function Semaforo({
   const verde = entregaAutorizada(reserva.estado);
   const progreso = progresoReserva(reserva.estado);
 
+  // El contrato existe desde el Pago 1 (se genera automático con el anticipo).
+  const conContrato = [
+    "ANTICIPO_PAGADO",
+    "SALDO_LINK_ENVIADO",
+    "PAGO_COMPLETO",
+    "CHECK_IN",
+    "COMPLETADA",
+  ].includes(reserva.estado);
+
   const accion =
     reserva.estado === "PAGO_COMPLETO"
       ? { hacia: "CHECK_IN" as const, label: "Confirmar check-in ✓" }
@@ -100,16 +109,26 @@ export function Semaforo({
         </div>
       </div>
 
-      {accionesPropietario && accion && (
-        <div className="mt-4 flex items-center justify-end gap-3 border-t border-borde pt-3">
+      {accionesPropietario && (accion || conContrato) && (
+        <div className="mt-4 flex flex-wrap items-center justify-end gap-3 border-t border-borde pt-3">
           {error && <p className="text-[11px] text-rojo">{error}</p>}
-          <button
-            onClick={transicionar}
-            disabled={cargando}
-            className="rounded-full bg-esmeralda px-5 py-2 text-xs font-bold text-white transition hover:brightness-110 disabled:opacity-60"
-          >
-            {cargando ? "Guardando…" : accion.label}
-          </button>
+          {conContrato && (
+            <a
+              href={`/api/contratos/${reserva.id}`}
+              className="rounded-full border border-borde px-4 py-2 text-xs font-semibold text-bruma transition hover:border-tiffany hover:text-tinta"
+            >
+              Contrato PDF ↓
+            </a>
+          )}
+          {accion && (
+            <button
+              onClick={transicionar}
+              disabled={cargando}
+              className="rounded-full bg-esmeralda px-5 py-2 text-xs font-bold text-white transition hover:brightness-110 disabled:opacity-60"
+            >
+              {cargando ? "Guardando…" : accion.label}
+            </button>
+          )}
         </div>
       )}
     </div>

@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import type { Db } from "../db";
-import { usuarios } from "../db/schema";
+import { cuentasBancarias, usuarios } from "../db/schema";
 import { cifrar, hashCedula } from "../crypto";
 import { asignarAliasUnico } from "./alias";
 import { identidadBaneada } from "./antifuga";
@@ -14,6 +14,8 @@ export interface DatosRegistro {
   email: string;
   telefono: string;
   rol: "propietario" | "principal" | "externo";
+  /** Cuenta de dispersión (se cifra en reposo; certifica el equipo después). */
+  cuentaBancaria?: { banco: string; numero: string };
 }
 
 /**
@@ -50,6 +52,14 @@ export async function registrarUsuario(
       estado: "pendiente_kyc",
     })
     .returning({ id: usuarios.id });
+
+  if (datos.cuentaBancaria?.banco && datos.cuentaBancaria?.numero) {
+    await db.insert(cuentasBancarias).values({
+      usuarioId: u.id,
+      banco: datos.cuentaBancaria.banco.trim().slice(0, 60),
+      numeroCifrado: cifrar(datos.cuentaBancaria.numero.trim()),
+    });
+  }
 
   const alias =
     datos.rol === "propietario" ? null : await asignarAliasUnico(db, u.id);

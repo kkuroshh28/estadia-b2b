@@ -229,3 +229,83 @@ async function contarActivos(db: Db, propiedadId: string): Promise<number> {
     );
   return n;
 }
+
+/**
+ * Edición de la propiedad por su dueño. La tarifa se maneja por TEMPORADAS:
+ * cambiarla cierra la vigencia actual (hasta ayer) y abre una nueva desde hoy
+ * — el histórico queda intacto para reservas ya liquidadas.
+ */
+export interface CambiosPropiedad {
+  nombre?: string;
+  municipio?: string;
+  zona?: string;
+  capacidad?: number;
+  habitaciones?: number;
+  banos?: number;
+  amenidades?: string[];
+  reglas?: string[];
+  publicada?: boolean;
+  tarifaNetaNochePesos?: number;
+}
+
+export async function editarPropiedad(
+  db: Db,
+  propietarioId: string,
+  propiedadId: string,
+  cambios: CambiosPropiedad,
+): Promise<void> {
+  await db.transaction(async (tx) => {
+    const [prop] = await tx
+      .select({ id: propiedades.id })
+      .from(propiedades)
+      .where(and(eq(propiedades.id, propiedadId), eq(propiedades.propietarioId, propietarioId)))
+      .for("update");
+    if (!prop) throw new PropiedadError("La propiedad no existe o no te pertenece.");
+
+    const campos: Record<string, unknown> = {};
+    if (cambios.nombre !== undefined) {
+      const n = cambios.nombre.trim();
+      if (n.length < 3 || n.length > 80) throw new PropiedadError("Nombre inválido (3–80).");
+      campos.nombre = n;
+    }
+    if (cambios.municipio !== undefined) campos.municipio = cambios.municipio.trim();
+    if (cambios.zona !== undefined) campos.zona = cambios.zona.trim();
+    if (cambios.capacidad !== undefined) {
+      if (cambios.capacidad < 1 || cambios.capacidad > 50) throw new PropiedadError("Capacidad inválida.");
+      campos.capacidad = cambios.capacidad;
+    }
+    if (cambios.habitaciones !== undefined) campos.habitaciones = cambios.habitaciones;
+    if (cambios.banos !== undefined) campos.banos = cambios.banos;
+    if (cambios.amenidades !== undefined) {
+      campos.amenidades = cambios.amenidades.map((a) => a.trim()).filter(Boolean).slice(0, 12);
+    }
+    if (cambios.reglas !== undefined) {
+      campos.reglas = cambios.reglas.map((r) => r.trim()).filter(Boolean).slice(0, 12);
+    }
+    if (cambios.publicada !== undefined) campos.publicada = cambios.publicada;
+    if (Object.keys(campos).length > 0) {
+      await tx.update(propiedades).set(campos).where(eq(propiedades.id, propiedadId));
+    }
+
+    if (cambios.tarifaNetaNochePesos !== undefined) {
+      const t = cambios.tarifaNetaNochePesos;
+      if (!Number.isSafeInteger(t) || t < 50_000 || t > 50_000_000) {
+        throw new PropiedadError("La tarifa neta debe estar entre $50.000 y $50.000.000.");
+      }
+      // Cerrar la vigencia que cubre hoy y abrir la nueva desde hoy.
+      await tx.execute(sql`
+        UPDATE tarifas SET hasta = CURRENT_DATE - 1
+        WHERE propiedad_id = ${propiedadId}
+          AND desde < CURRENT_DATE AND hasta >= CURRENT_DATE`);
+      await tx.execute(sql`
+        DELETE FROM tarifas
+        WHERE propiedad_id = ${propiedadId} AND desde >= CURRENT_DATE`);
+      await tx.insert(tarifas).values({
+        propiedadId,
+        desde: sql`CURRENT_DATE` as unknown as string,
+        hasta: "2099-12-31",
+        netaNocheCentavos: t * 100,
+      });
+    }
+  });
+}

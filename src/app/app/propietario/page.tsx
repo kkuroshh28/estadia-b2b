@@ -6,6 +6,7 @@ import { GraficaIngresos } from "@/components/grafica-ingresos";
 import { datosPropietario } from "@/server/datos/paneles";
 import { calcularNetoPropietario } from "@/lib/domain/split";
 import { formatearFechaCO } from "@/lib/fechas";
+import { PublicarBoton } from "./publicar-boton";
 
 export default async function PanelPropietario() {
   const datos = await datosPropietario();
@@ -96,11 +97,16 @@ export default async function PanelPropietario() {
                         {p.municipio} · {p.zona} · {p.capacidad} personas
                       </p>
                     </div>
-                    {p.verificada ? (
-                      <Badge tono="esmeralda">Verificada</Badge>
-                    ) : (
-                      <Badge tono="ambar">En revisión</Badge>
-                    )}
+                    <div className="flex flex-col items-end gap-1.5">
+                      {p.verificada ? (
+                        <Badge tono="esmeralda">Verificada</Badge>
+                      ) : (
+                        <Badge tono="ambar">En revisión</Badge>
+                      )}
+                      {!datos.esDemo && (
+                        <PublicarBoton propiedadId={p.id} publicada={p.publicada ?? true} />
+                      )}
+                    </div>
                   </div>
                   <div className="mt-4 flex items-end justify-between border-t border-borde pt-3">
                     <div>
