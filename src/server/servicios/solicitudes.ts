@@ -97,10 +97,10 @@ export async function crearSolicitud(
 async function generarCodigoReserva(db: Db): Promise<string> {
   const ano = new Date().getFullYear();
   const [{ n }] = (await db.execute(
-    sql`SELECT count(*)::int AS n FROM reservas WHERE codigo LIKE ${"EST-" + ano + "-%"}`,
+    sql`SELECT count(*)::int AS n FROM reservas WHERE codigo LIKE ${"CIR-" + ano + "-%"}`,
   )) as unknown as [{ n: number }];
   // Colisión bajo concurrencia → el índice único de codigo la detecta y se reintenta.
-  return `EST-${ano}-${String(400 + n + 1).padStart(5, "0")}`;
+  return `CIR-${ano}-${String(400 + n + 1).padStart(5, "0")}`;
 }
 
 export async function aceptarYAbrirNegociacion(

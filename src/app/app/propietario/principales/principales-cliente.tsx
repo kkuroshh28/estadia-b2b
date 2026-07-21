@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { AvatarAlias, Badge, Card } from "@/components/ui";
 import type { DatosPrincipales, VinculoPanel } from "@/lib/domain/paneles";
@@ -14,12 +15,34 @@ const MAX = 5;
 const MIN = 3;
 
 export function PrincipalesCliente({ datos }: { datos: DatosPrincipales }) {
+  const router = useRouter();
   const [propId, setPropId] = useState(datos.propiedades[0]?.id ?? "");
   const [vinculos, setVinculos] = useState<Record<string, VinculoPanel[]>>(datos.vinculos);
+  const [base, setBase] = useState(datos.vinculos);
+  const [aliasNuevo, setAliasNuevo] = useState("");
   const [invitando, setInvitando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Tras un refresh del servidor, el estado local se realinea.
+  if (base !== datos.vinculos) {
+    setBase(datos.vinculos);
+    setVinculos(datos.vinculos);
+  }
 
   const lista = vinculos[propId] ?? [];
   const prop = datos.propiedades.find((p) => p.id === propId);
+
+  const llamarVinculos = async (alias: string, accion: "vincular" | "desvincular") => {
+    setError(null);
+    const r = await fetch("/api/propiedades/vinculos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ propiedadId: propId, alias, accion }),
+    });
+    const json = await r.json();
+    if (!r.ok) throw new Error(json.error ?? "No se pudo actualizar el vínculo");
+    router.refresh();
+  };
 
   if (!prop) {
     return (
@@ -33,14 +56,37 @@ export function PrincipalesCliente({ datos }: { datos: DatosPrincipales }) {
     );
   }
 
-  const remover = (alias: string) => {
-    if (lista.length <= MIN) return;
-    setVinculos((v) => ({ ...v, [propId]: (v[propId] ?? []).filter((x) => x.alias !== alias) }));
+  const remover = async (alias: string) => {
+    if (datos.esDemo) {
+      setVinculos((v) => ({ ...v, [propId]: (v[propId] ?? []).filter((x) => x.alias !== alias) }));
+      return;
+    }
+    try {
+      await llamarVinculos(alias, "desvincular");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo desvincular");
+    }
   };
 
-  const invitar = () => {
+  const invitar = async () => {
+    if (datos.esDemo) {
+      setInvitando(true);
+      setTimeout(() => setInvitando(false), 2200);
+      return;
+    }
+    if (!aliasNuevo.trim()) {
+      setError("Escribe el alias del principal (te lo comparte él).");
+      return;
+    }
     setInvitando(true);
-    setTimeout(() => setInvitando(false), 2200);
+    try {
+      await llamarVinculos(aliasNuevo, "vincular");
+      setAliasNuevo("");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo vincular");
+    } finally {
+      setInvitando(false);
+    }
   };
 
   return (
@@ -78,18 +124,39 @@ export function PrincipalesCliente({ datos }: { datos: DatosPrincipales }) {
             </p>
           </div>
           {lista.length < MAX ? (
-            <button
-              onClick={invitar}
-              disabled={invitando}
-              className="rounded-full bg-tiffany px-5 py-2.5 text-xs font-bold text-tinta transition hover:bg-tiffany-claro disabled:opacity-60"
-            >
-              {invitando ? "Invitación enviada ✓" : "Invitar principal"}
-            </button>
+            datos.esDemo ? (
+              <button
+                onClick={invitar}
+                disabled={invitando}
+                className="rounded-full bg-tiffany px-5 py-2.5 text-xs font-bold text-tinta transition hover:bg-tiffany-claro disabled:opacity-60"
+              >
+                {invitando ? "Invitación enviada ✓" : "Invitar principal"}
+              </button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <input
+                  value={aliasNuevo}
+                  onChange={(e) => setAliasNuevo(e.target.value.toUpperCase())}
+                  placeholder="ALIAS-000"
+                  className="w-36 rounded-full border border-borde bg-panel px-4 py-2.5 font-mono text-xs text-tinta placeholder:text-bruma-osc"
+                />
+                <button
+                  onClick={invitar}
+                  disabled={invitando}
+                  className="rounded-full bg-tiffany px-5 py-2.5 text-xs font-bold text-tinta transition hover:bg-tiffany-claro disabled:opacity-60"
+                >
+                  {invitando ? "Vinculando…" : "Vincular"}
+                </button>
+              </div>
+            )
           ) : (
             <Badge tono="ambar">Cupo lleno</Badge>
           )}
         </div>
 
+        {error && (
+          <p className="border-b border-borde px-6 py-3 text-[11px] text-rojo">{error}</p>
+        )}
         <div className="divide-y divide-borde">
           <AnimatePresence>
             {lista.map((v) => (
@@ -115,7 +182,7 @@ export function PrincipalesCliente({ datos }: { datos: DatosPrincipales }) {
                   )}
                   <button
                     onClick={() => remover(v.alias)}
-                    disabled={lista.length <= MIN}
+                    disabled={datos.esDemo && lista.length <= MIN}
                     className="rounded-full border border-borde px-4 py-2 text-[11px] font-semibold text-bruma transition hover:border-rojo/40 hover:text-rojo disabled:cursor-not-allowed disabled:opacity-40"
                     title={lista.length <= MIN ? `Mínimo ${MIN} principales por propiedad` : "Desvincular"}
                   >

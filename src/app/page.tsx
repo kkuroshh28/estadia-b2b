@@ -65,7 +65,7 @@ export default function Landing() {
             href="/app"
             className="hidden rounded-full border border-tinta/30 px-5 py-2 text-sm font-semibold text-tinta transition hover:bg-white/50 sm:block"
           >
-            Ver demo
+            Entrar
           </Link>
           <Link
             href="/registro"
@@ -112,7 +112,7 @@ export default function Landing() {
                   href="/app"
                   className="rounded-full border border-tinta/35 px-7 py-3.5 text-sm font-semibold text-tinta transition hover:bg-white/50"
                 >
-                  Explorar la demo
+                  Explorar la plataforma
                 </Link>
               </div>
             </RevealHero>
@@ -398,7 +398,7 @@ export default function Landing() {
                 href="/app/chat"
                 className="mt-4 inline-block text-xs font-semibold text-esmeralda hover:underline"
               >
-                Probar el filtro en la demo →
+                Conocer el chat vigilado →
               </Link>
             </div>
           </Reveal>
@@ -428,7 +428,7 @@ export default function Landing() {
                 href="/app"
                 className="rounded-full border border-tinta/35 px-8 py-4 text-sm font-semibold text-tinta transition hover:bg-white/50"
               >
-                Ver la demo
+                Ver la plataforma
               </Link>
             </div>
           </Reveal>

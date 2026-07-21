@@ -14,7 +14,6 @@ export function BusquedaExternoCliente({ datos }: { datos: DatosBusquedaExterno 
   const [zona, setZona] = useState("todas");
   const [capacidad, setCapacidad] = useState(2);
   const [maxNoche, setMaxNoche] = useState(3_000_000);
-  const [solicitadas, setSolicitadas] = useState<string[]>([]);
 
   const zonas = ["todas", ...new Set(datos.propiedades.map((p) => p.zona))];
 
@@ -98,7 +97,6 @@ export function BusquedaExternoCliente({ datos }: { datos: DatosBusquedaExterno 
       {/* RESULTADOS */}
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {resultados.map((p) => {
-          const solicitada = solicitadas.includes(p.id);
           return (
             <Card key={p.id} className="flex flex-col overflow-hidden">
               <Cover matiz={p.matiz} className="h-32" />
@@ -129,26 +127,12 @@ export function BusquedaExternoCliente({ datos }: { datos: DatosBusquedaExterno 
                     <Money valor={p.tarifaNetaNoche} className="text-base font-bold text-esmeralda" />
                     <p className="text-[10px] text-oro">tu margen va por encima</p>
                   </div>
-                  {datos.esDemo ? (
-                    <button
-                      onClick={() => setSolicitadas((s) => [...s, p.id])}
-                      disabled={solicitada}
-                      className={`rounded-full px-4 py-2 text-[11px] font-bold transition ${
-                        solicitada
-                          ? "cursor-default border border-esmeralda/40 bg-esmeralda-tenue text-esmeralda"
-                          : "bg-tiffany text-tinta hover:bg-tiffany-claro"
-                      }`}
-                    >
-                      {solicitada ? "Enviada ✓" : "Solicitar renta"}
-                    </button>
-                  ) : (
-                    <Link
-                      href={`/app/externo/propiedad/${p.id}`}
-                      className="rounded-full bg-tiffany px-4 py-2 text-[11px] font-bold text-tinta transition hover:bg-tiffany-claro"
-                    >
-                      Elegir fechas →
-                    </Link>
-                  )}
+                  <Link
+                    href={`/app/externo/propiedad/${p.id}`}
+                    className="rounded-full bg-tiffany px-4 py-2 text-[11px] font-bold text-tinta transition hover:bg-tiffany-claro"
+                  >
+                    Elegir fechas →
+                  </Link>
                 </div>
               </div>
             </Card>
@@ -157,7 +141,9 @@ export function BusquedaExternoCliente({ datos }: { datos: DatosBusquedaExterno 
       </div>
       {resultados.length === 0 && (
         <Card className="p-10 text-center text-sm text-bruma">
-          Ninguna propiedad verificada cumple esos filtros. Ajusta zona, capacidad o precio.
+          {datos.propiedades.length === 0
+            ? "Aún no hay propiedades publicadas en la red. Los propietarios del piloto están registrando su inventario."
+            : "Ninguna propiedad verificada cumple esos filtros. Ajusta zona, capacidad o precio."}
         </Card>
       )}
       <p className="text-[11px] text-bruma-osc">

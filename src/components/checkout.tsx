@@ -4,22 +4,13 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import type { LinkDePago } from "@/lib/domain/tipos";
 import { Money } from "./ui";
-import { FlujoDinero } from "./flujo-dinero";
 
 /**
  * Checkout del cliente final — web, FUERA de la app. Sin desgloses de comisión.
  * Al "pagar": procesando → confirmación animada. El split que se muestra después
  * es didáctico del demo (el cliente real jamás lo ve).
  */
-export function Checkout({
-  link,
-  tarifaNetaMitad,
-  real = false,
-}: {
-  link: LinkDePago;
-  tarifaNetaMitad: number;
-  real?: boolean;
-}) {
+export function Checkout({ link }: { link: LinkDePago }) {
   const [fase, setFase] = useState<"form" | "procesando" | "pagado">(
     link.estado === "pagado" ? "pagado" : "form",
   );
@@ -29,10 +20,6 @@ export function Checkout({
   const pagar = async () => {
     setFase("procesando");
     setError(null);
-    if (!real) {
-      setTimeout(() => setFase("pagado"), 1900);
-      return;
-    }
     // Pasarela simulada REAL: el evento entra por el MISMO webhook firmado
     // (idempotencia, lock de días, splits). "El primero que paga, gana" aplica.
     try {
@@ -135,9 +122,8 @@ export function Checkout({
                 )}
               </button>
               <p className="text-center text-[10px] leading-relaxed text-bruma-osc">
-                {real
-                  ? "Pasarela simulada de staging: el pago entra por el mismo webhook firmado de producción. Si alguien paga estas fechas primero, este link se invalida y tu tarjeta no se cobra."
-                  : "Pago simulado del demo. En producción procesa la pasarela y el webhook confirma en tiempo real: si alguien paga estas fechas primero, este link se invalida y tu tarjeta no se cobra."}
+                Pago protegido: si alguien paga estas fechas primero, este link se
+                invalida en el instante y tu tarjeta no se cobra.
               </p>
             </div>
           </motion.div>
@@ -165,12 +151,6 @@ export function Checkout({
                 {link.mitad === 1 && " Tus fechas quedaron bloqueadas en firme."}
               </p>
             </div>
-            {/* Vista didáctica del demo: el split de esta mitad dispersándose */}
-            <FlujoDinero
-              precioFinal={link.monto}
-              tarifaNeta={tarifaNetaMitad}
-              titulo="Detrás de cámaras (solo en el demo): la mitad se reparte al instante"
-            />
           </motion.div>
         )}
       </AnimatePresence>

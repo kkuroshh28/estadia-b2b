@@ -41,6 +41,23 @@
   activa del propietario obligatoria (regla #3); turnos de oferta; capacidad.
 - Suite: **91 tests** verdes.
 
+## Novedades 2026-07-21 (2ª): SIN DATA DEMO — lista para data real
+- **Toda la data ficticia fue eliminada** (fincas, reservas, CONDOR-472, etc.):
+  sin DB cada panel muestra su estado vacío honesto; con DB, solo data real.
+- **Alta real construida** (lo que faltaba para ingresar data):
+  `crearPropiedad` (nace con tarifa; suscripción piloto se activa sola) +
+  formulario `/app/propietario/nueva`; vincular/desvincular principales por
+  ALIAS con regla #4 en servidor (`/api/propiedades[/vinculos]`).
+- Checkout sin DB → 404 (sin links ficticios); registro sin DB → aviso "en
+  preparación"; landing con CTAs "plataforma" (el copy ilustrativo se queda).
+- **PRUEBA DEFINITIVA en navegador con DB VACÍA (cero seed)**: registro de 3
+  usuarios reales → Finca Vista Real creada por el formulario ($1.200.000
+  neta) → IGUANA-149 vinculado por alias → BUHO-232 solicita 27–30 jul →
+  aceptación → negociación $4.100.000 → anticipo $2.050.000 → saldo →
+  **PAGO_COMPLETO/verde**, splits con beneficiarios reales por nombre,
+  calendario bloqueado y contrato generado. Código CIR-2026-00401.
+- FIX rebrand: el generador de códigos producía aún EST- → CIR-.
+
 ## Novedades 2026-07-21: REBRAND → THE CIRCLE
 - La app se llama **THE CIRCLE** (decisión de Kurosh). Rebrand completo en
   producto: wordmark, metadata/OG/manifest, íconos nuevos (anillo sobre

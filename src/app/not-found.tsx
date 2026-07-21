@@ -23,7 +23,7 @@ export default function NoEncontrada() {
           href="/app"
           className="rounded-full border border-borde-claro px-6 py-3 text-sm font-semibold text-bruma transition hover:text-tinta"
         >
-          Abrir la demo
+          Ir a la plataforma
         </Link>
       </div>
     </main>

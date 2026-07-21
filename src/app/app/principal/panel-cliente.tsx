@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "motion/react";
-import { AvatarAlias, Badge, Card, Money, Stat } from "@/components/ui";
+import { AvatarAlias, Badge, Card } from "@/components/ui";
 import { Semaforo } from "@/components/semaforo";
 import type { DatosPrincipal } from "@/lib/domain/paneles";
 
@@ -13,14 +12,9 @@ export function PanelPrincipalCliente({ datos }: { datos: DatosPrincipal }) {
   const [aceptadas, setAceptadas] = useState<string[]>([]);
   const [perdidas, setPerdidas] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [toast, setToast] = useState(false);
 
   // "El primero que acepta gana" — de verdad: UPDATE condicional en el servidor.
   const aceptar = async (solicitudId: string) => {
-    if (datos.esDemo) {
-      setAceptadas((a) => [...a, solicitudId]);
-      return;
-    }
     setError(null);
     try {
       const r = await fetch("/api/solicitudes/aceptar", {
@@ -43,43 +37,8 @@ export function PanelPrincipalCliente({ datos }: { datos: DatosPrincipal }) {
   const alias = datos.aliasYo ?? "—";
   const completadas = datos.reservas.filter((r) => r.estado === "COMPLETADA").length;
 
-  // Demo tiempo real: a los 6 s "entra" una solicitud nueva (solo demo pública).
-  useEffect(() => {
-    if (!datos.esDemo) return;
-    const entra = setTimeout(() => setToast(true), 6000);
-    const sale = setTimeout(() => setToast(false), 14000);
-    return () => { clearTimeout(entra); clearTimeout(sale); };
-  }, [datos.esDemo]);
-
   return (
     <div className="mx-auto max-w-5xl space-y-10">
-      {/* TOAST de solicitud entrante */}
-      <AnimatePresence>
-        {toast && (
-          <motion.div
-            initial={{ opacity: 0, y: -24, scale: 0.94 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -12, scale: 0.96 }}
-            transition={{ type: "spring", stiffness: 380, damping: 24 }}
-            className="fixed right-4 top-16 z-50 w-80 rounded-2xl elevada-alta border border-tiffany-claro bg-panel p-4"
-          >
-            <div className="flex items-start gap-3">
-              <AvatarAlias alias="YARUMO-611" size={36} />
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-oro">Nueva solicitud entrante</p>
-                <p className="mt-0.5 text-xs text-tinta">
-                  <span className="font-mono">YARUMO-611</span> pide Glamping Bosque
-                  Nublado · 8–10 ago · 2 noches
-                </p>
-                <p className="mt-1 text-[10px] text-bruma-osc">
-                  El primero que acepte se la queda — corre.
-                </p>
-              </div>
-              <button onClick={() => setToast(false)} className="text-bruma-osc hover:text-tinta">✕</button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="font-display text-3xl text-tinta">Solicitudes entrantes</h1>
@@ -93,19 +52,11 @@ export function PanelPrincipalCliente({ datos }: { datos: DatosPrincipal }) {
           <div>
             <p className="font-mono text-sm font-bold text-tinta">{alias}</p>
             <p className="text-[11px] text-bruma">
-              {datos.esDemo ? "38 reservas · responde en ~6 min" : `${completadas} reservas completadas`}
+              {`${completadas} reservas completadas`}
             </p>
           </div>
         </div>
       </div>
-
-      {datos.esDemo && (
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Stat etiqueta="Comisiones · julio" valor={<Money valor={2_340_000} />} detalle="50% de cada comisión acordada" tono="oro" />
-          <Stat etiqueta="Tasa de aceptación" valor="94%" detalle="Top 5% del gremio" tono="esmeralda" />
-          <Stat etiqueta="Propiedades vinculadas" valor="3" detalle="Por invitación directa del propietario" />
-        </div>
-      )}
 
       {/* BANDEJA */}
       <section className="space-y-4">

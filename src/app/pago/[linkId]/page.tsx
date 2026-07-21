@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
+import { notFound } from "next/navigation";
 import { Checkout } from "@/components/checkout";
-import { LINKS_DE_PAGO, RESERVAS } from "@/lib/data/demo";
 import { obtenerDb } from "@/server/db";
 import { linksDePago, propiedades, reservas } from "@/server/db/schema";
 import { hayDb } from "@/server/datos/fuente";
@@ -13,7 +13,7 @@ import type { LinkDePago } from "@/lib/domain/tipos";
  * Con DB el link es REAL (y el pago entra por el webhook); sin DB, demo.
  */
 
-async function linkReal(linkId: string): Promise<{ link: LinkDePago; netaMitad: number } | null> {
+async function linkReal(linkId: string): Promise<{ link: LinkDePago } | null> {
   const db = obtenerDb();
   const [fila] = await db
     .select({
@@ -26,7 +26,6 @@ async function linkReal(linkId: string): Promise<{ link: LinkDePago; netaMitad: 
       codigo: reservas.codigo,
       desde: reservas.desde,
       hasta: reservas.hasta,
-      tarifaNeta: reservas.tarifaNetaCentavos,
       propiedadNombre: propiedades.nombre,
     })
     .from(linksDePago)
@@ -54,7 +53,6 @@ async function linkReal(linkId: string): Promise<{ link: LinkDePago; netaMitad: 
       vence,
       fechas: { desde: fila.desde, hasta: fila.hasta },
     },
-    netaMitad: Math.round(fila.tarifaNeta / 200),
   };
 }
 
@@ -65,25 +63,10 @@ export default async function CheckoutCliente({
 }) {
   const { linkId } = await params;
 
-  let link: LinkDePago | undefined;
-  let tarifaNetaMitad = 0;
-  let real = false;
-
-  if (hayDb()) {
-    const r = await linkReal(linkId).catch(() => null);
-    if (r) {
-      link = r.link;
-      tarifaNetaMitad = r.netaMitad;
-      real = true;
-    }
-  }
-  if (!link) {
-    link = LINKS_DE_PAGO.find((l) => l.id === linkId) ?? LINKS_DE_PAGO[0];
-    const reserva = RESERVAS.find((r) => r.id === link!.reservaId);
-    tarifaNetaMitad = reserva
-      ? Math.round(reserva.tarifaNetaTotal / 2)
-      : Math.round(link.monto * 0.85);
-  }
+  if (!hayDb()) notFound();
+  const r = await linkReal(linkId).catch(() => null);
+  if (!r) notFound();
+  const { link } = r;
 
   return (
     <main className="atmosfera flex min-h-screen flex-col items-center justify-center px-6 py-16">
@@ -93,7 +76,7 @@ export default async function CheckoutCliente({
       <p className="mb-8 mt-1 text-[11px] uppercase tracking-[0.22em] text-bruma-osc">
         Pago seguro con tarjeta
       </p>
-      <Checkout link={link} tarifaNetaMitad={tarifaNetaMitad} real={real} />
+      <Checkout link={link} />
       <p className="mt-6 text-[11px] text-bruma-osc">
         ¿Dudas con tu reserva? Escríbele a tu asesor de confianza.
       </p>

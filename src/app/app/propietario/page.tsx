@@ -62,14 +62,28 @@ export default async function PanelPropietario() {
 
       {/* PROPIEDADES */}
       <section>
-        <div className="flex items-end justify-between">
+        <div className="flex flex-wrap items-end justify-between gap-3">
           <h2 className="font-display text-2xl text-tinta">Mis propiedades</h2>
-          <Link href="/app/propietario/calendario" className="text-sm font-semibold text-esmeralda hover:underline">
-            Calendario y tarifa →
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/app/propietario/calendario" className="text-sm font-semibold text-esmeralda hover:underline">
+              Calendario y tarifa →
+            </Link>
+            <Link
+              href="/app/propietario/nueva"
+              className="rounded-full bg-tiffany px-5 py-2.5 text-xs font-bold text-tinta transition hover:bg-tiffany-claro"
+            >
+              + Nueva propiedad
+            </Link>
+          </div>
         </div>
         <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {datos.propiedades.slice(0, 6).map((p) => {
+          {datos.propiedades.length === 0 && (
+          <Card className="p-6 text-sm text-bruma sm:col-span-2 lg:col-span-3">
+            Registra tu primera propiedad: nace con su tarifa neta y tu
+            suscripción del piloto se activa sola.
+          </Card>
+        )}
+        {datos.propiedades.slice(0, 6).map((p) => {
             const neto = calcularNetoPropietario(p.tarifaNetaNoche);
             return (
               <Card key={p.id} className="overflow-hidden">

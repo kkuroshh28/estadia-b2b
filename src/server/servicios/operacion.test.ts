@@ -151,7 +151,7 @@ describe.skipIf(!HAY_DB)("integración — operación completa", () => {
     const NETA = 435_000_000; // $4.350.000 (3 noches)
     const PRECIO = 510_000_000; // $5.100.000
     const [res] = await db.insert(reservas).values({
-      codigo: `EST-E2E-${Date.now()}`, solicitudId: sol.id, propiedadId: prop.id,
+      codigo: `CIR-E2E-${Date.now()}`, solicitudId: sol.id, propiedadId: prop.id,
       principalId, externoId, desde: "2026-12-10", hasta: "2026-12-13",
       estado: "NEGOCIACION", precioFinalCentavos: 0, tarifaNetaCentavos: NETA,
     }).returning({ id: reservas.id, codigo: reservas.codigo });

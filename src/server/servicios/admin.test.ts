@@ -84,7 +84,7 @@ describe.skipIf(!HAY_DB)("integración — operaciones admin auditadas", () => {
       huespedes: 2, estado: "aceptada", venceEn: sql`now() + interval '1 h'` as unknown as Date,
     }).returning({ id: solicitudes.id });
     const [r] = await db.insert(reservas).values({
-      codigo: `EST-RE-${Date.now()}`, solicitudId: s.id, propiedadId: p.id,
+      codigo: `CIR-RE-${Date.now()}`, solicitudId: s.id, propiedadId: p.id,
       principalId: u.id, externoId: u.id, desde: "2026-11-11", hasta: "2026-11-11",
       estado: "LINK_1_ENVIADO", precioFinalCentavos: 200_000_000, tarifaNetaCentavos: 170_000_000,
     }).returning({ id: reservas.id });

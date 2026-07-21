@@ -488,7 +488,7 @@ export function datosLinksExterno(): Promise<DatosLinksExterno> {
 // ─── Comisiones (compartido principal/externo) ───────────────────────────────
 
 export function datosComisiones(rol: "principal" | "externo"): Promise<DatosComisiones> {
-  return resolverPanel(rol, () => demoComisiones(rol), async (db, u) => {
+  return resolverPanel(rol, () => demoComisiones(), async (db, u) => {
     const concepto = rol === "principal" ? "comision_principal" : "comision_externo";
     const mios = await db
       .select({
@@ -740,7 +740,7 @@ export function datosChat(): Promise<DatosChat> {
 // ─── Ficha de propiedad (externo) ────────────────────────────────────────────
 
 export function datosFicha(id: string): Promise<DatosFicha | null> {
-  return resolverPanel("externo", () => demoFicha(id), async (db) => {
+  return resolverPanel("externo", () => demoFicha(), async (db) => {
     const [fila] = await db.select().from(propiedades).where(eq(propiedades.id, id)).limit(1);
     if (!fila || !fila.publicada) return null;
     const [prop] = await propiedadesUI(db, [fila]);

@@ -3,7 +3,7 @@ import { obtenerDb } from "@/server/db";
 import { hayDb, usuarioDelPanel } from "@/server/datos/fuente";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  let alias = { principal: "CONDOR-472", externo: "GUACAMAYA-256" };
+  let alias: { principal: string | null; externo: string | null } = { principal: null, externo: null };
   if (hayDb()) {
     try {
       const db = obtenerDb();
@@ -13,7 +13,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       ]);
       alias = { principal: p?.alias ?? "—", externo: e?.alias ?? "—" };
     } catch {
-      // demo pública: alias de demostración
+      // sin datos aún: el shell no muestra alias
     }
   }
   return <AppShell alias={alias}>{children}</AppShell>;

@@ -102,7 +102,7 @@ describe.skipIf(!HAY_DB)("integración — concurrencia financiera", () => {
     const [r] = await db
       .insert(reservas)
       .values({
-        codigo: `EST-TEST-${sufijo}-${Date.now()}`,
+        codigo: `CIR-TEST-${sufijo}-${Date.now()}`,
         solicitudId: s.id,
         propiedadId,
         principalId,
@@ -187,7 +187,7 @@ describe.skipIf(!HAY_DB)("integración — concurrencia financiera", () => {
     const [r] = await db
       .insert(reservas)
       .values({
-        codigo: `EST-TEST-IDEM-${Date.now()}`, solicitudId: s.id, propiedadId,
+        codigo: `CIR-TEST-IDEM-${Date.now()}`, solicitudId: s.id, propiedadId,
         principalId, externoId, desde: "2026-08-20", hasta: "2026-08-20",
         estado: "LINK_1_ENVIADO",
         precioFinalCentavos: 100_000_000, tarifaNetaCentavos: 80_000_000,

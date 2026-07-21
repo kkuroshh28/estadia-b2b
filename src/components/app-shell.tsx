@@ -54,7 +54,7 @@ const NAV_MOVIL = [
 
 export function AppShell({
   children,
-  alias = { principal: "CONDOR-472", externo: "GUACAMAYA-256" },
+  alias = { principal: null, externo: null },
 }: {
   children: React.ReactNode;
   alias?: AliasShell;
@@ -111,9 +111,9 @@ export function AppShell({
         </div>
         <div className="border-t border-borde p-4">
           <div className="rounded-xl border border-oro/20 bg-oro-tenue/50 p-3 text-[11px] leading-relaxed text-bruma">
-            <span className="font-bold text-oro">Entorno demo.</span> Un usuario real
-            solo ve el rol que le corresponde. Aquí navegas los tres para evaluar el
-            producto.
+            <span className="font-bold text-oro">Piloto.</span> Un usuario real solo
+            ve el rol que le corresponde; aquí navegas los tres para operar la
+            plataforma completa.
           </div>
         </div>
       </aside>
@@ -130,7 +130,7 @@ export function AppShell({
             </span>
           </div>
           <div className="flex items-center gap-3">
-            <Badge tono="esmeralda" vivo>Demo en vivo</Badge>
+            <Badge tono="esmeralda" vivo>Piloto</Badge>
             {seccionActiva?.alias ? (
               <div className="flex items-center gap-2">
                 <AvatarAlias alias={seccionActiva.alias} size={32} />

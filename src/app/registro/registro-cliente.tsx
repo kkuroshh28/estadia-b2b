@@ -108,7 +108,9 @@ function Registro({ real }: { real: boolean }) {
 
   const avanzarDesdeBanco = async () => {
     if (!real) {
-      setPaso(esComisionista ? 4 : 5);
+      setErrorRegistro(
+        "La plataforma está en preparación: el registro se habilita cuando se conecte la base de datos del piloto.",
+      );
       return;
     }
     // Registro REAL: usuario en DB (pendiente_kyc) + alias único + KYC simulado
@@ -318,8 +320,8 @@ function Registro({ real }: { real: boolean }) {
 
         <p className="mt-4 text-center text-[10px] text-bruma-osc">
           {real
-            ? "Entorno con base de datos: tu cuenta se crea de verdad (cédula cifrada, alias único) y el KYC simulado la aprueba por el callback firmado."
-            : "Demo: los datos no se envían a ningún lado. En producción: KYC con proveedor biométrico + certificación bancaria real."}
+            ? "Tu cuenta se crea de verdad: cédula cifrada en reposo, alias único asignado por la plataforma y verificación KYC."
+            : "La plataforma está en preparación — el registro se habilita al conectar la base de datos del piloto."}
         </p>
       </div>
     </main>

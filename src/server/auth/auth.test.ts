@@ -214,7 +214,7 @@ describe.skipIf(!HAY_DB)("integración — auth + KYC + pago simulado", () => {
     const [res] = await db
       .insert(reservas)
       .values({
-        codigo: `EST-WH-${Date.now()}`, solicitudId: s.id, propiedadId: pr.id,
+        codigo: `CIR-WH-${Date.now()}`, solicitudId: s.id, propiedadId: pr.id,
         principalId: prop.id, externoId: prop.id, desde: "2026-10-10", hasta: "2026-10-10",
         estado: "LINK_1_ENVIADO", precioFinalCentavos: 100_000_000, tarifaNetaCentavos: 90_000_000,
       })
