@@ -4,6 +4,7 @@ import { MotionProvider } from "@/components/motion";
 import "./globals.css";
 
 const archivo = Archivo({
+  display: "optional",
   variable: "--font-archivo",
   subsets: ["latin"],
 });
@@ -14,6 +15,7 @@ const bricolage = Bricolage_Grotesque({
 });
 
 const jetbrains = JetBrains_Mono({
+  display: "optional",
   variable: "--font-jetbrains",
   subsets: ["latin"],
 });

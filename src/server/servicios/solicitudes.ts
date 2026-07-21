@@ -113,14 +113,16 @@ export async function crearSolicitud(
     .select({ principalId: vinculos.principalId })
     .from(vinculos)
     .where(and(eq(vinculos.propiedadId, datos.propiedadId), eq(vinculos.estado, "activo")));
-  for (const p of principales) {
-    await notificarEnApp(db, p.principalId, {
-      tipo: "solicitud",
-      titulo: "Nueva solicitud entrante",
-      cuerpo: `${aliasExterno} pide ${nombreProp?.nombre ?? "una propiedad"} (${datos.desde} → ${datos.hasta}). El primero que acepte se la queda.`,
-      url: "/app/principal",
-    });
-  }
+  await Promise.all(
+    principales.map((p) =>
+      notificarEnApp(db, p.principalId, {
+        tipo: "solicitud",
+        titulo: "Nueva solicitud entrante",
+        cuerpo: `${aliasExterno} pide ${nombreProp?.nombre ?? "una propiedad"} (${datos.desde} → ${datos.hasta}). El primero que acepte se la queda.`,
+        url: "/app/principal",
+      }),
+    ),
+  );
   return { solicitudId: fila.id, venceEn: fila.venceEn };
 }
 
@@ -223,7 +225,11 @@ export async function contraofertar(
     if (!neg || neg.estado !== "abierta") {
       throw new OperacionError("La negociación no está abierta.");
     }
-    const [sol] = await tx.select().from(solicitudes).where(eq(solicitudes.id, neg.solicitudId));
+    const [sol] = await tx
+      .select()
+      .from(solicitudes)
+      .where(eq(solicitudes.id, neg.solicitudId))
+      .for("update");
     const participantes = [sol?.externoId, sol?.principalAceptanteId];
     if (!participantes.includes(emisorId)) {
       throw new OperacionError("No eres parte de esta negociación.");

@@ -314,17 +314,14 @@ export async function generarLinkSaldo(
       })
       .returning({ id: linksDePago.id, montoCentavos: linksDePago.montoCentavos });
 
-    return { linkId: link.id, montoCentavos: link.montoCentavos, yaExistia: false };
-  }).then(async (r) => {
-    if (!r.yaExistia) {
-      const [actual] = await db
-        .select({ estado: reservas.estado })
-        .from(reservas)
-        .where(eq(reservas.id, reservaId));
-      if (actual?.estado === "ANTICIPO_PAGADO") {
-        await transicionarReserva(db, reservaId, "SALDO_LINK_ENVIADO", actorId, { mitad: 2 });
-      }
+    // Transición DENTRO de la misma tx: la reserva está lockeada arriba
+    // (FOR UPDATE) — nadie puede cambiarle el estado entre el link y esto.
+    if (reserva.estado === "ANTICIPO_PAGADO") {
+      await transicionarReserva(tx as unknown as Db, reservaId, "SALDO_LINK_ENVIADO", actorId, {
+        mitad: 2,
+      });
     }
-    return r;
+
+    return { linkId: link.id, montoCentavos: link.montoCentavos, yaExistia: false };
   });
 }

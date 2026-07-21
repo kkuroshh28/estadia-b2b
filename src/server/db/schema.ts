@@ -221,13 +221,17 @@ export const propiedades = pgTable("propiedades", {
 });
 
 /** Tarifa neta por temporada, en CENTAVOS. Sin solapamiento (constraint en SQL). */
-export const tarifas = pgTable("tarifas", {
+export const tarifas = pgTable(
+  "tarifas",
+  {
   id: uuid("id").primaryKey().defaultRandom(),
   propiedadId: uuid("propiedad_id").notNull().references(() => propiedades.id),
   desde: date("desde").notNull(),
   hasta: date("hasta").notNull(),
-  netaNocheCentavos: bigint("neta_noche_centavos", { mode: "number" }).notNull(),
-});
+    netaNocheCentavos: bigint("neta_noche_centavos", { mode: "number" }).notNull(),
+  },
+  (t) => [index("tarifas_por_propiedad").on(t.propiedadId)],
+);
 
 /** 3–5 principales por propiedad (mín/máx validado en servicio + trigger). */
 export const vinculosComisionista = pgTable(
@@ -238,7 +242,10 @@ export const vinculosComisionista = pgTable(
     estado: text("estado").notNull().default("activo"), // activo | removido
     creadoEn: timestamp("creado_en", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [uniqueIndex("vinculo_unico").on(t.propiedadId, t.principalId)],
+  (t) => [
+    uniqueIndex("vinculo_unico").on(t.propiedadId, t.principalId),
+    index("vinculos_por_principal").on(t.principalId, t.estado),
+  ],
 );
 
 /** Una fila por día — la fuente ÚNICA de disponibilidad. Lock de fila = la regla. */
@@ -251,7 +258,10 @@ export const calendarioDias = pgTable(
     reservaId: uuid("reserva_id"),
     actualizadoEn: timestamp("actualizado_en", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [uniqueIndex("calendario_pk").on(t.propiedadId, t.fecha)],
+  (t) => [
+    uniqueIndex("calendario_pk").on(t.propiedadId, t.fecha),
+    index("calendario_por_reserva").on(t.reservaId),
+  ],
 );
 
 export const sincronizacionesIcal = pgTable("sincronizaciones_ical", {
@@ -264,7 +274,9 @@ export const sincronizacionesIcal = pgTable("sincronizaciones_ical", {
 
 // ─── Solicitud → negociación → reserva ───────────────────────────────────────
 
-export const solicitudes = pgTable("solicitudes", {
+export const solicitudes = pgTable(
+  "solicitudes",
+  {
   id: uuid("id").primaryKey().defaultRandom(),
   externoId: uuid("externo_id").notNull().references(() => usuarios.id),
   propiedadId: uuid("propiedad_id").notNull().references(() => propiedades.id),
@@ -274,9 +286,14 @@ export const solicitudes = pgTable("solicitudes", {
   estado: estadoSolicitudEnum("estado").notNull().default("pendiente"),
   // "El primero que acepta gana": UPDATE condicional WHERE principal_aceptante_id IS NULL
   principalAceptanteId: uuid("principal_aceptante_id").references(() => usuarios.id),
-  creadaEn: timestamp("creada_en", { withTimezone: true }).notNull().defaultNow(),
-  venceEn: timestamp("vence_en", { withTimezone: true }).notNull(),
-});
+    creadaEn: timestamp("creada_en", { withTimezone: true }).notNull().defaultNow(),
+    venceEn: timestamp("vence_en", { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    index("solicitudes_por_propiedad").on(t.propiedadId, t.estado),
+    index("solicitudes_por_externo").on(t.externoId),
+  ],
+);
 
 export const negociaciones = pgTable("negociaciones", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -297,7 +314,9 @@ export const ofertas = pgTable("ofertas", {
   creadaEn: timestamp("creada_en", { withTimezone: true }).notNull().defaultNow(),
 });
 
-export const reservas = pgTable("reservas", {
+export const reservas = pgTable(
+  "reservas",
+  {
   id: uuid("id").primaryKey().defaultRandom(),
   codigo: text("codigo").notNull().unique(), // CIR-YYYY-NNNNN
   solicitudId: uuid("solicitud_id").notNull().references(() => solicitudes.id),
@@ -308,9 +327,15 @@ export const reservas = pgTable("reservas", {
   hasta: date("hasta").notNull(),
   estado: estadoReservaEnum("estado").notNull().default("PRECIO_ACORDADO"),
   precioFinalCentavos: bigint("precio_final_centavos", { mode: "number" }).notNull(),
-  tarifaNetaCentavos: bigint("tarifa_neta_centavos", { mode: "number" }).notNull(),
-  creadaEn: timestamp("creada_en", { withTimezone: true }).notNull().defaultNow(),
-});
+    tarifaNetaCentavos: bigint("tarifa_neta_centavos", { mode: "number" }).notNull(),
+    creadaEn: timestamp("creada_en", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("reservas_por_propiedad").on(t.propiedadId, t.estado),
+    index("reservas_por_principal").on(t.principalId),
+    index("reservas_por_externo").on(t.externoId),
+  ],
+);
 
 /** Auditoría APPEND-ONLY de transiciones: actor, anterior → nuevo, cuándo. */
 export const auditoriaReservas = pgTable(
@@ -356,16 +381,22 @@ export const eventosPasarela = pgTable("eventos_pasarela", {
   procesadoEn: timestamp("procesado_en", { withTimezone: true }).notNull().defaultNow(),
 });
 
-export const transacciones = pgTable("transacciones", {
+export const transacciones = pgTable(
+  "transacciones",
+  {
   id: uuid("id").primaryKey().defaultRandom(),
   linkId: uuid("link_id").notNull().references(() => linksDePago.id),
   pasarelaRef: text("pasarela_ref").notNull().unique(),
   montoCentavos: bigint("monto_centavos", { mode: "number" }).notNull(),
   estado: text("estado").notNull(), // aprobada | rechazada | reversada
-  webhookEn: timestamp("webhook_en", { withTimezone: true }).notNull().defaultNow(),
-});
+    webhookEn: timestamp("webhook_en", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("transacciones_por_link").on(t.linkId)],
+);
 
-export const splits = pgTable("splits", {
+export const splits = pgTable(
+  "splits",
+  {
   id: uuid("id").primaryKey().defaultRandom(),
   transaccionId: uuid("transaccion_id").notNull().references(() => transacciones.id),
   beneficiarioId: uuid("beneficiario_id").references(() => usuarios.id), // NULL = plataforma
@@ -373,8 +404,13 @@ export const splits = pgTable("splits", {
   montoCentavos: bigint("monto_centavos", { mode: "number" }).notNull(),
   dispersado: boolean("dispersado").notNull().default(false),
   pasarelaPayoutRef: text("pasarela_payout_ref"),
-  dispersadoEn: timestamp("dispersado_en", { withTimezone: true }),
-});
+    dispersadoEn: timestamp("dispersado_en", { withTimezone: true }),
+  },
+  (t) => [
+    index("splits_por_beneficiario").on(t.beneficiarioId, t.concepto),
+    index("splits_por_transaccion").on(t.transaccionId),
+  ],
+);
 
 export const contratos = pgTable("contratos", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -400,16 +436,23 @@ export const mensajesChat = pgTable(
     ocrEstado: text("ocr_estado"), // null | en_revision | aprobado | bloqueado
     enviadoEn: timestamp("enviado_en", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("chat_por_reserva").on(t.reservaId)],
+  (t) => [
+    index("chat_por_reserva").on(t.reservaId),
+    index("chat_por_solicitud").on(t.solicitudId),
+  ],
 );
 
-export const intentosFuga = pgTable("intentos_fuga", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  usuarioId: uuid("usuario_id").notNull().references(() => usuarios.id),
-  evidencia: jsonb("evidencia").notNull(),
-  accion: text("accion").notNull(), // bloqueado | ban_perpetuo
-  registradoEn: timestamp("registrado_en", { withTimezone: true }).notNull().defaultNow(),
-});
+export const intentosFuga = pgTable(
+  "intentos_fuga",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    usuarioId: uuid("usuario_id").notNull().references(() => usuarios.id),
+    evidencia: jsonb("evidencia").notNull(),
+    accion: text("accion").notNull(), // bloqueado | ban_perpetuo
+    registradoEn: timestamp("registrado_en", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("fugas_por_usuario").on(t.usuarioId, t.accion)],
+);
 
 export const eventosReputacion = pgTable("eventos_reputacion", {
   id: uuid("id").primaryKey().defaultRandom(),

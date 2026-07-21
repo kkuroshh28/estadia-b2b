@@ -102,22 +102,23 @@ async function propiedadesUI(
   const ids = filas.map((f) => f.id);
   const hoy = hoyEnBogota();
 
-  const tarifasFilas = await db
-    .select()
-    .from(tarifas)
-    .where(inArray(tarifas.propiedadId, ids))
-    .orderBy(asc(tarifas.desde));
+  const [tarifasFilas, vinculos] = await Promise.all([
+    db
+      .select()
+      .from(tarifas)
+      .where(inArray(tarifas.propiedadId, ids))
+      .orderBy(asc(tarifas.desde)),
+    db
+      .select({ propiedadId: vinculosComisionista.propiedadId, n: sql<number>`count(*)::int` })
+      .from(vinculosComisionista)
+      .where(and(inArray(vinculosComisionista.propiedadId, ids), eq(vinculosComisionista.estado, "activo")))
+      .groupBy(vinculosComisionista.propiedadId),
+  ]);
   const tarifaDe = new Map<string, number>();
   for (const t of tarifasFilas) {
     const vigente = t.desde <= hoy && hoy <= t.hasta;
     if (vigente || !tarifaDe.has(t.propiedadId)) tarifaDe.set(t.propiedadId, t.netaNocheCentavos);
   }
-
-  const vinculos = await db
-    .select({ propiedadId: vinculosComisionista.propiedadId, n: sql<number>`count(*)::int` })
-    .from(vinculosComisionista)
-    .where(and(inArray(vinculosComisionista.propiedadId, ids), eq(vinculosComisionista.estado, "activo")))
-    .groupBy(vinculosComisionista.propiedadId);
   const vinculosDe = new Map(vinculos.map((v) => [v.propiedadId, v.n]));
 
   return filas.map((f) => ({
@@ -145,14 +146,14 @@ async function reservasUI(
   filas: (typeof reservas.$inferSelect)[],
 ): Promise<ReservaPanel[]> {
   if (filas.length === 0) return [];
-  const props = await db
-    .select({ id: propiedades.id, nombre: propiedades.nombre })
-    .from(propiedades)
-    .where(inArray(propiedades.id, [...new Set(filas.map((f) => f.propiedadId))]));
-  const nombreDe = new Map(props.map((p) => [p.id, p.nombre]));
-  const alias = await aliasDe(db, [
-    ...new Set(filas.flatMap((f) => [f.principalId, f.externoId])),
+  const [props, alias] = await Promise.all([
+    db
+      .select({ id: propiedades.id, nombre: propiedades.nombre })
+      .from(propiedades)
+      .where(inArray(propiedades.id, [...new Set(filas.map((f) => f.propiedadId))])),
+    aliasDe(db, [...new Set(filas.flatMap((f) => [f.principalId, f.externoId]))]),
   ]);
+  const nombreDe = new Map(props.map((p) => [p.id, p.nombre]));
   return filas.map((f) => ({
     id: f.id,
     codigo: f.codigo,
@@ -180,28 +181,28 @@ export function datosPropietario(): Promise<DatosPropietario> {
       .orderBy(asc(propiedades.creadaEn));
     const props = await propiedadesUI(db, misProps);
 
-    const misReservas = misProps.length
-      ? await db
-          .select()
-          .from(reservas)
-          .where(inArray(reservas.propiedadId, misProps.map((p) => p.id)))
-          .orderBy(desc(reservas.creadaEn))
-          .limit(12)
-      : [];
-
-    const sus = await db
-      .select({ estado: suscripciones.estado, renuevaEn: suscripciones.renuevaEn })
-      .from(suscripciones)
-      .where(eq(suscripciones.propietarioId, u.id))
-      .limit(1);
-
-    // Neto real dispersable: splits tarifa_neta del usuario, por mes (últ. 6).
-    const netos = await db
-      .select({ monto: splits.montoCentavos, fecha: transacciones.webhookEn })
-      .from(splits)
-      .innerJoin(transacciones, eq(splits.transaccionId, transacciones.id))
-      .where(and(eq(splits.beneficiarioId, u.id), eq(splits.concepto, "tarifa_neta")))
-      .orderBy(asc(transacciones.webhookEn));
+    const [misReservas, sus, netos] = await Promise.all([
+      misProps.length
+        ? db
+            .select()
+            .from(reservas)
+            .where(inArray(reservas.propiedadId, misProps.map((p) => p.id)))
+            .orderBy(desc(reservas.creadaEn))
+            .limit(12)
+        : Promise.resolve([]),
+      db
+        .select({ estado: suscripciones.estado, renuevaEn: suscripciones.renuevaEn })
+        .from(suscripciones)
+        .where(eq(suscripciones.propietarioId, u.id))
+        .limit(1),
+      // Neto real dispersable: splits tarifa_neta del usuario, por mes (últ. 6).
+      db
+        .select({ monto: splits.montoCentavos, fecha: transacciones.webhookEn })
+        .from(splits)
+        .innerJoin(transacciones, eq(splits.transaccionId, transacciones.id))
+        .where(and(eq(splits.beneficiarioId, u.id), eq(splits.concepto, "tarifa_neta")))
+        .orderBy(asc(transacciones.webhookEn)),
+    ]);
 
     const porMes = new Map<string, number>();
     const mesActual = mesCortoCO(new Date());
@@ -776,10 +777,13 @@ export function datosChat(): Promise<DatosChat> {
         bloqueado: f.bloqueado,
         motivos: (f.flags as string[]) ?? [],
       })),
-      strikes: {
-        principal: await strikesDe(ctx.principalId),
-        externo: await strikesDe(ctx.externoId),
-      },
+      strikes: await (async () => {
+        const [principal, externo] = await Promise.all([
+          strikesDe(ctx.principalId!),
+          strikesDe(ctx.externoId),
+        ]);
+        return { principal, externo };
+      })(),
     };
   });
 }

@@ -4,6 +4,9 @@ import { obtenerDb } from "@/server/db";
 import { authExigida, COOKIE_SESION, validarSesion } from "@/server/auth";
 import { hayDb, usuarioDelPanel } from "@/server/datos/fuente";
 
+// Paneles SIEMPRE dinámicos: jamás congelar datos en el build.
+export const dynamic = "force-dynamic";
+
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   let alias: { principal: string | null; externo: string | null } = { principal: null, externo: null };
   let roles: string[] | null = null;

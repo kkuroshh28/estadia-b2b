@@ -123,24 +123,27 @@ export async function reembolsar(
 
     const { refundRef } = await obtenerPasarela().reembolsar(t.pasarelaRef, t.montoCentavos);
     await tx.update(transacciones).set({ estado: "reversada" }).where(eq(transacciones.id, t.id));
-    // Contra-splits: la conciliación sigue cuadrando al centavo.
+    // Contra-splits en UN insert: la conciliación sigue cuadrando al centavo.
     const filas = await tx.select().from(splits).where(eq(splits.transaccionId, t.id));
-    for (const s of filas) {
-      await tx.insert(splits).values({
-        transaccionId: t.id,
-        beneficiarioId: s.beneficiarioId,
-        concepto: s.concepto,
-        montoCentavos: -s.montoCentavos,
-        dispersado: false,
-        pasarelaPayoutRef: refundRef,
-      });
+    if (filas.length) {
+      await tx.insert(splits).values(
+        filas.map((s) => ({
+          transaccionId: t.id,
+          beneficiarioId: s.beneficiarioId,
+          concepto: s.concepto,
+          montoCentavos: -s.montoCentavos,
+          dispersado: false,
+          pasarelaPayoutRef: refundRef,
+        })),
+      );
     }
     await tx
       .insert(auditoriaAdmin)
       .values({ adminId: admin.id, accion: "reembolso", detalle: { transaccionId, refundRef } });
 
-    // El reembolso CANCELA la reserva: se liberan los días (el calendario
-    // nunca miente) y se invalida cualquier link vivo. Notifica a las partes.
+    // El reembolso CANCELA la reserva EN LA MISMA tx (la reserva queda
+    // lockeada): días liberados, links invalidados y transición auditada —
+    // o todo o nada con el dinero.
     const [link] = await tx.select().from(linksDePago).where(eq(linksDePago.id, t.linkId));
     const [reserva] = link
       ? await tx.select().from(reservas).where(eq(reservas.id, link.reservaId)).for("update")
@@ -154,15 +157,15 @@ export async function reembolsar(
         .update(linksDePago)
         .set({ estado: "invalidado" })
         .where(and(eq(linksDePago.reservaId, reserva.id), eq(linksDePago.estado, "activo")));
+      await transicionarReserva(tx as unknown as Db, reserva.id, "CANCELADA", admin.id, {
+        motivo: "reembolso_admin",
+        refundRef,
+      });
     }
     return { refundRef, reservaId: reserva?.id ?? null, estadoReserva: reserva?.estado ?? null };
   }).then(async (r) => {
-    // Transición + notificaciones FUERA de la tx del dinero (auditadas aparte).
+    // Solo las notificaciones quedan fuera (fallan en silencio por diseño).
     if (r.reservaId && r.estadoReserva && ["ANTICIPO_PAGADO", "SALDO_LINK_ENVIADO", "PAGO_COMPLETO"].includes(r.estadoReserva)) {
-      await transicionarReserva(db, r.reservaId, "CANCELADA", admin.id, {
-        motivo: "reembolso_admin",
-        refundRef: r.refundRef,
-      });
       const [res] = await db.select().from(reservas).where(eq(reservas.id, r.reservaId));
       if (res) {
         const [prop] = await db.select().from(propiedades).where(eq(propiedades.id, res.propiedadId));

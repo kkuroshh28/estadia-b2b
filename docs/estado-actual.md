@@ -41,6 +41,30 @@
   activa del propietario obligatoria (regla #3); turnos de oferta; capacidad.
 - Suite: **91 tests** verdes.
 
+## Novedades 2026-07-21 (7ª): VELOCIDAD Y CONCURRENCIA (revisión profunda)
+- **Revisión adversarial multi-archivo** del código nuevo: 14 hallazgos; los
+  que importaban quedaron corregidos:
+  - [CRÍTICO] transición del saldo y cancelación del reembolso movidas AL
+    INTERIOR de la transacción del dinero (la reserva queda lockeada — antes
+    había ventana de carrera entre la tx y el .then()).
+  - [ALTO] `contraofertar` ahora lockea la solicitud (FOR UPDATE) al validar
+    participantes.
+  - N+1 eliminados: notificaciones a principales en paralelo, contra-splits
+    en UN insert, vigencias con select en batch.
+- **FIX crítico de build**: /app y /admin con `force-dynamic` — varias páginas
+  se prerenderizaban ESTÁTICAS y con DATABASE_URL en Vercel habrían quedado
+  congeladas con datos del build.
+- **13 índices nuevos** (migración 0003) según los WHERE/JOIN reales:
+  reservas por propiedad/principal/externo, splits por beneficiario,
+  solicitudes, transacciones, chat por solicitud, vínculos, calendario por
+  reserva, tarifas, intentos de fuga.
+- **Capa de datos paralelizada** (Promise.all en propiedades/reservas/
+  propietario/chat). Paneles en build de producción: **12–22 ms**.
+- **Fuentes**: Archivo y JetBrains con `display: optional` — el repintado
+  tardío del swap contaba como LCP (element render delay 1.269 → 228 ms,
+  FCP 0,9 s). Lighthouse 93–94 / 100 / 100 / 100.
+- Suite: **95 tests** verdes.
+
 ## Novedades 2026-07-21 (6ª): reembolso íntegro, logout, salud
 - **FIX de integridad: el reembolso ahora CANCELA de verdad** — antes revertía
   el dinero (contra-splits) pero dejaba la reserva viva y el calendario

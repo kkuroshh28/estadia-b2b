@@ -1,4 +1,4 @@
-import { and, eq, lt, sql } from "drizzle-orm";
+import { and, eq, inArray, lt, sql } from "drizzle-orm";
 import type { Db } from "../db";
 import { linksDePago, ofertas, reservas, solicitudes } from "../db/schema";
 import { transicionarReserva } from "./reservas";
@@ -40,16 +40,15 @@ export async function expirarVigencias(db: Db): Promise<{
     .returning({ id: linksDePago.id, reservaId: linksDePago.reservaId, mitad: linksDePago.mitad });
 
   let reservasExpiradas = 0;
-  for (const l of linksVencidos) {
-    if (l.mitad !== 1) continue; // saldo vencido: el externo puede regenerarlo
-    const [r] = await db
-      .select({ estado: reservas.estado })
+  const idsMitad1 = linksVencidos.filter((l) => l.mitad === 1).map((l) => l.reservaId);
+  if (idsMitad1.length) {
+    // Un solo select; el saldo vencido (mitad 2) se regenera, no expira reserva.
+    const filas = await db
+      .select({ id: reservas.id })
       .from(reservas)
-      .where(eq(reservas.id, l.reservaId));
-    if (r?.estado === "LINK_1_ENVIADO") {
-      await transicionarReserva(db, l.reservaId, "EXPIRADA", "sistema", {
-        motivo: "link_1_vencido",
-      });
+      .where(and(inArray(reservas.id, idsMitad1), eq(reservas.estado, "LINK_1_ENVIADO")));
+    for (const r of filas) {
+      await transicionarReserva(db, r.id, "EXPIRADA", "sistema", { motivo: "link_1_vencido" });
       reservasExpiradas++;
     }
   }

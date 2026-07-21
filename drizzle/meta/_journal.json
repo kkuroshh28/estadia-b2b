@@ -22,6 +22,13 @@
       "when": 1784614362825,
       "tag": "0002_notificaciones_inapp",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1784654114254,
+      "tag": "0003_indices_rendimiento",
+      "breakpoints": true
     }
   ]
 }
