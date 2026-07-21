@@ -11,13 +11,5 @@ export default async function PaginaFicha({
   const { id } = await params;
   const datos = await datosFicha(id);
   if (!datos) notFound();
-  return (
-    <FichaPropiedad
-      propiedad={datos.propiedad}
-      mesTitulo={datos.mesTitulo}
-      diasDelMes={datos.diasDelMes}
-      offsetLunes={datos.offsetLunes}
-      ocupados={datos.ocupados}
-    />
-  );
+  return <FichaPropiedad datos={datos} />;
 }

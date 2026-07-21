@@ -5,26 +5,52 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { Badge, Card, Cover, Money } from "@/components/ui";
 import { MoneyAnimado } from "@/components/motion";
-import type { Propiedad } from "@/lib/domain/tipos";
+import type { DatosFicha } from "@/lib/domain/paneles";
 
 /**
  * Ficha técnica + selector de fechas para solicitar renta.
  * Regla #4: los días ocupados están deshabilitados — ni siquiera clickeables.
  */
-interface Props {
-  propiedad: Propiedad;
-  mesTitulo: string;
-  diasDelMes: number;
-  offsetLunes: number;
-  ocupados: number[];
-}
-
-export function FichaPropiedad({ propiedad, mesTitulo, diasDelMes, offsetLunes, ocupados }: Props) {
+export function FichaPropiedad({ datos }: { datos: DatosFicha }) {
+  const { propiedad, mesTitulo, diasDelMes, offsetLunes, ocupados, mesIso, esDemo } = datos;
   const [rango, setRango] = useState<{ desde: number | null; hasta: number | null }>({
     desde: null,
     hasta: null,
   });
   const [solicitada, setSolicitada] = useState(false);
+  const [huespedes, setHuespedes] = useState(Math.min(2, propiedad.capacidad));
+  const [enviando, setEnviando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fechaIso = (dia: number) => `${mesIso}-${String(dia).padStart(2, "0")}`;
+
+  const solicitar = async () => {
+    if (esDemo) {
+      setSolicitada(true);
+      return;
+    }
+    setEnviando(true);
+    setError(null);
+    try {
+      const r = await fetch("/api/solicitudes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          propiedadId: propiedad.id,
+          desde: fechaIso(rango.desde!),
+          hasta: fechaIso(rango.hasta!),
+          huespedes,
+        }),
+      });
+      const json = await r.json();
+      if (!r.ok) throw new Error(json.error ?? "No se pudo enviar la solicitud");
+      setSolicitada(true);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo enviar la solicitud");
+    } finally {
+      setEnviando(false);
+    }
+  };
 
   const rangoValido = (a: number, b: number) => {
     for (let d = a; d <= b; d++) if (ocupados.includes(d)) return false;
@@ -165,13 +191,32 @@ export function FichaPropiedad({ propiedad, mesTitulo, diasDelMes, offsetLunes, 
                   <p className="text-xs text-bruma">
                     Tarifa neta total <MoneyAnimado valor={netaTotal} className="font-bold text-esmeralda" /> — tu precio al cliente lo negocias con el principal.
                   </p>
+                  {error && (
+                    <p className="mt-2 rounded-lg border border-rojo/30 bg-rojo-tenue p-2 text-[11px] text-rojo">
+                      {error}
+                    </p>
+                  )}
                 </div>
-                <button
-                  onClick={() => setSolicitada(true)}
-                  className="rounded-full bg-tiffany px-6 py-3 text-xs font-bold text-tinta transition hover:bg-tiffany-claro"
-                >
-                  Solicitar estas fechas
-                </button>
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center gap-1.5 text-[11px] text-bruma">
+                    Huéspedes
+                    <input
+                      type="number"
+                      min={1}
+                      max={propiedad.capacidad}
+                      value={huespedes}
+                      onChange={(e) => setHuespedes(Number(e.target.value))}
+                      className="w-14 rounded-lg border border-borde bg-panel px-2 py-1.5 text-center text-xs text-tinta"
+                    />
+                  </label>
+                  <button
+                    onClick={solicitar}
+                    disabled={enviando}
+                    className="rounded-full bg-tiffany px-6 py-3 text-xs font-bold text-tinta transition hover:bg-tiffany-claro disabled:opacity-60"
+                  >
+                    {enviando ? "Enviando…" : "Solicitar estas fechas"}
+                  </button>
+                </div>
               </motion.div>
             )}
             {solicitada && (

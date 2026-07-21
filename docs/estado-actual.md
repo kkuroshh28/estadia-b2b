@@ -23,6 +23,24 @@
   anima traslación). Lighthouse local: 94 / 100 / 100 / 100.
 - Suite: **89 tests** (todos verdes contra Postgres 16 real).
 
+## Novedades 2026-07-20 (2ª sesión): CICLO OPERATIVO COMPLETO REAL
+- **La app ya opera de punta a punta con el motor real** (verificado clic a
+  clic en navegador contra Postgres): el externo solicita fechas desde la
+  ficha (`POST /api/solicitudes`), el principal acepta ("el primero gana",
+  UPDATE condicional; crea reserva EST-YYYY-NNNNN + negociación vía
+  `servicios/solicitudes.ts`), ambos negocian con ofertas REALES por turnos
+  (`/api/negociacion/ofertar`), la aceptación genera el link del MOTOR
+  (regla #6) y transiciona la reserva; el checkout `/pago/[linkId]` lee el
+  link real y paga por `/api/pagos/simular` → mismo webhook firmado →
+  splits exactos + contrato + semáforo. Todo visible en paneles y comisiones.
+- **FIX de integridad crítico**: el webhook ahora MATERIALIZA las filas de
+  calendario del rango antes del lock (`generate_series` + ON CONFLICT DO
+  NOTHING). Antes, un pago sobre fechas sin filas no bloqueaba el calendario
+  → una segunda venta podía colarse. Con test.
+- Reglas nuevas en servidor: solo principales VINCULADOS aceptan; suscripción
+  activa del propietario obligatoria (regla #3); turnos de oferta; capacidad.
+- Suite: **91 tests** verdes.
+
 
 Regla: nada se marca hecho sin evidencia (test, archivo:línea o demostración
 reproducible). Suite de referencia: `npm test` → **80 tests verdes** (unitarios +

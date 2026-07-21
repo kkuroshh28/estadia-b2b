@@ -107,7 +107,17 @@ async function procesarUnaVez(db: Db, evento: EventoPago): Promise<ResultadoPago
     if (!reserva) throw new Error(`Reserva no encontrada para link ${link.id}`);
 
     if (link.mitad === 1) {
-      // 3 · Lock de los días del rango — aquí se decide la carrera
+      // 3a · Materializar las filas del rango que aún no existan (un día sin
+      // fila cuenta como disponible, pero SIN fila no hay nada que lockear y
+      // la carrera no se serializaría). ON CONFLICT DO NOTHING: bajo carrera,
+      // el segundo espera el commit del primero y luego lockea las mismas filas.
+      await tx.execute(sql`
+        INSERT INTO calendario_dias (propiedad_id, fecha, estado)
+        SELECT ${reserva.propiedadId}, d::date, 'disponible'
+        FROM generate_series(${reserva.desde}::date, ${reserva.hasta}::date, interval '1 day') d
+        ON CONFLICT (propiedad_id, fecha) DO NOTHING`);
+
+      // 3b · Lock de los días del rango — aquí se decide la carrera
       const dias = await tx
         .select()
         .from(calendarioDias)

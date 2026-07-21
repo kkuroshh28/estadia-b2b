@@ -156,6 +156,8 @@ export function demoFicha(id: string): DatosFicha | null {
   const info = infoMes("2026-07");
   return {
     propiedad,
+    esDemo: true,
+    mesIso: "2026-07",
     mesTitulo: info.titulo,
     diasDelMes: info.dias,
     offsetLunes: info.offsetLunes,

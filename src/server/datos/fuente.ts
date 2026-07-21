@@ -78,6 +78,21 @@ export async function resolverPanel<T>(
   }
 }
 
+/**
+ * Actor de una petición de ESCRITURA para un rol dado:
+ * - MODO_AUTH=exigida → sesión válida con ese rol, o null (401 en el handler).
+ * - dev/preview sin auth → el usuario del panel de ese rol (semilla).
+ */
+export async function actorDePeticion(db: Db, rol: Seccion): Promise<UsuarioPanel | null> {
+  if (authExigida()) {
+    const { usuarioDePeticion } = await import("../auth/guardia");
+    const sesion = await usuarioDePeticion();
+    if (!sesion || !sesion.roles.includes(rol)) return null;
+    return usuarioDelPanel(db, rol, sesion);
+  }
+  return usuarioDelPanel(db, rol, null);
+}
+
 /** matiz determinista 0–359 desde un uuid (carátulas generadas, sin fotos). */
 export function matizDeId(id: string): number {
   let h = 0;

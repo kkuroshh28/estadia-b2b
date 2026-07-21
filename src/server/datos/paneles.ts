@@ -584,7 +584,7 @@ export function datosNegociacion(): Promise<DatosNegociacion> {
           sql`(${solicitudes.principalAceptanteId} = ${u.id} OR ${solicitudes.externoId} = ${u.id})`,
         ),
       )
-      .orderBy(desc(negociaciones.id))
+      .orderBy(desc(solicitudes.creadaEn))
       .limit(1);
 
     const n = abiertas[0];
@@ -663,6 +663,8 @@ export function datosFicha(id: string): Promise<DatosFicha | null> {
     const info = infoMes(mesActual);
     return {
       propiedad: prop,
+      esDemo: false,
+      mesIso: mesActual,
       mesTitulo: info.titulo,
       diasDelMes: info.dias,
       offsetLunes: info.offsetLunes,

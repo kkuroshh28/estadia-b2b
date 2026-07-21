@@ -167,14 +167,14 @@ async function main() {
 
   // Una negociación EN CURSO con dos ofertas
   const [sol2] = await db.insert(solicitudes).values({
-    externoId: externos[1], propiedadId: propIds[1],
+    externoId: externos[0], propiedadId: propIds[1],
     desde: "2026-08-21", hasta: "2026-08-23", huespedes: 6,
     estado: "aceptada", principalAceptanteId: principales[0],
     venceEn: sql`now() + interval '1 day'` as unknown as Date,
   }).returning({ id: solicitudes.id });
   await db.insert(reservas).values({
     codigo: "EST-2026-00402", solicitudId: sol2.id, propiedadId: propIds[1],
-    principalId: principales[0], externoId: externos[1],
+    principalId: principales[0], externoId: externos[0],
     desde: "2026-08-21", hasta: "2026-08-23", estado: "NEGOCIACION",
     precioFinalCentavos: 0, tarifaNetaCentavos: 196_000_000,
   });
@@ -183,7 +183,7 @@ async function main() {
   }).returning({ id: negociaciones.id });
   await db.insert(ofertas).values([
     {
-      negociacionId: neg.id, emisorId: externos[1], montoCentavos: 220_000_000,
+      negociacionId: neg.id, emisorId: externos[0], montoCentavos: 220_000_000,
       estado: "contraofertada", venceEn: sql`now() + interval '6 hours'` as unknown as Date,
     },
     {

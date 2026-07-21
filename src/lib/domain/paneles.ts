@@ -105,6 +105,8 @@ export interface DatosCalendario {
 
 export interface DatosFicha {
   propiedad: Propiedad;
+  esDemo: boolean;
+  mesIso: string; // YYYY-MM del calendario mostrado
   mesTitulo: string;
   diasDelMes: number;
   offsetLunes: number;

@@ -2,14 +2,44 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { AvatarAlias, Badge, Card, Money, Stat } from "@/components/ui";
 import { Semaforo } from "@/components/semaforo";
 import type { DatosPrincipal } from "@/lib/domain/paneles";
 
 export function PanelPrincipalCliente({ datos }: { datos: DatosPrincipal }) {
+  const router = useRouter();
   const [aceptadas, setAceptadas] = useState<string[]>([]);
+  const [perdidas, setPerdidas] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState(false);
+
+  // "El primero que acepta gana" — de verdad: UPDATE condicional en el servidor.
+  const aceptar = async (solicitudId: string) => {
+    if (datos.esDemo) {
+      setAceptadas((a) => [...a, solicitudId]);
+      return;
+    }
+    setError(null);
+    try {
+      const r = await fetch("/api/solicitudes/aceptar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ solicitudId }),
+      });
+      const json = await r.json();
+      if (!r.ok) throw new Error(json.error ?? "No se pudo aceptar");
+      if (json.gano) {
+        setAceptadas((a) => [...a, solicitudId]);
+        router.refresh();
+      } else {
+        setPerdidas((p) => [...p, solicitudId]);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo aceptar");
+    }
+  };
   const alias = datos.aliasYo ?? "—";
   const completadas = datos.reservas.filter((r) => r.estado === "COMPLETADA").length;
 
@@ -85,8 +115,12 @@ export function PanelPrincipalCliente({ datos }: { datos: DatosPrincipal }) {
             tus propiedades vinculadas, aparecerán aquí al instante.
           </Card>
         )}
+        {error && (
+          <p className="rounded-lg border border-rojo/30 bg-rojo-tenue p-2 text-[11px] text-rojo">{error}</p>
+        )}
         {datos.solicitudes.filter((s) => s.estado === "pendiente").map((s) => {
           const aceptada = aceptadas.includes(s.id);
+          const perdida = perdidas.includes(s.id);
           return (
             <Card key={s.id} alta className="p-5">
               <div className="flex flex-wrap items-center justify-between gap-4">
@@ -115,13 +149,15 @@ export function PanelPrincipalCliente({ datos }: { datos: DatosPrincipal }) {
                         Negociar precio →
                       </Link>
                     </>
+                  ) : perdida ? (
+                    <Badge tono="rojo">Otro principal llegó primero</Badge>
                   ) : (
                     <>
                       <Badge tono="ambar" vivo>
                         {s.recibidaHace} · vence en {s.vigenciaMin} min
                       </Badge>
                       <button
-                        onClick={() => setAceptadas((a) => [...a, s.id])}
+                        onClick={() => aceptar(s.id)}
                         className="rounded-full bg-tiffany px-5 py-2.5 text-xs font-bold text-tinta transition hover:bg-tiffany-claro"
                       >
                         Aceptar solicitud

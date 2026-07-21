@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { AvatarAlias, Badge, Card, Money } from "@/components/ui";
 import { MoneyAnimado } from "@/components/motion";
@@ -18,22 +19,50 @@ import type { DatosNegociacion, NegociacionPanel } from "@/lib/domain/paneles";
  */
 export function NegociacionCliente({ datos }: { datos: DatosNegociacion }) {
   const neg = datos.negociacion as NegociacionPanel; // el server garantiza != null
+  const router = useRouter();
 
   const [perspectiva, setPerspectiva] = useState<"principal" | "externo">(
     datos.perspectivaFija ?? "principal",
   );
   const [ofertas, setOfertas] = useState<Oferta[]>(neg.ofertas);
+  const [ofertasBase, setOfertasBase] = useState<Oferta[]>(neg.ofertas);
+  const [linkReal, setLinkReal] = useState<string | null>(null);
+  const [errorReal, setErrorReal] = useState<string | null>(null);
+
+  // Con datos reales el hilo es el del servidor: si el refresh trae ofertas
+  // nuevas, el estado local se realinea (patrón "adjust state during render").
+  if (ofertasBase !== neg.ofertas) {
+    setOfertasBase(neg.ofertas);
+    setOfertas(neg.ofertas);
+  }
   const [propuesta, setPropuesta] = useState(neg.tarifaNetaTotal + Math.round((neg.rangoSugerido.min - neg.tarifaNetaTotal) * 1.2));
   const [acordado, setAcordado] = useState<number | null>(null);
 
-  const ultima = ofertas[ofertas.length - 1];
-  const turnoDe = ultima.emisor === "principal" ? "externo" : "principal";
+  // Sin ofertas aún (negociación recién abierta): cualquiera puede abrir el juego.
+  const ultima = ofertas.length ? ofertas[ofertas.length - 1] : null;
+  const turnoDe = ultima ? (ultima.emisor === "principal" ? "externo" : "principal") : perspectiva;
   const esMiTurno = perspectiva === turnoDe && !acordado;
   const validacion = validarPropuesta(propuesta, neg.tarifaNetaTotal);
   const alias = perspectiva === "principal" ? neg.aliasPrincipal : neg.aliasExterno;
 
-  const contraofertar = () => {
+  const contraofertar = async () => {
     if (!validacion.valida) return;
+    if (!datos.esDemo) {
+      setErrorReal(null);
+      try {
+        const r = await fetch("/api/negociacion/ofertar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ negociacionId: neg.id, montoPesos: propuesta, como: perspectiva }),
+        });
+        const json = await r.json();
+        if (!r.ok) throw new Error(json.error ?? "No se pudo enviar la oferta");
+        router.refresh();
+      } catch (e) {
+        setErrorReal(e instanceof Error ? e.message : "No se pudo enviar la oferta");
+      }
+      return;
+    }
     setOfertas((prev) => [
       ...prev.map((o) => ({ ...o, estado: "contraofertada" as const })),
       {
@@ -47,7 +76,27 @@ export function NegociacionCliente({ datos }: { datos: DatosNegociacion }) {
     ]);
   };
 
-  const aceptar = () => setAcordado(ultima.monto);
+  const aceptar = async () => {
+    if (!ultima) return;
+    if (datos.esDemo) {
+      setAcordado(ultima.monto);
+      return;
+    }
+    setErrorReal(null);
+    try {
+      const r = await fetch("/api/negociacion/aceptar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ofertaId: ultima!.id, como: perspectiva }),
+      });
+      const json = await r.json();
+      if (!r.ok) throw new Error(json.error ?? "No se pudo aceptar la oferta");
+      setLinkReal(json.linkId);
+      setAcordado(ultima!.monto);
+    } catch (e) {
+      setErrorReal(e instanceof Error ? e.message : "No se pudo aceptar la oferta");
+    }
+  };
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
@@ -157,7 +206,7 @@ export function NegociacionCliente({ datos }: { datos: DatosNegociacion }) {
                   hasta que el cliente pague.
                 </p>
                 <Link
-                  href="/pago/lnk-7f3a"
+                  href={`/pago/${linkReal ?? "lnk-7f3a"}`}
                   className="mt-4 inline-block rounded-full bg-tiffany px-6 py-2.5 text-xs font-bold text-tinta transition hover:bg-tiffany-claro"
                 >
                   Ver checkout del cliente →
@@ -179,6 +228,11 @@ export function NegociacionCliente({ datos }: { datos: DatosNegociacion }) {
               <p className="font-mono text-sm font-bold text-tinta">{alias}</p>
             </div>
 
+            {errorReal && (
+              <p className="mt-3 rounded-lg border border-rojo/30 bg-rojo-tenue p-2 text-[11px] text-rojo">
+                {errorReal}
+              </p>
+            )}
             {acordado ? (
               <p className="mt-4 text-sm text-bruma">
                 Negociación cerrada en <Money valor={acordado} className="font-bold text-esmeralda" />.
@@ -204,12 +258,14 @@ export function NegociacionCliente({ datos }: { datos: DatosNegociacion }) {
                   </p>
                 )}
                 <div className="mt-4 grid gap-2">
-                  <button
-                    onClick={aceptar}
-                    className="rounded-full bg-tiffany px-5 py-3 text-xs font-bold text-tinta transition hover:bg-tiffany-claro"
-                  >
-                    Aceptar la última oferta (<Money valor={ultima.monto} />)
-                  </button>
+                  {ultima && (
+                    <button
+                      onClick={aceptar}
+                      className="rounded-full bg-tiffany px-5 py-3 text-xs font-bold text-tinta transition hover:bg-tiffany-claro"
+                    >
+                      Aceptar la última oferta (<Money valor={ultima.monto} />)
+                    </button>
+                  )}
                   <button
                     onClick={contraofertar}
                     disabled={!validacion.valida}
@@ -233,13 +289,13 @@ export function NegociacionCliente({ datos }: { datos: DatosNegociacion }) {
 
           {/* DESGLOSE EN VIVO */}
           <DesgloseSplit
-            precioFinal={acordado ?? (esMiTurno ? propuesta : ultima.monto)}
+            precioFinal={acordado ?? (esMiTurno ? propuesta : (ultima?.monto ?? neg.tarifaNetaTotal))}
             tarifaNeta={neg.tarifaNetaTotal}
             perspectiva={perspectiva}
           />
 
           {(() => {
-            const precio = acordado ?? (esMiTurno ? propuesta : ultima.monto);
+            const precio = acordado ?? (esMiTurno ? propuesta : (ultima?.monto ?? neg.tarifaNetaTotal));
             const { porMitad } = calcularSplit(precio, neg.tarifaNetaTotal);
             return (
               <Card className="p-4 text-[11px] leading-relaxed text-bruma">

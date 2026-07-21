@@ -11,15 +11,48 @@ import { FlujoDinero } from "./flujo-dinero";
  * Al "pagar": procesando → confirmación animada. El split que se muestra después
  * es didáctico del demo (el cliente real jamás lo ve).
  */
-export function Checkout({ link, tarifaNetaMitad }: { link: LinkDePago; tarifaNetaMitad: number }) {
+export function Checkout({
+  link,
+  tarifaNetaMitad,
+  real = false,
+}: {
+  link: LinkDePago;
+  tarifaNetaMitad: number;
+  real?: boolean;
+}) {
   const [fase, setFase] = useState<"form" | "procesando" | "pagado">(
     link.estado === "pagado" ? "pagado" : "form",
   );
+  const [error, setError] = useState<string | null>(null);
   const muerto = link.estado === "invalidado" || link.estado === "expirado";
 
-  const pagar = () => {
+  const pagar = async () => {
     setFase("procesando");
-    setTimeout(() => setFase("pagado"), 1900);
+    setError(null);
+    if (!real) {
+      setTimeout(() => setFase("pagado"), 1900);
+      return;
+    }
+    // Pasarela simulada REAL: el evento entra por el MISMO webhook firmado
+    // (idempotencia, lock de días, splits). "El primero que paga, gana" aplica.
+    try {
+      const r = await fetch("/api/pagos/simular", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ linkId: link.id, montoCentavos: link.monto * 100 }),
+      });
+      const json = await r.json();
+      if (!r.ok) throw new Error(json.error ?? "El pago no pudo procesarse");
+      if (json.resultado === "procesado" || json.resultado === "duplicado") {
+        setTimeout(() => setFase("pagado"), 900);
+      } else {
+        // fechas_tomadas u otro terminal: recargar muestra el link invalidado
+        window.location.reload();
+      }
+    } catch (e) {
+      setFase("form");
+      setError(e instanceof Error ? e.message : "El pago no pudo procesarse");
+    }
   };
 
   if (muerto) {
@@ -80,6 +113,11 @@ export function Checkout({ link, tarifaNetaMitad }: { link: LinkDePago; tarifaNe
                 <input placeholder="MM/AA" className="w-1/2 rounded-xl border border-borde bg-panel px-4 py-3 text-sm placeholder:text-bruma-osc" />
                 <input placeholder="CVC" className="w-1/2 rounded-xl border border-borde bg-panel px-4 py-3 text-sm placeholder:text-bruma-osc" />
               </div>
+              {error && (
+                <p className="rounded-lg border border-rojo/30 bg-rojo-tenue p-2 text-[11px] text-rojo">
+                  {error}
+                </p>
+              )}
               <button
                 onClick={pagar}
                 disabled={fase === "procesando"}
@@ -97,9 +135,9 @@ export function Checkout({ link, tarifaNetaMitad }: { link: LinkDePago; tarifaNe
                 )}
               </button>
               <p className="text-center text-[10px] leading-relaxed text-bruma-osc">
-                Pago simulado del demo. En producción procesa la pasarela y el webhook
-                confirma en tiempo real: si alguien paga estas fechas primero, este
-                link se invalida y tu tarjeta no se cobra.
+                {real
+                  ? "Pasarela simulada de staging: el pago entra por el mismo webhook firmado de producción. Si alguien paga estas fechas primero, este link se invalida y tu tarjeta no se cobra."
+                  : "Pago simulado del demo. En producción procesa la pasarela y el webhook confirma en tiempo real: si alguien paga estas fechas primero, este link se invalida y tu tarjeta no se cobra."}
               </p>
             </div>
           </motion.div>

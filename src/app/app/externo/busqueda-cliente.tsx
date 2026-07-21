@@ -129,17 +129,26 @@ export function BusquedaExternoCliente({ datos }: { datos: DatosBusquedaExterno 
                     <Money valor={p.tarifaNetaNoche} className="text-base font-bold text-esmeralda" />
                     <p className="text-[10px] text-oro">tu margen va por encima</p>
                   </div>
-                  <button
-                    onClick={() => setSolicitadas((s) => [...s, p.id])}
-                    disabled={solicitada}
-                    className={`rounded-full px-4 py-2 text-[11px] font-bold transition ${
-                      solicitada
-                        ? "cursor-default border border-esmeralda/40 bg-esmeralda-tenue text-esmeralda"
-                        : "bg-tiffany text-tinta hover:bg-tiffany-claro"
-                    }`}
-                  >
-                    {solicitada ? "Enviada ✓" : "Solicitar renta"}
-                  </button>
+                  {datos.esDemo ? (
+                    <button
+                      onClick={() => setSolicitadas((s) => [...s, p.id])}
+                      disabled={solicitada}
+                      className={`rounded-full px-4 py-2 text-[11px] font-bold transition ${
+                        solicitada
+                          ? "cursor-default border border-esmeralda/40 bg-esmeralda-tenue text-esmeralda"
+                          : "bg-tiffany text-tinta hover:bg-tiffany-claro"
+                      }`}
+                    >
+                      {solicitada ? "Enviada ✓" : "Solicitar renta"}
+                    </button>
+                  ) : (
+                    <Link
+                      href={`/app/externo/propiedad/${p.id}`}
+                      className="rounded-full bg-tiffany px-4 py-2 text-[11px] font-bold text-tinta transition hover:bg-tiffany-claro"
+                    >
+                      Elegir fechas →
+                    </Link>
+                  )}
                 </div>
               </div>
             </Card>
