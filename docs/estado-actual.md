@@ -41,6 +41,19 @@
   activa del propietario obligatoria (regla #3); turnos de oferta; capacidad.
 - Suite: **91 tests** verdes.
 
+## Novedades 2026-07-21 (6ª): reembolso íntegro, logout, salud
+- **FIX de integridad: el reembolso ahora CANCELA de verdad** — antes revertía
+  el dinero (contra-splits) pero dejaba la reserva viva y el calendario
+  bloqueado para siempre. Ahora: reserva → CANCELADA (auditada con refundRef),
+  días reservado_app → disponibles, links activos invalidados y campanita a
+  las 3 partes. Test extendido: reserva CANCELADA + día liberado.
+- **Cerrar sesión**: botón "Salir" en el shell (solo con auth exigida) →
+  DELETE /api/auth/sesion.
+- **Rate limit por IP en OTP** (además del límite por email en DB).
+- **/api/salud** para monitoreo externo: estado de DB (latencia), drivers
+  activos y versión del deploy — sin secretos.
+- Suite: **95 tests** verdes.
+
 ## Novedades 2026-07-21 (5ª): búsqueda real por fechas, tarifa editable, banco y contratos
 - **Búsqueda con disponibilidad REAL**: rango desde/hasta en la búsqueda del
   externo; el servidor excluye toda propiedad con algún día no-disponible en

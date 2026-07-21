@@ -1,9 +1,11 @@
 import { and, desc, eq, sql } from "drizzle-orm";
 import type { Db } from "../db";
 import {
-  auditoriaAdmin, configuracionPlataforma, contratos, intentosFuga,
-  listaNegraIdentidad, propiedades, splits, transacciones, usuarios,
+  auditoriaAdmin, calendarioDias, configuracionPlataforma, contratos, intentosFuga,
+  linksDePago, listaNegraIdentidad, propiedades, reservas, splits, transacciones, usuarios,
 } from "../db/schema";
+import { transicionarReserva } from "./reservas";
+import { notificarEnApp } from "./notificaciones";
 import { exigirAdmin, type UsuarioSesion } from "../auth";
 import { obtenerPasarela } from "../adaptadores/pasarela";
 import { obtenerKyc } from "../adaptadores/kyc";
@@ -136,7 +138,45 @@ export async function reembolsar(
     await tx
       .insert(auditoriaAdmin)
       .values({ adminId: admin.id, accion: "reembolso", detalle: { transaccionId, refundRef } });
-    return refundRef;
+
+    // El reembolso CANCELA la reserva: se liberan los días (el calendario
+    // nunca miente) y se invalida cualquier link vivo. Notifica a las partes.
+    const [link] = await tx.select().from(linksDePago).where(eq(linksDePago.id, t.linkId));
+    const [reserva] = link
+      ? await tx.select().from(reservas).where(eq(reservas.id, link.reservaId)).for("update")
+      : [];
+    if (reserva && ["ANTICIPO_PAGADO", "SALDO_LINK_ENVIADO", "PAGO_COMPLETO"].includes(reserva.estado)) {
+      await tx
+        .update(calendarioDias)
+        .set({ estado: "disponible", reservaId: null, actualizadoEn: sql`now()` })
+        .where(and(eq(calendarioDias.reservaId, reserva.id), eq(calendarioDias.estado, "reservado_app")));
+      await tx
+        .update(linksDePago)
+        .set({ estado: "invalidado" })
+        .where(and(eq(linksDePago.reservaId, reserva.id), eq(linksDePago.estado, "activo")));
+    }
+    return { refundRef, reservaId: reserva?.id ?? null, estadoReserva: reserva?.estado ?? null };
+  }).then(async (r) => {
+    // Transición + notificaciones FUERA de la tx del dinero (auditadas aparte).
+    if (r.reservaId && r.estadoReserva && ["ANTICIPO_PAGADO", "SALDO_LINK_ENVIADO", "PAGO_COMPLETO"].includes(r.estadoReserva)) {
+      await transicionarReserva(db, r.reservaId, "CANCELADA", admin.id, {
+        motivo: "reembolso_admin",
+        refundRef: r.refundRef,
+      });
+      const [res] = await db.select().from(reservas).where(eq(reservas.id, r.reservaId));
+      if (res) {
+        const [prop] = await db.select().from(propiedades).where(eq(propiedades.id, res.propiedadId));
+        const aviso = {
+          tipo: "pago",
+          titulo: "Reserva cancelada con reembolso",
+          cuerpo: `${prop?.nombre ?? "La propiedad"} · ${res.codigo}: la plataforma reembolsó el pago y liberó las fechas.`,
+        };
+        if (prop) await notificarEnApp(db, prop.propietarioId, { ...aviso, url: "/app/propietario" });
+        await notificarEnApp(db, res.principalId, { ...aviso, url: "/app/principal" });
+        await notificarEnApp(db, res.externoId, { ...aviso, url: "/app/externo/links" });
+      }
+    }
+    return r.refundRef;
   });
 }
 

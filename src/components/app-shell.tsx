@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { AvatarAlias, Badge } from "./ui";
 import { Campanita } from "./campanita";
 
@@ -74,6 +74,12 @@ export function AppShell({
   conDatos?: boolean;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const salir = async () => {
+    await fetch("/api/auth/sesion", { method: "DELETE" }).catch(() => null);
+    router.push("/login");
+    router.refresh();
+  };
   const secciones = SECCIONES(alias).filter((s) => {
     if (!roles) return true; // piloto sin auth: se navegan los tres
     const rol = ROL_DE_SECCION[s.rol];
@@ -159,6 +165,14 @@ export function AppShell({
               />
             )}
             <Badge tono="esmeralda" vivo>Piloto</Badge>
+            {roles !== null && (
+              <button
+                onClick={salir}
+                className="rounded-full border border-borde px-3 py-1.5 text-[11px] font-semibold text-bruma transition hover:border-rojo/40 hover:text-rojo"
+              >
+                Salir
+              </button>
+            )}
             {seccionActiva?.alias ? (
               <div className="flex items-center gap-2">
                 <AvatarAlias alias={seccionActiva.alias} size={32} />

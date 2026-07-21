@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from "vitest";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { obtenerDb, type Db } from "../db";
 import {
   auditoriaAdmin, calendarioDias, configuracionPlataforma, linksDePago,
@@ -9,7 +9,7 @@ import {
   aprobarPropiedad, conciliar, editarConfiguracion, reembolsar, revertirBan,
 } from "./admin";
 import { procesarMensaje } from "./antifuga";
-import { procesarWebhookPago } from "./pagos";
+import { procesarWebhookPago, transicionPostPago } from "./pagos";
 import { AuthError, type UsuarioSesion } from "../auth";
 
 const HAY_DB = Boolean(process.env.DATABASE_URL);
@@ -95,6 +95,7 @@ describe.skipIf(!HAY_DB)("integración — operaciones admin auditadas", () => {
     }).returning({ id: linksDePago.id });
     const ref = `evt-re-${Date.now()}`;
     await procesarWebhookPago(db, { pasarelaRef: ref, linkId: l.id, montoCentavos: 100_000_000, estado: "aprobada" });
+    await transicionPostPago(db, r.id, 1); // ANTICIPO_PAGADO: reserva viva con días bloqueados
 
     const [t] = await db.select().from(transacciones).where(eq(transacciones.pasarelaRef, ref));
 
@@ -113,6 +114,16 @@ describe.skipIf(!HAY_DB)("integración — operaciones admin auditadas", () => {
     // Y la conciliación global sigue cuadrando (reversadas quedan fuera)
     const conc = await conciliar(db);
     expect(conc.cuadra).toBe(true);
+
+    // El reembolso CANCELA la reserva y LIBERA el calendario (nunca miente).
+    const [rFinal] = await db.select().from(reservas).where(eq(reservas.id, r.id));
+    expect(rFinal.estado).toBe("CANCELADA");
+    const [dia] = await db
+      .select()
+      .from(calendarioDias)
+      .where(and(eq(calendarioDias.propiedadId, p.id), eq(calendarioDias.fecha, "2026-11-11")));
+    expect(dia.estado).toBe("disponible");
+    expect(dia.reservaId).toBeNull();
   }, 30_000);
 
   it("revertir ban: frase + motivo obligatorios, auditado, y el usuario vuelve a activo", async () => {
