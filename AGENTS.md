@@ -5,7 +5,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 <!-- END:nextjs-agent-rules -->
 
 # Regla absoluta de aislamiento
-Este proyecto (ESTADÍA, `~/Documents/estadia-b2b`) es COMPLETAMENTE independiente.
+Este proyecto (THE CIRCLE — antes ESTADÍA —, `~/Documents/estadia-b2b`) es COMPLETAMENTE independiente.
 Prohibido tocar o reutilizar recursos de cualquier otro proyecto (BHIA, ContaAI,
 AURION, Dentales, etc.): ni código, ni Supabase, ni Vercel, ni dominios, ni datos.
 Verificar `pwd` + `git remote -v` antes de cualquier cambio.

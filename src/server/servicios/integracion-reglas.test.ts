@@ -54,7 +54,7 @@ describe.skipIf(!HAY_DB)("integración — reglas 6, 8 y 16", () => {
       })
       .returning({ id: solicitudes.id });
     await db.insert(reservas).values({
-      codigo: `EST-NEG-${Date.now()}-${Math.random()}`,
+      codigo: `CIR-NEG-${Date.now()}-${Math.random()}`,
       solicitudId: s.id, propiedadId, principalId, externoId,
       desde: "2026-09-10", hasta: "2026-09-13",
       estado: "NEGOCIACION",

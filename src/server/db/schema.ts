@@ -1,5 +1,5 @@
 /**
- * Schema de producción — ESTADÍA (Drizzle · PostgreSQL).
+ * Schema de producción — THE CIRCLE (Drizzle · PostgreSQL).
  * Todo dinero: BIGINT en CENTAVOS COP (ver src/lib/dinero).
  * Auditoría y ofertas: append-only (sin UPDATE/DELETE — se refuerza con grants).
  */
@@ -283,7 +283,7 @@ export const ofertas = pgTable("ofertas", {
 
 export const reservas = pgTable("reservas", {
   id: uuid("id").primaryKey().defaultRandom(),
-  codigo: text("codigo").notNull().unique(), // EST-YYYY-NNNNN
+  codigo: text("codigo").notNull().unique(), // CIR-YYYY-NNNNN
   solicitudId: uuid("solicitud_id").notNull().references(() => solicitudes.id),
   propiedadId: uuid("propiedad_id").notNull().references(() => propiedades.id),
   principalId: uuid("principal_id").notNull().references(() => usuarios.id),

@@ -3,8 +3,8 @@ import type { MetadataRoute } from "next";
 /** PWA instalable — el gremio trabaja desde el celular. */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "ESTADÍA — Red B2B de rentas cortas",
-    short_name: "ESTADÍA",
+    name: "THE CIRCLE — Red B2B de rentas cortas",
+    short_name: "THE CIRCLE",
     description:
       "La red B2B de rentas cortas de Antioquia. El primero que paga, gana.",
     start_url: "/app",

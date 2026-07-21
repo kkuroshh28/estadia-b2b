@@ -74,7 +74,7 @@ const wompi: PasarelaPagos = {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        name: `Reserva ESTADÍA ${referencia}`,
+        name: `Reserva THE CIRCLE ${referencia}`,
         description: "Pago de reserva de renta corta",
         single_use: true,
         currency: "COP",
@@ -177,7 +177,7 @@ const mercadopago: PasarelaPagos = {
       body: JSON.stringify({
         items: [
           {
-            title: `Reserva ESTADÍA ${referencia}`,
+            title: `Reserva THE CIRCLE ${referencia}`,
             quantity: 1,
             currency_id: "COP",
             // MP trabaja en UNIDADES de moneda (pesos), no centavos.

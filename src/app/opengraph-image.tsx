@@ -3,7 +3,7 @@ import { ImageResponse } from "next/og";
 /** OG para compartir por WhatsApp — Tiffany + blanco, se ve premium en el chat. */
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-export const alt = "ESTADÍA — La red B2B de rentas cortas de Antioquia";
+export const alt = "THE CIRCLE — La red B2B de rentas cortas de Antioquia";
 
 export default function OgImage() {
   return new ImageResponse(
@@ -23,7 +23,7 @@ export default function OgImage() {
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", fontSize: 44, fontWeight: 700 }}>
-            ESTADÍA<span style={{ color: "#ffffff" }}>.</span>
+            THE CIRCLE<span style={{ color: "#ffffff" }}>.</span>
           </div>
           <div
             style={{

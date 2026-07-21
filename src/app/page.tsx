@@ -53,7 +53,7 @@ export default function Landing() {
       <div className="terciopelo">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <p className="font-display text-2xl text-tinta">
-          ESTADÍA<span className="text-white">.</span>
+          THE CIRCLE<span className="text-white">.</span>
         </p>
         <div className="hidden items-center gap-8 text-sm text-tinta/75 sm:flex">
           <a href="#modelo" className="transition hover:text-tinta">Modelo</a>
@@ -435,7 +435,7 @@ export default function Landing() {
         </div>
         <footer className="border-t border-tinta/15">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-8 text-xs text-tinta/70">
-            <p className="font-display text-lg text-tinta">ESTADÍA<span className="text-white">.</span></p>
+            <p className="font-display text-lg text-tinta">THE CIRCLE<span className="text-white">.</span></p>
             <p>Antioquia, Colombia · Piloto Oriente Antioqueño · Demo de producto — no es asesoría legal</p>
           </div>
         </footer>

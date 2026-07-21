@@ -122,7 +122,7 @@ export function PanelComisiones({ rol, datos }: { rol: "principal" | "externo"; 
         <FlujoDinero
           precioFinal={2_280_000}
           tarifaNeta={1_960_000}
-          titulo="Tu última liquidación · EST-2026-00341 · mitad 2"
+          titulo="Tu última liquidación · CIR-2026-00341 · mitad 2"
         />
       )}
     </div>

@@ -156,7 +156,7 @@ export function demoChat(): DatosChat {
   return {
     esDemo: true,
     solicitudId: null,
-    contexto: "Reserva EST-2026-00362 · Finca Mirador del Peñol",
+    contexto: "Reserva CIR-2026-00362 · Finca Mirador del Peñol",
     aliasPrincipal: "CONDOR-472",
     aliasExterno: "COLIBRI-345",
     mensajes: [

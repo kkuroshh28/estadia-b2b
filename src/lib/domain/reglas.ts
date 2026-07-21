@@ -13,7 +13,7 @@ export function validarDuracion(desde: string, hasta: string): {
 } {
   const noches = nochesEntre(desde, hasta);
   if (!Number.isFinite(noches) || noches < MIN_NOCHES) {
-    return { valida: false, noches, motivo: "La estadía mínima es 1 noche." };
+    return { valida: false, noches, motivo: "La The Circle mínima es 1 noche." };
   }
   if (noches > MAX_NOCHES) {
     return {

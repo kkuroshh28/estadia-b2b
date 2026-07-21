@@ -41,6 +41,14 @@
   activa del propietario obligatoria (regla #3); turnos de oferta; capacidad.
 - Suite: **91 tests** verdes.
 
+## Novedades 2026-07-21: REBRAND → THE CIRCLE
+- La app se llama **THE CIRCLE** (decisión de Kurosh). Rebrand completo en
+  producto: wordmark, metadata/OG/manifest, íconos nuevos (anillo sobre
+  Tiffany), emails, contratos, checkout y códigos de reserva `CIR-YYYY-NNNNN`
+  (antes EST-). Infra intacta a propósito: repo/Vercel `estadia-b2b`, cookie
+  de sesión y correos del seed — renombrarlos es decisión de infraestructura
+  aparte (dominio/proyecto Vercel los decide Kurosh).
+
 ## Novedades 2026-07-20 (3ª sesión): saldo, chat y registro REALES
 - **Link del saldo (mitad 2)**: `generarLinkSaldo` idempotente (solo
   participantes, reserva ANTICIPO_PAGADO, monto del motor, vence ≤ check-in)

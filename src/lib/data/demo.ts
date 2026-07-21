@@ -190,7 +190,7 @@ export const NEGOCIACION_DEMO: Negociacion = {
 export const RESERVAS: Reserva[] = [
   {
     id: "res-01",
-    codigo: "EST-2026-00341",
+    codigo: "CIR-2026-00341",
     propiedadId: "prop-02",
     aliasPrincipal: "CONDOR-472",
     aliasExterno: "YARUMO-611",
@@ -203,7 +203,7 @@ export const RESERVAS: Reserva[] = [
   },
   {
     id: "res-02",
-    codigo: "EST-2026-00358",
+    codigo: "CIR-2026-00358",
     propiedadId: "prop-03",
     aliasPrincipal: "CEIBA-118",
     aliasExterno: "GUACAMAYA-256",
@@ -216,7 +216,7 @@ export const RESERVAS: Reserva[] = [
   },
   {
     id: "res-03",
-    codigo: "EST-2026-00362",
+    codigo: "CIR-2026-00362",
     propiedadId: "prop-01",
     aliasPrincipal: "CONDOR-472",
     aliasExterno: "COLIBRI-345",
@@ -229,7 +229,7 @@ export const RESERVAS: Reserva[] = [
   },
   {
     id: "res-04",
-    codigo: "EST-2026-00287",
+    codigo: "CIR-2026-00287",
     propiedadId: "prop-04",
     aliasPrincipal: "OCELOTE-903",
     aliasExterno: "YARUMO-611",
@@ -246,7 +246,7 @@ export const LINKS_DE_PAGO: LinkDePago[] = [
   {
     id: "lnk-7f3a",
     reservaId: "res-03",
-    codigoReserva: "EST-2026-00362",
+    codigoReserva: "CIR-2026-00362",
     propiedadNombre: "Finca Mirador del Peñol",
     mitad: 1,
     monto: 2_550_000,
@@ -257,7 +257,7 @@ export const LINKS_DE_PAGO: LinkDePago[] = [
   {
     id: "lnk-2c91",
     reservaId: "res-02",
-    codigoReserva: "EST-2026-00358",
+    codigoReserva: "CIR-2026-00358",
     propiedadNombre: "Casa Campestre Llanogrande",
     mitad: 2,
     monto: 2_025_000,
@@ -268,7 +268,7 @@ export const LINKS_DE_PAGO: LinkDePago[] = [
   {
     id: "lnk-9d04",
     reservaId: "res-01",
-    codigoReserva: "EST-2026-00341",
+    codigoReserva: "CIR-2026-00341",
     propiedadNombre: "Penthouse Provenza 1102",
     mitad: 2,
     monto: 2_280_000,
@@ -279,7 +279,7 @@ export const LINKS_DE_PAGO: LinkDePago[] = [
   {
     id: "lnk-x882",
     reservaId: "res-x",
-    codigoReserva: "EST-2026-00355",
+    codigoReserva: "CIR-2026-00355",
     propiedadNombre: "Finca Mirador del Peñol",
     mitad: 1,
     monto: 2_600_000,
@@ -307,12 +307,12 @@ import type { SplitLiquidado } from "@/lib/domain/paneles";
 export type { SplitLiquidado };
 
 export const SPLITS_LIQUIDADOS: SplitLiquidado[] = [
-  { fecha: "01 jul", codigo: "EST-2026-00341", propiedad: "Penthouse Provenza 1102", mitad: 2, comisionTotal: 320_000, principal: 160_000, externo: 128_000, dispersado: true },
-  { fecha: "28 jun", codigo: "EST-2026-00358", propiedad: "Casa Campestre Llanogrande", mitad: 1, comisionTotal: 300_000, principal: 150_000, externo: 120_000, dispersado: true },
-  { fecha: "24 jun", codigo: "EST-2026-00341", propiedad: "Penthouse Provenza 1102", mitad: 1, comisionTotal: 320_000, principal: 160_000, externo: 128_000, dispersado: true },
-  { fecha: "20 jun", codigo: "EST-2026-00287", propiedad: "Glamping Bosque Nublado", mitad: 2, comisionTotal: 120_000, principal: 60_000, externo: 48_000, dispersado: true },
-  { fecha: "18 jun", codigo: "EST-2026-00287", propiedad: "Glamping Bosque Nublado", mitad: 1, comisionTotal: 120_000, principal: 60_000, externo: 48_000, dispersado: true },
-  { fecha: "12 jun", codigo: "EST-2026-00274", propiedad: "Finca Mirador del Peñol", mitad: 2, comisionTotal: 410_000, principal: 205_000, externo: 164_000, dispersado: true },
+  { fecha: "01 jul", codigo: "CIR-2026-00341", propiedad: "Penthouse Provenza 1102", mitad: 2, comisionTotal: 320_000, principal: 160_000, externo: 128_000, dispersado: true },
+  { fecha: "28 jun", codigo: "CIR-2026-00358", propiedad: "Casa Campestre Llanogrande", mitad: 1, comisionTotal: 300_000, principal: 150_000, externo: 120_000, dispersado: true },
+  { fecha: "24 jun", codigo: "CIR-2026-00341", propiedad: "Penthouse Provenza 1102", mitad: 1, comisionTotal: 320_000, principal: 160_000, externo: 128_000, dispersado: true },
+  { fecha: "20 jun", codigo: "CIR-2026-00287", propiedad: "Glamping Bosque Nublado", mitad: 2, comisionTotal: 120_000, principal: 60_000, externo: 48_000, dispersado: true },
+  { fecha: "18 jun", codigo: "CIR-2026-00287", propiedad: "Glamping Bosque Nublado", mitad: 1, comisionTotal: 120_000, principal: 60_000, externo: 48_000, dispersado: true },
+  { fecha: "12 jun", codigo: "CIR-2026-00274", propiedad: "Finca Mirador del Peñol", mitad: 2, comisionTotal: 410_000, principal: 205_000, externo: 164_000, dispersado: true },
 ];
 
 export const COMISIONES_POR_MES = [

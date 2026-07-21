@@ -43,7 +43,7 @@ export default function Login() {
   return (
     <main className="atmosfera flex min-h-screen flex-col items-center justify-center px-6">
       <Link href="/" className="font-display text-2xl text-tinta">
-        ESTADÍA<span className="text-tiffany">.</span>
+        THE CIRCLE<span className="text-tiffany">.</span>
       </Link>
       <motion.div
         initial={{ opacity: 0, y: 16 }}

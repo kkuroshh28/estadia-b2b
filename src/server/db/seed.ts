@@ -150,7 +150,7 @@ async function main() {
     venceEn: sql`now() + interval '1 day'` as unknown as Date,
   }).returning({ id: solicitudes.id });
   const [res] = await db.insert(reservas).values({
-    codigo: "EST-2026-00401", solicitudId: sol.id, propiedadId: propIds[0],
+    codigo: "CIR-2026-00401", solicitudId: sol.id, propiedadId: propIds[0],
     principalId: principales[0], externoId: externos[0],
     desde: "2026-08-14", hasta: "2026-08-17", estado: "LINK_1_ENVIADO",
     precioFinalCentavos: 510_000_000, tarifaNetaCentavos: 435_000_000,
@@ -163,7 +163,7 @@ async function main() {
     pasarelaRef: "seed-pago-1", linkId: lnk.id, montoCentavos: 255_000_000, estado: "aprobada",
   });
   if (r.resultado === "procesado") await transicionPostPago(db, res.id, 1);
-  console.log(`reserva semilla EST-2026-00401 → ${r.resultado} (splits reales en DB)`);
+  console.log(`reserva semilla CIR-2026-00401 → ${r.resultado} (splits reales en DB)`);
 
   // Una negociación EN CURSO con dos ofertas
   const [sol2] = await db.insert(solicitudes).values({
@@ -173,7 +173,7 @@ async function main() {
     venceEn: sql`now() + interval '1 day'` as unknown as Date,
   }).returning({ id: solicitudes.id });
   await db.insert(reservas).values({
-    codigo: "EST-2026-00402", solicitudId: sol2.id, propiedadId: propIds[1],
+    codigo: "CIR-2026-00402", solicitudId: sol2.id, propiedadId: propIds[1],
     principalId: principales[0], externoId: externos[0],
     desde: "2026-08-21", hasta: "2026-08-23", estado: "NEGOCIACION",
     precioFinalCentavos: 0, tarifaNetaCentavos: 196_000_000,

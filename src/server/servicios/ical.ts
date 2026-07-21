@@ -43,7 +43,7 @@ export async function exportarIcs(db: Db, propiedadId: string): Promise<string> 
         `UID:estadia-${propiedadId}-${ymd}@estadia.app`,
         `DTSTART;VALUE=DATE:${ymd}`,
         `DTEND;VALUE=DATE:${siguiente}`,
-        `SUMMARY:${d.estado === "reservado_app" ? "Reservado (ESTADÍA)" : "No disponible"}`,
+        `SUMMARY:${d.estado === "reservado_app" ? "Reservado (THE CIRCLE)" : "No disponible"}`,
         "END:VEVENT",
       ].join("\r\n");
     })
@@ -53,7 +53,7 @@ export async function exportarIcs(db: Db, propiedadId: string): Promise<string> 
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
     "PRODID:-//ESTADIA//Calendario//ES",
-    `X-WR-CALNAME:${prop.nombre} (ESTADÍA)`,
+    `X-WR-CALNAME:${prop.nombre} (THE CIRCLE)`,
     eventos,
     "END:VCALENDAR",
   ].join("\r\n");

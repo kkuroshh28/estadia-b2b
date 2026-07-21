@@ -93,7 +93,7 @@ export async function crearSolicitud(
   return { solicitudId: fila.id, venceEn: fila.venceEn };
 }
 
-/** Código legible y único de reserva: EST-YYYY-NNNNN (secuencia por año). */
+/** Código legible y único de reserva: CIR-YYYY-NNNNN (secuencia por año). */
 async function generarCodigoReserva(db: Db): Promise<string> {
   const ano = new Date().getFullYear();
   const [{ n }] = (await db.execute(

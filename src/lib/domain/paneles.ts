@@ -123,7 +123,7 @@ export interface MensajeChatPanel {
 export interface DatosChat {
   esDemo: boolean;
   solicitudId: string | null;
-  contexto: string; // "EST-2026-00403 · Finca ..." o el texto demo
+  contexto: string; // "CIR-2026-00403 · Finca ..." o el texto demo
   aliasPrincipal: string;
   aliasExterno: string;
   mensajes: MensajeChatPanel[];

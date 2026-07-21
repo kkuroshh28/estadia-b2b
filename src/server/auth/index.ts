@@ -38,7 +38,7 @@ export async function solicitarOtp(db: Db, email: string): Promise<void> {
   await obtenerEmail().enviar(
     db,
     normalizado,
-    "Tu código de acceso a ESTADÍA",
+    "Tu código de acceso a THE CIRCLE",
     `Tu código es ${codigo}. Vence en ${OTP_VIGENCIA_MIN} minutos. Nunca lo compartas.`,
   );
 }

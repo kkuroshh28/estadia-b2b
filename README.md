@@ -1,4 +1,4 @@
-# ESTADÍA — Marketplace B2B de Rentas Cortas · Antioquia
+# THE CIRCLE — Marketplace B2B de Rentas Cortas · Antioquia
 
 Plataforma **100% B2B** que conecta propietarios de inmuebles de renta corta con su
 red de comisionistas. El cliente final (huésped) **nunca usa la app**: solo recibe

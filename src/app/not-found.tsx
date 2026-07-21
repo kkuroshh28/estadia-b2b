@@ -4,7 +4,7 @@ export default function NoEncontrada() {
   return (
     <main className="atmosfera flex min-h-screen flex-col items-center justify-center px-6 text-center">
       <p className="font-display text-2xl text-tinta">
-        ESTADÍA<span className="text-tiffany">.</span>
+        THE CIRCLE<span className="text-tiffany">.</span>
       </p>
       <p className="cifra mt-8 text-6xl font-bold text-borde-claro">404</p>
       <h1 className="mt-3 font-display text-3xl text-tinta">Esta página no existe</h1>

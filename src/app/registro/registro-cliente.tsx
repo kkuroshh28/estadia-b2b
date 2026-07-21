@@ -146,7 +146,7 @@ function Registro({ real }: { real: boolean }) {
   return (
     <main className="atmosfera flex min-h-screen flex-col items-center px-6 py-10">
       <Link href="/" className="font-display text-2xl text-tinta">
-        ESTADÍA<span className="text-tiffany">.</span>
+        THE CIRCLE<span className="text-tiffany">.</span>
       </Link>
 
       <div className="mt-8 w-full max-w-lg">
@@ -258,7 +258,7 @@ function Registro({ real }: { real: boolean }) {
             {paso === 4 && (
               <motion.div key="alias" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, x: -24 }} className="text-center">
                 <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-bruma-osc">
-                  Desde hoy, en Estadía nadie sabrá quién eres
+                  Desde hoy, en The Circle nadie sabrá quién eres
                 </p>
                 <h1 className="mt-3 font-display text-2xl text-tinta">Tu identidad en el gremio es</h1>
                 <motion.div

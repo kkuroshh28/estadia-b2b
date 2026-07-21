@@ -71,7 +71,7 @@ export function AppShell({
       <aside className="hidden w-64 shrink-0 flex-col border-r border-borde bg-panel lg:flex">
         <Link href="/" className="border-b border-borde px-6 py-5">
           <p className="font-display text-xl text-tinta">
-            ESTADÍA<span className="text-tiffany">.</span>
+            THE CIRCLE<span className="text-tiffany">.</span>
           </p>
           <p className="mt-0.5 text-[10px] uppercase tracking-[0.2em] text-bruma-osc">
             Red B2B · Antioquia
@@ -123,7 +123,7 @@ export function AppShell({
         <header className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-borde bg-fondo/85 px-5 py-3 backdrop-blur">
           <div className="flex items-center gap-3">
             <Link href="/" className="font-display text-lg text-tinta lg:hidden">
-              ESTADÍA<span className="text-tiffany">.</span>
+              THE CIRCLE<span className="text-tiffany">.</span>
             </Link>
             <span className="hidden text-sm text-bruma lg:inline">
               {seccionActiva ? `Vista de ${seccionActiva.rol}` : "Selecciona un rol"}

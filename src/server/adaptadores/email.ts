@@ -26,7 +26,7 @@ const resend: AdaptadorEmail = {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: process.env.EMAIL_REMITENTE ?? "ESTADÍA <notificaciones@estadia.app>",
+        from: process.env.EMAIL_REMITENTE ?? "THE CIRCLE <notificaciones@estadia.app>",
         to: [destinatario],
         subject: asunto,
         text: cuerpo,

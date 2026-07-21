@@ -1,5 +1,5 @@
 CONTRATO DE HOSPEDAJE — VIVIENDA TURÍSTICA
-(Estadías inferiores a 30 noches · Ley 300 de 1996 y normas de turismo)
+(The Circles inferiores a 30 noches · Ley 300 de 1996 y normas de turismo)
 
 *** BORRADOR PARA REVISIÓN DEL ABOGADO — NO USAR EN PRODUCCIÓN SIN VALIDACIÓN LEGAL ***
 
@@ -16,7 +16,7 @@ EL HUÉSPED: {{nombre_huesped}}, identificado como aparece al pie de su firma.
    fines exclusivamente turísticos, del {{fecha_entrada}} al {{fecha_salida}}
    ({{noches}} noches), para máximo {{huespedes}} personas.
 2. PRECIO. El valor total del hospedaje es {{precio_total}} COP, pagadero en dos
-   cuotas del 50% mediante los links de pago de la plataforma ESTADÍA. No se
+   cuotas del 50% mediante los links de pago de la plataforma THE CIRCLE. No se
    acepta efectivo. La entrega del inmueble está condicionada a la confirmación
    del pago completo.
 3. REGLAS DEL INMUEBLE. {{reglas}}

@@ -21,25 +21,25 @@ const jetbrains = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://estadia-b2b.vercel.app"),
   title: {
-    default: "ESTADÍA — La red B2B de rentas cortas de Antioquia",
-    template: "%s · ESTADÍA",
+    default: "THE CIRCLE — La red B2B de rentas cortas de Antioquia",
+    template: "%s · THE CIRCLE",
   },
   description:
     "Plataforma B2B que conecta propietarios de inmuebles de renta corta con su red de comisionistas. El calendario solo se bloquea con dinero. El primero que paga, gana.",
   openGraph: {
-    title: "ESTADÍA — La red B2B de rentas cortas de Antioquia",
+    title: "THE CIRCLE — La red B2B de rentas cortas de Antioquia",
     description:
       "La app no te quita tu cliente: te da inventario. Split automático 50/40/10, calendario que nunca miente y pago garantizado por link.",
     url: "https://estadia-b2b.vercel.app",
-    siteName: "ESTADÍA",
+    siteName: "THE CIRCLE",
     locale: "es_CO",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
   },
-  applicationName: "ESTADÍA",
-  appleWebApp: { capable: true, title: "ESTADÍA", statusBarStyle: "black-translucent" },
+  applicationName: "THE CIRCLE",
+  appleWebApp: { capable: true, title: "THE CIRCLE", statusBarStyle: "black-translucent" },
 };
 
 export const viewport = {
