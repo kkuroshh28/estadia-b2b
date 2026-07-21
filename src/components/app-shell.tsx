@@ -9,6 +9,13 @@ interface AliasShell {
   externo: string | null;
 }
 
+const ROL_DE_SECCION: Record<string, string | null> = {
+  Propietario: "propietario",
+  "C. Principal": "principal",
+  "C. Externo": "externo",
+  "Común": null, // visible para todos
+};
+
 const SECCIONES = (alias: AliasShell) => [
   {
     rol: "Propietario",
@@ -55,12 +62,19 @@ const NAV_MOVIL = [
 export function AppShell({
   children,
   alias = { principal: null, externo: null },
+  roles = null,
 }: {
   children: React.ReactNode;
   alias?: AliasShell;
+  /** Con sesión real: solo se muestran las secciones de estos roles. */
+  roles?: string[] | null;
 }) {
   const pathname = usePathname();
-  const secciones = SECCIONES(alias);
+  const secciones = SECCIONES(alias).filter((s) => {
+    if (!roles) return true; // piloto sin auth: se navegan los tres
+    const rol = ROL_DE_SECCION[s.rol];
+    return rol === null || roles.includes(rol);
+  });
   const seccionActiva = secciones.find((s) =>
     s.items.some((i) => pathname.startsWith(i.href)),
   );

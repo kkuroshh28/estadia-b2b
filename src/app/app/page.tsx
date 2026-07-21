@@ -1,5 +1,10 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { Card } from "@/components/ui";
+import { obtenerDb } from "@/server/db";
+import { authExigida, COOKIE_SESION, validarSesion } from "@/server/auth";
+import { hayDb } from "@/server/datos/fuente";
 
 const ROLES = [
   {
@@ -22,7 +27,16 @@ const ROLES = [
   },
 ];
 
-export default function HubRoles() {
+export default async function HubRoles() {
+  // Con auth exigida cada usuario va directo a SU panel.
+  if (hayDb() && authExigida()) {
+    const jar = await cookies();
+    const sesion = await validarSesion(obtenerDb(), jar.get(COOKIE_SESION)?.value);
+    if (!sesion) redirect("/login");
+    if (sesion.roles.includes("propietario")) redirect("/app/propietario");
+    if (sesion.roles.includes("principal")) redirect("/app/principal");
+    if (sesion.roles.includes("externo")) redirect("/app/externo");
+  }
   return (
     <div className="mx-auto max-w-4xl py-10">
       <h1 className="font-display text-4xl text-tinta">¿Desde qué rol quieres ver la plataforma?</h1>

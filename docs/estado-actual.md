@@ -41,6 +41,25 @@
   activa del propietario obligatoria (regla #3); turnos de oferta; capacidad.
 - Suite: **91 tests** verdes.
 
+## Novedades 2026-07-21 (3ª): vigencias duras, cierre del ciclo, admin y auth
+- **Vigencias DURAS**: un link vencido JAMÁS se cobra (el webhook lo marca
+  expirado sin mover un peso) y una oferta vencida no se acepta. Cron
+  `/api/cron/vigencias` cada 10 min: expira solicitudes/ofertas/links, la
+  reserva del link 1 vencido EXPIRA auditada, el saldo vencido se REGENERA
+  (misma fila) y las reservas con salida cumplida se COMPLETAN solas. 4 tests.
+- **Cierre del ciclo en el panel**: botones del propietario en el semáforo
+  (PAGO_COMPLETO → "Confirmar check-in" → "Marcar completada"), API con
+  pertenencia verificada, máquina de estados intacta. Verificado: CIR-2026-
+  00401 → COMPLETADA con auditoría de actor humano.
+- **Admin operativo sin SQL**: la consola /admin/verificaciones otorga el
+  sello Verificada (server action). FIX: en dev/preview sin MODO_AUTH las
+  acciones usan el admin de desarrollo (usuario real `admin@thecircle.dev`,
+  FK de auditoría intacta); con auth exigida, sesión admin + TOTP como siempre.
+- **MODO_AUTH=exigida verificado e2e en navegador**: /app sin sesión → login;
+  OTP real (bandeja dev) → sesión httpOnly → aterriza en SU panel; el shell
+  muestra SOLO las secciones de su rol; /app/principal ajeno rebota a su panel.
+- Suite: **95 tests** verdes.
+
 ## Novedades 2026-07-21 (2ª): SIN DATA DEMO — lista para data real
 - **Toda la data ficticia fue eliminada** (fincas, reservas, CONDOR-472, etc.):
   sin DB cada panel muestra su estado vacío honesto; con DB, solo data real.

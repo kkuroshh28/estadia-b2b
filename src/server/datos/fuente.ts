@@ -93,6 +93,40 @@ export async function actorDePeticion(db: Db, rol: Seccion): Promise<UsuarioPane
   return usuarioDelPanel(db, rol, null);
 }
 
+/**
+ * Admin de DESARROLLO: solo cuando MODO_AUTH no está exigido. Se materializa
+ * como usuario real (la auditoría admin tiene FK a usuarios) con sesión
+ * "elevada" sintética. En producción con auth, esto jamás se usa.
+ */
+export async function adminDev(db: Db): Promise<UsuarioSesion | null> {
+  if (authExigida()) return null;
+  const { usuarios } = await import("../db/schema");
+  const email = "admin@thecircle.dev";
+  const [existente] = await db
+    .select({ id: usuarios.id })
+    .from(usuarios)
+    .where(sql`${usuarios.email} = ${email}`);
+  let id = existente?.id;
+  if (!id) {
+    const [nuevo] = await db
+      .insert(usuarios)
+      .values({
+        nombreReal: "Admin Dev",
+        cedulaHash: "admin-dev",
+        cedulaCifrada: "admin-dev",
+        email,
+        telefonoCifrado: "admin-dev",
+        roles: ["admin"],
+        estado: "activo",
+      })
+      .onConflictDoNothing()
+      .returning({ id: usuarios.id });
+    id = nuevo?.id;
+  }
+  if (!id) return null;
+  return { id, email, roles: ["admin"], estado: "activo", adminElevada: true } as UsuarioSesion;
+}
+
 /** matiz determinista 0–359 desde un uuid (carátulas generadas, sin fotos). */
 export function matizDeId(id: string): number {
   let h = 0;

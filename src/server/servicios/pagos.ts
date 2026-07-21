@@ -93,6 +93,11 @@ async function procesarUnaVez(db: Db, evento: EventoPago): Promise<ResultadoPago
       .where(eq(linksDePago.id, evento.linkId))
       .for("update");
     if (!link || link.estado !== "activo") return { resultado: "link_no_activo" };
+    // Un link vencido JAMÁS se cobra, aunque siga marcado 'activo' en DB.
+    if (link.venceEn.getTime() < Date.now()) {
+      await tx.update(linksDePago).set({ estado: "expirado" }).where(eq(linksDePago.id, link.id));
+      return { resultado: "link_no_activo" };
+    }
     if (link.montoCentavos !== evento.montoCentavos) {
       throw new Error(
         `Monto del webhook (${evento.montoCentavos}) no coincide con el link (${link.montoCentavos}) — se detiene el procesamiento`,
@@ -267,17 +272,30 @@ export async function generarLinkSaldo(
       throw new SaldoError("No eres parte de esta reserva.");
     }
 
-    // Idempotencia: si el link 2 ya existe, se devuelve (índice único reserva+mitad).
+    // Idempotencia: si el link 2 existe y sigue vivo, se devuelve; si EXPIRÓ,
+    // se regenera sobre la misma fila (índice único reserva+mitad).
     const [existente] = await tx
       .select()
       .from(linksDePago)
-      .where(and(eq(linksDePago.reservaId, reservaId), eq(linksDePago.mitad, 2)));
-    if (existente) {
+      .where(and(eq(linksDePago.reservaId, reservaId), eq(linksDePago.mitad, 2)))
+      .for("update");
+    if (existente && existente.estado !== "expirado") {
       return { linkId: existente.id, montoCentavos: existente.montoCentavos, yaExistia: true };
     }
 
-    if (reserva.estado !== "ANTICIPO_PAGADO") {
+    if (!existente && reserva.estado !== "ANTICIPO_PAGADO") {
       throw new SaldoError("El saldo solo se genera con el anticipo pagado.");
+    }
+    if (existente) {
+      // Regeneración tras expirar: nueva vigencia, misma mitad y monto.
+      await tx
+        .update(linksDePago)
+        .set({
+          estado: "activo",
+          venceEn: sql`LEAST(now() + interval '24 hours', ${reserva.desde}::timestamp)`,
+        })
+        .where(eq(linksDePago.id, existente.id));
+      return { linkId: existente.id, montoCentavos: existente.montoCentavos, yaExistia: false };
     }
 
     const liq = liquidarReserva(
@@ -299,7 +317,13 @@ export async function generarLinkSaldo(
     return { linkId: link.id, montoCentavos: link.montoCentavos, yaExistia: false };
   }).then(async (r) => {
     if (!r.yaExistia) {
-      await transicionarReserva(db, reservaId, "SALDO_LINK_ENVIADO", actorId, { mitad: 2 });
+      const [actual] = await db
+        .select({ estado: reservas.estado })
+        .from(reservas)
+        .where(eq(reservas.id, reservaId));
+      if (actual?.estado === "ANTICIPO_PAGADO") {
+        await transicionarReserva(db, reservaId, "SALDO_LINK_ENVIADO", actorId, { mitad: 2 });
+      }
     }
     return r;
   });

@@ -70,6 +70,13 @@ export async function aceptarOfertaYGenerarLink(
   ofertaId: string,
   aceptanteId: string,
 ): Promise<{ linkId: string; montoCentavos: number }> {
+  // Vigencia ANTES de la transacción: si venció, la marca debe sobrevivir
+  // (dentro de la tx el throw la revertiría).
+  const [previa] = await db.select().from(ofertas).where(eq(ofertas.id, ofertaId));
+  if (previa && previa.estado === "activa" && previa.venceEn.getTime() < Date.now()) {
+    await db.update(ofertas).set({ estado: "expirada" }).where(eq(ofertas.id, ofertaId));
+    throw new OfertaNoAceptableError("La oferta venció: pide una nueva propuesta.");
+  }
   return await db.transaction(async (tx) => {
     const [oferta] = await tx
       .select()

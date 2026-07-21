@@ -1,5 +1,6 @@
 {
   "crons": [
-    { "path": "/api/cron/ical", "schedule": "*/20 * * * *" }
+    { "path": "/api/cron/ical", "schedule": "*/20 * * * *" },
+    { "path": "/api/cron/vigencias", "schedule": "*/10 * * * *" }
   ]
 }

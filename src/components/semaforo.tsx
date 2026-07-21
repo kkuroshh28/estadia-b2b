@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import type { Reserva } from "@/lib/domain/tipos";
 import { entregaAutorizada, progresoReserva } from "@/lib/domain/reserva";
@@ -9,9 +11,48 @@ import { EstadoBadge, Money } from "./ui";
  * Semáforo de pagos (§5): la pantalla en tiempo real que autoriza —o no—
  * la entrega de llaves/códigos. Sin "Pago completo ✓" no hay entrega.
  */
-export function Semaforo({ reserva, propiedadNombre }: { reserva: Reserva; propiedadNombre: string }) {
+export function Semaforo({
+  reserva,
+  propiedadNombre,
+  accionesPropietario = false,
+}: {
+  reserva: Reserva;
+  propiedadNombre: string;
+  /** true en el panel del propietario: habilita check-in/completada reales. */
+  accionesPropietario?: boolean;
+}) {
+  const router = useRouter();
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const verde = entregaAutorizada(reserva.estado);
   const progreso = progresoReserva(reserva.estado);
+
+  const accion =
+    reserva.estado === "PAGO_COMPLETO"
+      ? { hacia: "CHECK_IN" as const, label: "Confirmar check-in ✓" }
+      : reserva.estado === "CHECK_IN"
+        ? { hacia: "COMPLETADA" as const, label: "Marcar completada" }
+        : null;
+
+  const transicionar = async () => {
+    if (!accion) return;
+    setCargando(true);
+    setError(null);
+    try {
+      const r = await fetch("/api/reservas/transicion", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reservaId: reserva.id, hacia: accion.hacia }),
+      });
+      const json = await r.json();
+      if (!r.ok) throw new Error(json.error ?? "No se pudo actualizar");
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo actualizar");
+    } finally {
+      setCargando(false);
+    }
+  };
   return (
     <div className="rounded-2xl border border-borde bg-tarjeta p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -58,6 +99,19 @@ export function Semaforo({ reserva, propiedadNombre }: { reserva: Reserva; propi
           {verde ? "Entrega autorizada" : "Entrega NO autorizada"}
         </div>
       </div>
+
+      {accionesPropietario && accion && (
+        <div className="mt-4 flex items-center justify-end gap-3 border-t border-borde pt-3">
+          {error && <p className="text-[11px] text-rojo">{error}</p>}
+          <button
+            onClick={transicionar}
+            disabled={cargando}
+            className="rounded-full bg-esmeralda px-5 py-2 text-xs font-bold text-white transition hover:brightness-110 disabled:opacity-60"
+          >
+            {cargando ? "Guardando…" : accion.label}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
