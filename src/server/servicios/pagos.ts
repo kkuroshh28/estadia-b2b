@@ -242,3 +242,65 @@ export async function transicionPostPago(
     { mitad },
   );
 }
+
+/**
+ * Genera (idempotente) el link del SALDO — mitad 2. Solo sobre una reserva
+ * ANTICIPO_PAGADO y solo para sus participantes. El monto sale del motor
+ * (liquidarReserva): imposible digitarlo. Vence en 24 h o al llegar el
+ * check-in, lo que ocurra primero.
+ */
+export class SaldoError extends Error {}
+
+export async function generarLinkSaldo(
+  db: Db,
+  reservaId: string,
+  actorId: string,
+): Promise<{ linkId: string; montoCentavos: number; yaExistia: boolean }> {
+  return await db.transaction(async (tx) => {
+    const [reserva] = await tx
+      .select()
+      .from(reservas)
+      .where(eq(reservas.id, reservaId))
+      .for("update");
+    if (!reserva) throw new SaldoError("Reserva no encontrada.");
+    if (reserva.principalId !== actorId && reserva.externoId !== actorId) {
+      throw new SaldoError("No eres parte de esta reserva.");
+    }
+
+    // Idempotencia: si el link 2 ya existe, se devuelve (índice único reserva+mitad).
+    const [existente] = await tx
+      .select()
+      .from(linksDePago)
+      .where(and(eq(linksDePago.reservaId, reservaId), eq(linksDePago.mitad, 2)));
+    if (existente) {
+      return { linkId: existente.id, montoCentavos: existente.montoCentavos, yaExistia: true };
+    }
+
+    if (reserva.estado !== "ANTICIPO_PAGADO") {
+      throw new SaldoError("El saldo solo se genera con el anticipo pagado.");
+    }
+
+    const liq = liquidarReserva(
+      centavos(reserva.precioFinalCentavos),
+      centavos(reserva.tarifaNetaCentavos),
+    );
+    const [link] = await tx
+      .insert(linksDePago)
+      .values({
+        reservaId,
+        mitad: 2,
+        montoCentavos: liq.mitades[1].montoCliente,
+        url: `/pago/${crypto.randomUUID()}`,
+        // 24 h de vigencia, pero nunca más allá de la medianoche del check-in.
+        venceEn: sql`LEAST(now() + interval '24 hours', ${reserva.desde}::timestamp)` as unknown as Date,
+      })
+      .returning({ id: linksDePago.id, montoCentavos: linksDePago.montoCentavos });
+
+    return { linkId: link.id, montoCentavos: link.montoCentavos, yaExistia: false };
+  }).then(async (r) => {
+    if (!r.yaExistia) {
+      await transicionarReserva(db, reservaId, "SALDO_LINK_ENVIADO", actorId, { mitad: 2 });
+    }
+    return r;
+  });
+}

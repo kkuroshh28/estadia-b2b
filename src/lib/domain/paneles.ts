@@ -54,10 +54,19 @@ export interface DatosBusquedaExterno {
   propiedades: Propiedad[];
 }
 
+export interface SaldoPendiente {
+  reservaId: string;
+  codigo: string;
+  propiedadNombre: string;
+  montoPesos: number; // mitad 2 exacta según el motor
+}
+
 export interface DatosLinksExterno {
   esDemo: boolean;
   aliasYo: string | null;
   links: LinkDePago[];
+  /** Reservas ANTICIPO_PAGADO sin link de saldo aún. */
+  saldosPendientes: SaldoPendiente[];
   /** % de links pagados (0–1) — parte de la reputación. null = sin historial. */
   tasaPago: number | null;
   comisionesMes: number;
@@ -101,6 +110,24 @@ export interface DatosCalendario {
   propiedades: Propiedad[];
   /** Estado por propiedad y día del mes (solo días NO disponibles). */
   estados: Record<string, Partial<Record<number, EstadoDia>>>;
+}
+
+export interface MensajeChatPanel {
+  id: string;
+  emisorRol: "principal" | "externo";
+  texto: string;
+  bloqueado: boolean;
+  motivos: string[];
+}
+
+export interface DatosChat {
+  esDemo: boolean;
+  solicitudId: string | null;
+  contexto: string; // "EST-2026-00403 · Finca ..." o el texto demo
+  aliasPrincipal: string;
+  aliasExterno: string;
+  mensajes: MensajeChatPanel[];
+  strikes: { principal: number; externo: number };
 }
 
 export interface DatosFicha {

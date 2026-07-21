@@ -12,6 +12,7 @@ import { infoMes } from "@/lib/domain/paneles";
 import type {
   DatosBusquedaExterno,
   DatosCalendario,
+  DatosChat,
   DatosComisiones,
   DatosFicha,
   DatosLinksExterno,
@@ -87,6 +88,7 @@ export function demoLinksExterno(): DatosLinksExterno {
     esDemo: true,
     aliasYo: "GUACAMAYA-256",
     links: LINKS_DE_PAGO,
+    saldosPendientes: [],
     tasaPago: 0.92,
     comisionesMes: 1_872_000,
   };
@@ -147,6 +149,22 @@ export function demoCalendario(): DatosCalendario {
     mes: { iso: "2026-07", ...infoMes("2026-07") },
     propiedades: PROPIEDADES,
     estados,
+  };
+}
+
+export function demoChat(): DatosChat {
+  return {
+    esDemo: true,
+    solicitudId: null,
+    contexto: "Reserva EST-2026-00362 · Finca Mirador del Peñol",
+    aliasPrincipal: "CONDOR-472",
+    aliasExterno: "COLIBRI-345",
+    mensajes: [
+      { id: "d1", emisorRol: "externo", texto: "Buenas. Mi cliente llega el 17 a las 3 pm, ¿la entrega es en portería?", bloqueado: false, motivos: [] },
+      { id: "d2", emisorRol: "principal", texto: "Sí, en portería con el código QR que genera la app cuando el semáforo esté en verde.", bloqueado: false, motivos: [] },
+      { id: "d3", emisorRol: "externo", texto: "Perfecto. Ya le reenvié el link del saldo, apenas pague coordinamos.", bloqueado: false, motivos: [] },
+    ],
+    strikes: { principal: 0, externo: 0 },
   };
 }
 

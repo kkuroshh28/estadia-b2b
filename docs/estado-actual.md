@@ -41,6 +41,23 @@
   activa del propietario obligatoria (regla #3); turnos de oferta; capacidad.
 - Suite: **91 tests** verdes.
 
+## Novedades 2026-07-20 (3ª sesión): saldo, chat y registro REALES
+- **Link del saldo (mitad 2)**: `generarLinkSaldo` idempotente (solo
+  participantes, reserva ANTICIPO_PAGADO, monto del motor, vence ≤ check-in)
+  + `/api/reservas/saldo` + tarjeta "Generar link del saldo" en Links del
+  externo. Verificado en navegador: EST-2026-00401 pagó su saldo por el
+  checkout → **PAGO_COMPLETO → semáforo VERDE → "Entrega autorizada"**.
+- **Chat REAL persistente**: `/api/chat/mensajes` pasa TODO mensaje por
+  `procesarMensaje` (anti-fuga server-side) — un bloqueado se persiste como
+  evidencia (flags con motivos), suma strike real y al 3º banea la identidad;
+  jamás se entrega a la otra parte (solo su emisor lo ve tachado). Hilo por
+  solicitud (misma conversación del módulo de negociación).
+- **Registro REAL**: el wizard crea el usuario por `/api/registro` (cédula
+  CIFRADA, alias único de la DB) y `/api/kyc/simular` lo aprueba por el MISMO
+  callback firmado del proveedor (lista negra incluida). La revelación del
+  alias muestra el REAL. Verificado: usuaria activa con alias ROBLE-472.
+- Suite: **91 tests** verdes; build limpio.
+
 
 Regla: nada se marca hecho sin evidencia (test, archivo:línea o demostración
 reproducible). Suite de referencia: `npm test` → **80 tests verdes** (unitarios +

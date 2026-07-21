@@ -4,6 +4,8 @@ import {
   alias as tablaAlias,
   calendarioDias,
   linksDePago,
+  mensajesChat,
+  intentosFuga,
   negociaciones,
   ofertas,
   propiedades,
@@ -20,6 +22,7 @@ import { infoMes } from "@/lib/domain/paneles";
 import type {
   DatosBusquedaExterno,
   DatosCalendario,
+  DatosChat,
   DatosComisiones,
   DatosFicha,
   DatosLinksExterno,
@@ -35,6 +38,7 @@ import type { EstadoDia, EstadoReserva, Propiedad } from "@/lib/domain/tipos";
 import {
   demoBusquedaExterno,
   demoCalendario,
+  demoChat,
   demoComisiones,
   demoFicha,
   demoLinksExterno,
@@ -440,9 +444,30 @@ export function datosLinksExterno(): Promise<DatosLinksExterno> {
       .filter((c) => mesCortoCO(c.fecha) === mesActual)
       .reduce((a, c) => a + pesos(c.monto), 0);
 
+    // Reservas con anticipo pagado que aún no tienen link de saldo.
+    const pendientes = await db
+      .select({
+        id: reservas.id,
+        codigo: reservas.codigo,
+        propiedadId: reservas.propiedadId,
+        precio: reservas.precioFinalCentavos,
+      })
+      .from(reservas)
+      .where(and(eq(reservas.externoId, u.id), sql`${reservas.estado} = 'ANTICIPO_PAGADO'`));
+    const conLink2 = new Set(filas.filter((f) => f.mitad === 2).map((f) => f.reservaId));
+    const saldosPendientes = pendientes
+      .filter((p) => !conLink2.has(p.id))
+      .map((p) => ({
+        reservaId: p.id,
+        codigo: p.codigo,
+        propiedadNombre: nombreDe.get(p.propiedadId) ?? "—",
+        montoPesos: pesos(p.precio - Math.floor(p.precio / 2)), // mitad 2 = resto exacto
+      }));
+
     return {
       esDemo: false,
       aliasYo: u.alias,
+      saldosPendientes,
       links: filas.map((f) => ({
         id: f.id,
         reservaId: f.reservaId,
@@ -636,6 +661,78 @@ export function datosNegociacion(): Promise<DatosNegociacion> {
         })),
       },
       perspectivaFija: null,
+    };
+  });
+}
+
+// ─── Chat (conversación de la negociación/reserva en curso) ─────────────────
+
+export function datosChat(): Promise<DatosChat> {
+  return resolverPanel("principal", demoChat, async (db, u) => {
+    // Misma conversación que el módulo de negociación: la solicitud aceptada
+    // más reciente donde participa el usuario del panel.
+    const [ctx] = await db
+      .select({
+        solicitudId: solicitudes.id,
+        propiedadId: solicitudes.propiedadId,
+        externoId: solicitudes.externoId,
+        principalId: solicitudes.principalAceptanteId,
+      })
+      .from(solicitudes)
+      .where(
+        and(
+          sql`${solicitudes.estado} = 'aceptada'`,
+          sql`(${solicitudes.principalAceptanteId} = ${u.id} OR ${solicitudes.externoId} = ${u.id})`,
+        ),
+      )
+      .orderBy(desc(solicitudes.creadaEn))
+      .limit(1);
+    if (!ctx || !ctx.principalId) {
+      return { ...demoChat(), esDemo: false, solicitudId: null, mensajes: [], contexto: "Sin conversaciones activas" };
+    }
+
+    const [prop] = await db
+      .select({ nombre: propiedades.nombre })
+      .from(propiedades)
+      .where(eq(propiedades.id, ctx.propiedadId));
+    const [res] = await db
+      .select({ codigo: reservas.codigo })
+      .from(reservas)
+      .where(eq(reservas.solicitudId, ctx.solicitudId));
+    const alias = await aliasDe(db, [ctx.principalId, ctx.externoId]);
+
+    const filas = await db
+      .select()
+      .from(mensajesChat)
+      .where(eq(mensajesChat.solicitudId, ctx.solicitudId))
+      .orderBy(asc(mensajesChat.enviadoEn))
+      .limit(200);
+
+    const strikesDe = async (id: string) => {
+      const [{ n }] = await db
+        .select({ n: sql<number>`count(*)::int` })
+        .from(intentosFuga)
+        .where(and(eq(intentosFuga.usuarioId, id), eq(intentosFuga.accion, "bloqueado")));
+      return n;
+    };
+
+    return {
+      esDemo: false,
+      solicitudId: ctx.solicitudId,
+      contexto: `${res?.codigo ?? "Negociación"} · ${prop?.nombre ?? ""}`,
+      aliasPrincipal: alias.get(ctx.principalId) ?? "—",
+      aliasExterno: alias.get(ctx.externoId) ?? "—",
+      mensajes: filas.map((f) => ({
+        id: f.id,
+        emisorRol: f.emisorId === ctx.externoId ? ("externo" as const) : ("principal" as const),
+        texto: f.contenido,
+        bloqueado: f.bloqueado,
+        motivos: (f.flags as string[]) ?? [],
+      })),
+      strikes: {
+        principal: await strikesDe(ctx.principalId),
+        externo: await strikesDe(ctx.externoId),
+      },
     };
   });
 }

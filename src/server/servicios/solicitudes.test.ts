@@ -22,7 +22,7 @@ import {
   crearSolicitud,
   OperacionError,
 } from "./solicitudes";
-import { procesarWebhookPago } from "./pagos";
+import { generarLinkSaldo, procesarWebhookPago, SaldoError } from "./pagos";
 import { calendarioDias } from "../db/schema";
 
 const HAY_DB = Boolean(process.env.DATABASE_URL);
@@ -178,6 +178,8 @@ describe.skipIf(!HAY_DB)("operación — solicitud a link, reglas en servidor", 
       estado: "aprobada",
     });
     expect(r.resultado).toBe("procesado");
+    const { transicionPostPago } = await import("./pagos");
+    await transicionPostPago(db, reservaId, 1); // lo hace el orquestador del webhook
     const dias = await db
       .select()
       .from(calendarioDias)
@@ -186,5 +188,31 @@ describe.skipIf(!HAY_DB)("operación — solicitud a link, reglas en servidor", 
       (d) => d.fecha >= "2026-09-10" && d.fecha <= "2026-09-13" && d.estado === "reservado_app",
     );
     expect(bloqueados).toHaveLength(4); // 10, 11, 12 y 13 (incluye salida)
+
+    // ── Saldo (mitad 2): solo participantes, idempotente, monto del motor ──
+    const intruso2 = await crearUsuario("externo", "sx");
+    await expect(generarLinkSaldo(db, reservaId, intruso2)).rejects.toThrow(SaldoError);
+
+    const s1 = await generarLinkSaldo(db, reservaId, externoId);
+    expect(s1.montoCentavos).toBe(180_000_000); // resto exacto de $3.600.000
+    expect(s1.yaExistia).toBe(false);
+    const s2 = await generarLinkSaldo(db, reservaId, externoId);
+    expect(s2.linkId).toBe(s1.linkId); // idempotente
+    expect(s2.yaExistia).toBe(true);
+
+    const [conSaldo] = await db.select().from(reservas).where(eq(reservas.id, reservaId));
+    expect(conSaldo.estado).toBe("SALDO_LINK_ENVIADO");
+
+    // Pago 2 → PAGO_COMPLETO (semáforo verde)
+    const pago2 = await procesarWebhookPago(db, {
+      pasarelaRef: `op-pago2-${Date.now()}`,
+      linkId: s1.linkId,
+      montoCentavos: 180_000_000,
+      estado: "aprobada",
+    });
+    expect(pago2.resultado).toBe("procesado");
+    await transicionPostPago(db, reservaId, 2);
+    const [verde] = await db.select().from(reservas).where(eq(reservas.id, reservaId));
+    expect(verde.estado).toBe("PAGO_COMPLETO");
   });
 });

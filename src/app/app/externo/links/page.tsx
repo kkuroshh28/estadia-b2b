@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Badge, Card, Money, Stat } from "@/components/ui";
 import { datosLinksExterno } from "@/server/datos/paneles";
+import { SaldosPendientes } from "./saldo-boton";
 import type { EstadoLink } from "@/lib/domain/tipos";
 
 const TONO_LINK: Record<EstadoLink, { tono: "esmeralda" | "oro" | "rojo" | "neutro"; label: string }> = {
@@ -33,6 +34,8 @@ export default async function LinksDePago() {
         <Stat etiqueta="Comisiones · este mes" valor={<Money valor={datos.comisionesMes} />} detalle="40% de cada comisión acordada" tono="oro" />
         <Stat etiqueta="Links activos" valor={datos.links.filter((l) => l.estado === "activo").length} detalle="Con vigencia corriendo" />
       </div>
+
+      <SaldosPendientes saldos={datos.saldosPendientes} />
 
       <div className="space-y-4">
         {datos.links.length === 0 && (
