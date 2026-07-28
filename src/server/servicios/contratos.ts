@@ -14,13 +14,13 @@ import { formatearFechaCO } from "@/lib/fechas";
  * - Plantilla por duración: <30 noches vivienda turística; 30–92 mediano plazo.
  * - Identidades REALES solo dentro del documento (jamás en la UI entre alias).
  * - Hash SHA-256 almacenado; el PDF vive en contratos_blob.
- * - Acceso: SOLO propietario y admin (los comisionistas NO son parte).
+ * - Acceso: SOLO propietario y admin (los socios NO son parte).
  */
 
 export async function generarContrato(
   db: Db,
   reservaId: string,
-  nombreHuesped = "(Cliente final — lo completa el externo en el flujo real)",
+  nombreHuesped = "(Cliente final — lo completa el socio de ventas en el flujo real)",
 ): Promise<{ contratoId: string; tipo: string; hash: string }> {
   const [existente] = await db.select().from(contratos).where(eq(contratos.reservaId, reservaId));
   if (existente) return { contratoId: existente.id, tipo: existente.tipo, hash: existente.hashSha256 };
@@ -88,7 +88,7 @@ export async function generarContrato(
 
 /**
  * Acceso al contrato: SOLO el propietario del inmueble (parte legal) o admin.
- * Los comisionistas —principal o externo— JAMÁS: preservar el anonimato es la regla.
+ * Los socios —principal o externo— JAMÁS: preservar el anonimato es la regla.
  */
 export async function puedeVerContrato(db: Db, usuarioId: string, reservaId: string): Promise<boolean> {
   const [u] = await db.select().from(usuarios).where(eq(usuarios.id, usuarioId));

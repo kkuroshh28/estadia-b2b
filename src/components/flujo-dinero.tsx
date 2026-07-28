@@ -33,7 +33,7 @@ export function FlujoDinero({
       borde: "border-tiffany-claro",
     },
     {
-      k: "C. Principal",
+      k: "Socio Comercial",
       sub: "50% de la comisión",
       v: total.principal,
       color: "var(--color-tiffany-profundo)",
@@ -41,7 +41,7 @@ export function FlujoDinero({
       borde: "border-borde",
     },
     {
-      k: "C. Externo",
+      k: "Socio de Ventas",
       sub: "40% de la comisión",
       v: total.externo,
       color: "var(--color-tiffany-claro)",

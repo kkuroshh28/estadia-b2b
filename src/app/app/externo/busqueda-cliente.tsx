@@ -7,7 +7,7 @@ import { Badge, Card, Cover, Money } from "@/components/ui";
 import type { DatosBusquedaExterno } from "@/lib/domain/paneles";
 
 /**
- * Búsqueda del Comisionista Externo: solo propiedades con disponibilidad REAL
+ * Búsqueda del Socio de Ventas: solo propiedades con disponibilidad REAL
  * en las fechas pedidas, con la tarifa neta visible (confidencial: jamás se
  * muestra al cliente final).
  */
@@ -181,7 +181,7 @@ export function BusquedaExternoCliente({ datos }: { datos: DatosBusquedaExterno 
         </Card>
       )}
       <p className="text-[11px] text-bruma-osc">
-        Confidencialidad: la tarifa neta es visible solo para comisionistas
+        Confidencialidad: la tarifa neta es visible solo para socios
         verificados. Filtrarla a un cliente final es falta grave.
       </p>
     </div>

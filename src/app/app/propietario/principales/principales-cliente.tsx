@@ -7,7 +7,7 @@ import { AvatarAlias, Badge, Card } from "@/components/ui";
 import type { DatosPrincipales, VinculoPanel } from "@/lib/domain/paneles";
 
 /**
- * Gestión de Comisionistas Principales (§2.1): 3–5 por propiedad, por invitación.
+ * Gestión de Socios Comerciales (§2.1): 3–5 por propiedad, por invitación.
  * El propietario los conoce en la vida real; aquí los administra por su alias.
  */
 
@@ -47,10 +47,10 @@ export function PrincipalesCliente({ datos }: { datos: DatosPrincipales }) {
   if (!prop) {
     return (
       <div className="mx-auto max-w-3xl space-y-6">
-        <h1 className="font-display text-3xl text-tinta">Mis comisionistas principales</h1>
+        <h1 className="font-display text-3xl text-tinta">Mis socios comerciales</h1>
         <Card className="p-8 text-sm text-bruma">
           Registra tu primera propiedad para invitar a tu red de confianza (entre{" "}
-          {MIN} y {MAX} principales por propiedad).
+          {MIN} y {MAX} socios comerciales por propiedad).
         </Card>
       </div>
     );
@@ -75,7 +75,7 @@ export function PrincipalesCliente({ datos }: { datos: DatosPrincipales }) {
       return;
     }
     if (!aliasNuevo.trim()) {
-      setError("Escribe el alias del principal (te lo comparte él).");
+      setError("Escribe el alias del socio comercial (te lo comparte él).");
       return;
     }
     setInvitando(true);
@@ -92,7 +92,7 @@ export function PrincipalesCliente({ datos }: { datos: DatosPrincipales }) {
   return (
     <div className="mx-auto max-w-4xl space-y-8">
       <div>
-        <h1 className="font-display text-3xl text-tinta">Mis comisionistas principales</h1>
+        <h1 className="font-display text-3xl text-tinta">Mis socios comerciales</h1>
         <p className="mt-1 text-sm text-bruma">
           Tu red de confianza: entre {MIN} y {MAX} por propiedad, vinculados por tu
           invitación. Los administras por su alias — su desempeño habla por ellos.
@@ -130,7 +130,7 @@ export function PrincipalesCliente({ datos }: { datos: DatosPrincipales }) {
                 disabled={invitando}
                 className="rounded-full bg-tiffany px-5 py-2.5 text-xs font-bold text-tinta transition hover:bg-tiffany-claro disabled:opacity-60"
               >
-                {invitando ? "Invitación enviada ✓" : "Invitar principal"}
+                {invitando ? "Invitación enviada ✓" : "Invitar socio"}
               </button>
             ) : (
               <div className="flex items-center gap-2">
@@ -184,7 +184,7 @@ export function PrincipalesCliente({ datos }: { datos: DatosPrincipales }) {
                     onClick={() => remover(v.alias)}
                     disabled={datos.esDemo && lista.length <= MIN}
                     className="rounded-full border border-borde px-4 py-2 text-[11px] font-semibold text-bruma transition hover:border-rojo/40 hover:text-rojo disabled:cursor-not-allowed disabled:opacity-40"
-                    title={lista.length <= MIN ? `Mínimo ${MIN} principales por propiedad` : "Desvincular"}
+                    title={lista.length <= MIN ? `Mínimo ${MIN} socios comerciales por propiedad` : "Desvincular"}
                   >
                     Desvincular
                   </button>
@@ -209,7 +209,7 @@ export function PrincipalesCliente({ datos }: { datos: DatosPrincipales }) {
         <span className="font-bold text-esmeralda">Cómo funciona la invitación:</span>{" "}
         le envías el código a tu contacto por fuera (a él sí lo conoces), completa su
         KYC, el sistema le asigna su alias y queda vinculado a esta propiedad. Tú
-        nunca ves su alias hasta que acepta, y los externos jamás sabrán quién es.
+        nunca ves su alias hasta que acepta, y los socios de ventas jamás sabrán quién es.
       </Card>
     </div>
   );

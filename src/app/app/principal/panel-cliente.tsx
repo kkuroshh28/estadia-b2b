@@ -101,7 +101,7 @@ export function PanelPrincipalCliente({ datos }: { datos: DatosPrincipal }) {
                       </Link>
                     </>
                   ) : perdida ? (
-                    <Badge tono="rojo">Otro principal llegó primero</Badge>
+                    <Badge tono="rojo">Otro socio llegó primero</Badge>
                   ) : (
                     <>
                       <Badge tono="ambar" vivo>

@@ -65,7 +65,7 @@ async function main() {
     { clave: "split", valor: { principal: 0.5, externo: 0.4, app: 0.1 } },
   ]).onConflictDoNothing();
 
-  // 3 propietarios + 8 comisionistas (3 principales, 5 externos)
+  // 3 propietarios + 8 socios (3 principales, 5 externos)
   const crearUsuario = async (rol: "propietario" | "principal" | "externo", n: number) => {
     const [u] = await db.insert(usuarios).values({
       nombreReal: `Demo ${rol} ${n}`,
@@ -192,7 +192,7 @@ async function main() {
     },
   ]);
 
-  console.log("Seed aplicado: 3 propietarios, 8 comisionistas, 12 propiedades, reserva pagada + negociación en curso.");
+  console.log("Seed aplicado: 3 propietarios, 8 socios, 12 propiedades, reserva pagada + negociación en curso.");
 }
 
 main().then(() => process.exit(0)).catch((e) => {

@@ -119,7 +119,7 @@ export default async function PanelPropietario() {
                       </p>
                     </div>
                     <p className="text-[11px] text-bruma">
-                      {p.principalesVinculados}/5 principales
+                      {p.principalesVinculados}/5 socios
                     </p>
                   </div>
                 </div>

@@ -21,7 +21,7 @@ const REGLAS_DE_ORO = [
   },
   {
     t: "Identidad verificada, operación anónima",
-    d: "KYC con cédula y biometría para entrar; adentro, cada comisionista opera con un alias autogenerado, único e irrepetible. Nadie ve nombres, fotos ni teléfonos reales.",
+    d: "KYC con cédula y biometría para entrar; adentro, cada socio opera con un alias autogenerado, único e irrepetible. Nadie ve nombres, fotos ni teléfonos reales.",
   },
   {
     t: "Todo pasa dentro de la app",
@@ -95,7 +95,7 @@ export default function Landing() {
             <RevealHero delay={0.16}>
               <p className="mt-6 max-w-xl text-lg leading-relaxed text-tinta/85">
                 La red que conecta propietarios de rentas cortas en Antioquia con su
-                gremio de comisionistas. Calendario que nunca miente, negociación con
+                red de socios. Calendario que nunca miente, negociación con
                 las cartas sobre la mesa y split automático en cada pago. El cliente
                 final nunca entra: solo recibe un link.
               </p>
@@ -155,18 +155,18 @@ export default function Landing() {
               rol: "Propietario",
               pct: "tarifa neta completa",
               tono: "text-esmeralda",
-              d: "Fija su tarifa neta y siempre la recibe entera. Único con acceso de escritura al calendario. Vincula de 3 a 5 principales de su confianza. Paga suscripción para publicar.",
+              d: "Fija su tarifa neta y siempre la recibe entera. Único con acceso de escritura al calendario. Vincula de 3 a 5 socios comerciales de su confianza. Paga suscripción para publicar.",
               demo: "/app/propietario",
             },
             {
-              rol: "Comisionista Principal",
+              rol: "Socio Comercial",
               pct: "50% de la comisión",
               tono: "text-oro",
-              d: "Recibe las solicitudes sobre sus propiedades vinculadas — el primero en aceptar se la queda. Negocia el precio final con el externo en el módulo formal de ofertas.",
+              d: "Recibe las solicitudes sobre sus propiedades vinculadas — el primero en aceptar se la queda. Negocia el precio final con el socio de ventas en el módulo formal de ofertas.",
               demo: "/app/principal",
             },
             {
-              rol: "Comisionista Externo",
+              rol: "Socio de Ventas",
               pct: "40% de la comisión",
               tono: "text-oro",
               d: "Trae el cliente — que es suyo, la plataforma jamás lo contacta. Busca disponibilidad real, negocia y reenvía el link de pago. Su reputación vive en su alias.",
@@ -227,8 +227,8 @@ export default function Landing() {
                 {[
                   ["Cliente paga (2 mitades de $600.000)", EJEMPLO.total.precioFinal, "text-tinta font-bold"],
                   ["Comisión acordada", EJEMPLO.total.comision, "text-tinta"],
-                  ["→ Comisionista Principal (50%)", EJEMPLO.total.principal, "text-oro"],
-                  ["→ Comisionista Externo (40%)", EJEMPLO.total.externo, "text-oro"],
+                  ["→ Socio Comercial (50%)", EJEMPLO.total.principal, "text-oro"],
+                  ["→ Socio de Ventas (40%)", EJEMPLO.total.externo, "text-oro"],
                   ["→ Plataforma (10%)", EJEMPLO.total.app, "text-bruma"],
                   ["Propietario — tarifa neta", EJEMPLO.total.tarifaNeta, "text-esmeralda font-bold"],
                   ["− Pasarela (~3% del total procesado)", -EJEMPLO.total.pasarela, "text-rojo"],
@@ -333,7 +333,7 @@ export default function Landing() {
                 <h3 className="font-semibold text-esmeralda">Al entrar el Pago 2</h3>
                 <p className="mt-2 text-sm leading-relaxed text-bruma">
                   Split 2 dispersado y semáforo en verde: &ldquo;Pago completo ✓&rdquo;. Solo esa
-                  pantalla autoriza al principal o al propietario a entregar llaves o
+                  pantalla autoriza al socio comercial o al propietario a entregar llaves o
                   códigos de acceso. Sin verde no hay entrega.
                 </p>
               </div>
@@ -356,7 +356,7 @@ export default function Landing() {
                 Registro con cédula, biometría y cuenta bancaria certificada.
                 Propiedades con certificado de tradición y libertad → sello{" "}
                 <span className="font-semibold text-esmeralda">Propiedad Verificada</span>.
-                Adentro, cada comisionista opera con un alias —{" "}
+                Adentro, cada socio opera con un alias —{" "}
                 <span className="font-mono text-sm text-tinta">CONDOR-472</span>,{" "}
                 <span className="font-mono text-sm text-tinta">CEIBA-118</span> — sin
                 relación alguna con sus datos personales.

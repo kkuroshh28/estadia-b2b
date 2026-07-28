@@ -37,7 +37,7 @@ function descomponer(iso: string): [number, number, number] {
   return [y, (m ?? 1) - 1, d ?? 1];
 }
 
-/** Regla #4: entre 3 y 5 comisionistas principales por propiedad. */
+/** Regla #4: entre 3 y 5 socios comerciales por propiedad. */
 export const MIN_PRINCIPALES = 3;
 export const MAX_PRINCIPALES = 5;
 

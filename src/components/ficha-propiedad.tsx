@@ -136,7 +136,7 @@ export function FichaPropiedad({ datos }: { datos: DatosFicha }) {
               ))}
             </ul>
             <p className="mt-4 border-t border-borde pt-3 text-[11px] text-bruma-osc">
-              {propiedad.principalesVinculados} principales atienden esta propiedad —
+              {propiedad.principalesVinculados} socios comerciales atienden esta propiedad —
               el primero que acepte tu solicitud negocia contigo.
             </p>
           </Card>
@@ -212,7 +212,7 @@ export function FichaPropiedad({ datos }: { datos: DatosFicha }) {
                     {rango.desde} → {rango.hasta} · {noches} {noches === 1 ? "noche" : "noches"}
                   </p>
                   <p className="text-xs text-bruma">
-                    Tarifa neta total <MoneyAnimado valor={netaTotal} className="font-bold text-esmeralda" /> — tu precio al cliente lo negocias con el principal.
+                    Tarifa neta total <MoneyAnimado valor={netaTotal} className="font-bold text-esmeralda" /> — tu precio al cliente lo negocias con el socio comercial.
                   </p>
                   {error && (
                     <p className="mt-2 rounded-lg border border-rojo/30 bg-rojo-tenue p-2 text-[11px] text-rojo">
@@ -250,7 +250,7 @@ export function FichaPropiedad({ datos }: { datos: DatosFicha }) {
                 transition={{ type: "spring", stiffness: 260, damping: 20 }}
                 className="mt-5 rounded-xl border border-oro/30 bg-oro-tenue/40 p-4 text-center"
               >
-                <p className="text-sm font-bold text-oro">Solicitud enviada a los {propiedad.principalesVinculados} principales</p>
+                <p className="text-sm font-bold text-oro">Solicitud enviada a los {propiedad.principalesVinculados} socios comerciales</p>
                 <p className="mt-1 text-xs text-bruma">
                   El primero que acepte se queda con ella y abre la negociación contigo.
                   Recuerda: las fechas NO están apartadas hasta que tu cliente pague el 50%.

@@ -200,7 +200,7 @@ export function NuevaPropiedadCliente() {
           />
           <span className="text-xs leading-relaxed text-bruma">
             <span className="font-bold text-tinta">Publicar ya.</span> Visible para el
-            gremio desde hoy. Recuerda: necesita entre 3 y 5 principales vinculados
+            gremio desde hoy. Recuerda: necesita entre 3 y 5 socios comerciales vinculados
             para operar con solicitudes.
           </span>
         </label>

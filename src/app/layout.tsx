@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     template: "%s · THE CIRCLE",
   },
   description:
-    "Plataforma B2B que conecta propietarios de inmuebles de renta corta con su red de comisionistas. El calendario solo se bloquea con dinero. El primero que paga, gana.",
+    "Plataforma B2B que conecta propietarios de inmuebles de renta corta con su red de socios. El calendario solo se bloquea con dinero. El primero que paga, gana.",
   openGraph: {
     title: "THE CIRCLE — La red B2B de rentas cortas de Antioquia",
     description:

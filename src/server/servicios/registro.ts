@@ -20,7 +20,7 @@ export interface DatosRegistro {
 
 /**
  * Registro real: valida lista negra ANTES de crear, guarda cédula/teléfono
- * cifrados, deja al usuario en pendiente_kyc, asigna alias (comisionistas)
+ * cifrados, deja al usuario en pendiente_kyc, asigna alias (socios)
  * con el servicio de unicidad, e inicia la verificación con el proveedor KYC.
  */
 export async function registrarUsuario(

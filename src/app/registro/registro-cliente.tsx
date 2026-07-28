@@ -9,13 +9,13 @@ import { generarAlias } from "@/lib/domain/alias";
 
 /**
  * Onboarding (§8.1): rol → datos → cédula/biometría → cuenta bancaria →
- * (comisionistas) REVELACIÓN DEL ALIAS → aceptación de la regla anti-fuga.
+ * (socios) REVELACIÓN DEL ALIAS → aceptación de la regla anti-fuga.
  * Con DB (staging/dev): el registro es REAL — /api/registro crea el usuario
  * (cédula cifrada, alias único de la DB) y el KYC simulado lo aprueba por el
  * MISMO callback firmado del proveedor. Sin DB: demo visual.
  */
 
-type Rol = "Propietario" | "Comisionista Principal" | "Comisionista Externo";
+type Rol = "Propietario" | "Socio Comercial" | "Socio de Ventas";
 
 const PASOS = ["Rol", "Datos", "Identidad", "Banco", "Alias", "Reglas"];
 
@@ -78,8 +78,8 @@ function BotonSiguiente({ onClick, children = "Continuar →" }: { onClick: () =
 
 const ROL_API: Record<Rol, "propietario" | "principal" | "externo"> = {
   Propietario: "propietario",
-  "Comisionista Principal": "principal",
-  "Comisionista Externo": "externo",
+  "Socio Comercial": "principal",
+  "Socio de Ventas": "externo",
 };
 
 function Registro({ real }: { real: boolean }) {
@@ -127,7 +127,7 @@ function Registro({ real }: { real: boolean }) {
           cedula: datos.cedula,
           telefono: datos.celular,
           email: datos.correo,
-          rol: ROL_API[rol ?? "Comisionista Externo"],
+          rol: ROL_API[rol ?? "Socio de Ventas"],
           ...(banco.nombre && banco.numero
             ? { cuentaBancaria: { banco: banco.nombre, numero: banco.numero } }
             : {}),
@@ -165,7 +165,7 @@ function Registro({ real }: { real: boolean }) {
               <motion.div key="rol" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }}>
                 <h1 className="font-display text-2xl text-tinta">¿Cuál es tu rol en el gremio?</h1>
                 <div className="mt-6 space-y-3">
-                  {(["Propietario", "Comisionista Principal", "Comisionista Externo"] as Rol[]).map((r) => (
+                  {(["Propietario", "Socio Comercial", "Socio de Ventas"] as Rol[]).map((r) => (
                     <button
                       key={r}
                       onClick={() => { setRol(r); setPaso(1); }}
@@ -175,7 +175,7 @@ function Registro({ real }: { real: boolean }) {
                       <p className="mt-1 text-xs text-bruma">
                         {r === "Propietario"
                           ? "Publicas propiedades, fijas tu tarifa neta y controlas tu calendario."
-                          : r === "Comisionista Principal"
+                          : r === "Socio Comercial"
                             ? "Gestionas solicitudes de propiedades vinculadas. Ganas 50% de la comisión."
                             : "Traes tus clientes y vendes con inventario real. Ganas 40% de la comisión."}
                       </p>

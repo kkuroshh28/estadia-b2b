@@ -25,7 +25,7 @@ async function aliasDeUsuario(db: Db, usuarioId: string): Promise<string> {
     .select({ alias: tablaAlias.alias })
     .from(tablaAlias)
     .where(and(eq(tablaAlias.usuarioId, usuarioId), sql`NOT ${tablaAlias.retirado}`));
-  return a?.alias ?? "un comisionista";
+  return a?.alias ?? "un socio";
 }
 
 /**

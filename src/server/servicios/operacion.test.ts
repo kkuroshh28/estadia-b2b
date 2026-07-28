@@ -196,7 +196,7 @@ describe.skipIf(!HAY_DB)("integración — operación completa", () => {
     expect(c.tipo).toBe("vivienda_turistica"); // 3 noches < 30
     expect(c.hashSha256).toMatch(/^[a-f0-9]{64}$/);
 
-    // Acceso al contrato: propietario SÍ, comisionistas JAMÁS
+    // Acceso al contrato: propietario SÍ, socios JAMÁS
     expect(await puedeVerContrato(db, duenoId, res.id)).toBe(true);
     expect(await puedeVerContrato(db, principalId, res.id)).toBe(false);
     expect(await puedeVerContrato(db, externoId, res.id)).toBe(false);

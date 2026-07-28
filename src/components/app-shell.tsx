@@ -12,8 +12,8 @@ interface AliasShell {
 
 const ROL_DE_SECCION: Record<string, string | null> = {
   Propietario: "propietario",
-  "C. Principal": "principal",
-  "C. Externo": "externo",
+  "Socio Comercial": "principal",
+  "Socio de Ventas": "externo",
   "Común": null, // visible para todos
 };
 
@@ -24,11 +24,11 @@ const SECCIONES = (alias: AliasShell) => [
     items: [
       { href: "/app/propietario", label: "Panel y reservas" },
       { href: "/app/propietario/calendario", label: "Calendario y tarifa" },
-      { href: "/app/propietario/principales", label: "Mis principales" },
+      { href: "/app/propietario/principales", label: "Mis socios" },
     ],
   },
   {
-    rol: "C. Principal",
+    rol: "Socio Comercial",
     alias: alias.principal,
     items: [
       { href: "/app/principal", label: "Solicitudes entrantes" },
@@ -37,7 +37,7 @@ const SECCIONES = (alias: AliasShell) => [
     ],
   },
   {
-    rol: "C. Externo",
+    rol: "Socio de Ventas",
     alias: alias.externo,
     items: [
       { href: "/app/externo", label: "Buscar disponibilidad" },

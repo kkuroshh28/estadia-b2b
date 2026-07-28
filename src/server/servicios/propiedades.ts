@@ -139,12 +139,12 @@ export async function vincularPrincipal(
       .from(usuarios)
       .where(eq(usuarios.id, fila.usuarioId));
     if (!u || u.estado !== "activo" || !u.roles.includes("principal")) {
-      throw new PropiedadError(`${limpio} no es un comisionista principal activo.`);
+      throw new PropiedadError(`${limpio} no es un socio comercial activo.`);
     }
 
     const activos = await contarActivos(tx as unknown as Db, propiedadId);
     if (!puedeVincularPrincipal(activos)) {
-      throw new PropiedadError(`Máximo ${MAX_PRINCIPALES} principales por propiedad.`);
+      throw new PropiedadError(`Máximo ${MAX_PRINCIPALES} socios comerciales por propiedad.`);
     }
 
     await tx
@@ -186,7 +186,7 @@ export async function desvincularPrincipal(
     const activos = await contarActivos(tx as unknown as Db, propiedadId);
     if (prop.publicada && activos <= MIN_PRINCIPALES) {
       throw new PropiedadError(
-        `Una propiedad publicada necesita mínimo ${MIN_PRINCIPALES} principales.`,
+        `Una propiedad publicada necesita mínimo ${MIN_PRINCIPALES} socios comerciales.`,
       );
     }
 

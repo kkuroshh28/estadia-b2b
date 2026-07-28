@@ -8,7 +8,7 @@ import { limitar } from "@/server/rate-limit";
 
 /**
  * Descarga del contrato PDF. SOLO propietario de la reserva (o admin):
- * los comisionistas jamás lo ven — ahí viven las identidades reales.
+ * los socios jamás lo ven — ahí viven las identidades reales.
  */
 export async function GET(
   req: Request,

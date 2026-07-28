@@ -277,7 +277,7 @@ export function CalendarioCliente({ datos }: { datos: DatosCalendario }) {
           <h2 className="font-display text-xl text-tinta">Calculadora de neto</h2>
           <p className="mt-1 text-xs text-bruma">
             Fija tu tarifa sabiendo exactamente qué recibes. El ~3% de pasarela es tu
-            único costo — la comisión de los comisionistas va por encima.
+            único costo — la comisión de los socios va por encima.
           </p>
           <label className="mt-5 block text-[11px] font-bold uppercase tracking-wider text-bruma-osc">
             Tarifa neta por noche · {prop.nombre}

@@ -28,7 +28,7 @@ export default async function LinksDePago() {
         <Stat
           etiqueta="Tasa de pago de tus links"
           valor={datos.tasaPago === null ? "—" : `${Math.round(datos.tasaPago * 100)}%`}
-          detalle={`Parte de tu reputación como ${datos.aliasYo ?? "comisionista"}`}
+          detalle={`Parte de tu reputación como ${datos.aliasYo ?? "socio de ventas"}`}
           tono="esmeralda"
         />
         <Stat etiqueta="Comisiones · este mes" valor={<Money valor={datos.comisionesMes} />} detalle="40% de cada comisión acordada" tono="oro" />
