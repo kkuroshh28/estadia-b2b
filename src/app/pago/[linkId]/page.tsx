@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { Checkout } from "@/components/checkout";
+import { LINKS_DE_PAGO } from "@/lib/data/demo";
 import { obtenerDb } from "@/server/db";
 import { linksDePago, propiedades, reservas } from "@/server/db/schema";
 import { hayDb } from "@/server/datos/fuente";
@@ -63,10 +64,18 @@ export default async function CheckoutCliente({
 }) {
   const { linkId } = await params;
 
-  if (!hayDb()) notFound();
-  const r = await linkReal(linkId).catch(() => null);
-  if (!r) notFound();
-  const { link } = r;
+  let link;
+  let vitrina = false;
+  if (hayDb()) {
+    const r = await linkReal(linkId).catch(() => null);
+    if (!r) notFound();
+    link = r.link;
+  } else {
+    // Vitrina sin DB: solo los links de demostración existen.
+    link = LINKS_DE_PAGO.find((l) => l.id === linkId);
+    if (!link) notFound();
+    vitrina = true;
+  }
 
   return (
     <main className="atmosfera flex min-h-screen flex-col items-center justify-center px-6 py-16">
@@ -76,7 +85,7 @@ export default async function CheckoutCliente({
       <p className="mb-8 mt-1 text-[11px] uppercase tracking-[0.22em] text-bruma-osc">
         Pago seguro con tarjeta
       </p>
-      <Checkout link={link} />
+      <Checkout link={link} vitrina={vitrina} />
       <p className="mt-6 text-[11px] text-bruma-osc">
         ¿Dudas con tu reserva? Escríbele a tu asesor de confianza.
       </p>

@@ -41,6 +41,20 @@
   activa del propietario obligatoria (regla #3); turnos de oferta; capacidad.
 - Suite: **91 tests** verdes.
 
+## Novedades 2026-07-28: MODO VITRINA (data demo de vuelta, solo sin DB)
+- Kurosh necesita MOSTRAR la plataforma llena a dueños/prospectos. Sin
+  DATABASE_URL, los paneles se llenan con data de demostración coherente
+  (marca CIR-, fechas jul–sep 2026): 6 propiedades, 4 reservas en todos los
+  estados del semáforo, negociación con ofertas, links (activo/pagado/
+  invalidado), ganancias por mes, splits, calendario/ficha con meses
+  NAVEGABLES (estados deterministas por mes), chat con filtro anti-fuga
+  interactivo (veredicto real del endpoint, strikes/ban visuales), checkout
+  de vitrina con pago simulado visual, campanita con avisos estáticos y
+  aliases CONDOR-472/GUACAMAYA-256 en el shell.
+- REGLA DE ORO INTACTA: con DATABASE_URL la data real reemplaza TODO esto
+  automáticamente (mismo mecanismo de fallback); las acciones reales
+  (check-in, tarifa, vínculos, saldo) siguen apagadas en vitrina.
+
 ## Novedades 2026-07-21 (7ª): VELOCIDAD Y CONCURRENCIA (revisión profunda)
 - **Revisión adversarial multi-archivo** del código nuevo: 14 hallazgos; los
   que importaban quedaron corregidos:

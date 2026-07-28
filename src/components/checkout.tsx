@@ -10,7 +10,7 @@ import { Money } from "./ui";
  * Al "pagar": procesando → confirmación animada. El split que se muestra después
  * es didáctico del demo (el cliente real jamás lo ve).
  */
-export function Checkout({ link }: { link: LinkDePago }) {
+export function Checkout({ link, vitrina = false }: { link: LinkDePago; vitrina?: boolean }) {
   const [fase, setFase] = useState<"form" | "procesando" | "pagado">(
     link.estado === "pagado" ? "pagado" : "form",
   );
@@ -20,6 +20,11 @@ export function Checkout({ link }: { link: LinkDePago }) {
   const pagar = async () => {
     setFase("procesando");
     setError(null);
+    if (vitrina) {
+      // Demostración visual: sin DB no hay webhook que procesar.
+      setTimeout(() => setFase("pagado"), 1900);
+      return;
+    }
     // Pasarela simulada REAL: el evento entra por el MISMO webhook firmado
     // (idempotencia, lock de días, splits). "El primero que paga, gana" aplica.
     try {

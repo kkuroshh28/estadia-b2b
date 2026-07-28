@@ -154,16 +154,15 @@ export function AppShell({
             </span>
           </div>
           <div className="flex items-center gap-3">
-            {conDatos && (
-              <Campanita
-                rol={
-                  (ROL_DE_SECCION[seccionActiva?.rol ?? "Propietario"] ?? "propietario") as
-                    | "propietario"
-                    | "principal"
-                    | "externo"
-                }
-              />
-            )}
+            <Campanita
+              vitrina={!conDatos}
+              rol={
+                (ROL_DE_SECCION[seccionActiva?.rol ?? "Propietario"] ?? "propietario") as
+                  | "propietario"
+                  | "principal"
+                  | "externo"
+              }
+            />
             <Badge tono="esmeralda" vivo>Piloto</Badge>
             {roles !== null && (
               <button

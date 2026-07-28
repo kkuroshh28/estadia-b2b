@@ -223,7 +223,7 @@ export function datosPropietario(): Promise<DatosPropietario> {
 }
 
 export function datosCalendario(mesPedido?: string): Promise<DatosCalendario> {
-  return resolverPanel("propietario", demoCalendario, async (db, u) => {
+  return resolverPanel("propietario", () => demoCalendario(mesPedido), async (db, u) => {
     const misProps = await db
       .select()
       .from(propiedades)
@@ -400,7 +400,7 @@ export function datosBusquedaExterno(
   desde?: string,
   hasta?: string,
 ): Promise<DatosBusquedaExterno> {
-  return resolverPanel("externo", demoBusquedaExterno, async (db, u) => {
+  return resolverPanel("externo", () => demoBusquedaExterno(desde, hasta), async (db, u) => {
     // Rango válido: fechas bien formadas, futuro, 1–92 noches.
     const RE = /^\d{4}-\d{2}-\d{2}$/;
     let fechas: { desde: string; hasta: string; noches: number } | null = null;
@@ -791,7 +791,7 @@ export function datosChat(): Promise<DatosChat> {
 // ─── Ficha de propiedad (externo) ────────────────────────────────────────────
 
 export function datosFicha(id: string, mesPedido?: string): Promise<DatosFicha | null> {
-  return resolverPanel("externo", () => demoFicha(), async (db) => {
+  return resolverPanel("externo", () => demoFicha(id, mesPedido), async (db) => {
     const [fila] = await db.select().from(propiedades).where(eq(propiedades.id, id)).limit(1);
     if (!fila || !fila.publicada) return null;
     const [prop] = await propiedadesUI(db, [fila]);
