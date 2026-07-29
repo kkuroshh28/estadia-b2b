@@ -9,7 +9,7 @@ import { limitar } from "@/server/rate-limit";
 const Cuerpo = z.object({
   negociacionId: z.uuid(),
   montoPesos: z.number().int().min(1),
-  como: z.enum(["principal", "externo"]),
+  como: z.enum(["principal", "externo", "propietario"]),
 });
 
 export async function POST(req: Request) {

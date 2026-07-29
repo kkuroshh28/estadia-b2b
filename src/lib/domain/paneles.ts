@@ -34,6 +34,8 @@ export interface SplitLiquidado {
 
 export interface DatosPropietario {
   esDemo: boolean;
+  /** Solicitudes pendientes de las propiedades en gestión directa (Anexo I). */
+  solicitudesDirectas: SolicitudPanel[];
   netoMes: number; // pesos, mes en curso (splits tarifa_neta reales)
   suscripcion: { estado: string; renuevaEn: string } | null;
   propiedades: Propiedad[];
@@ -84,6 +86,8 @@ export interface DatosComisiones {
 
 export interface NegociacionPanel extends Negociacion {
   propiedadNombre: string;
+  /** Margen comercial mínimo del dueño (pesos) — precio mínimo = neta + margen. */
+  margenMinimo: number;
 }
 
 export interface DatosNegociacion {
@@ -91,6 +95,8 @@ export interface DatosNegociacion {
   negociacion: NegociacionPanel | null;
   /** Con sesión real la perspectiva es la del usuario; en demo hay selector. */
   perspectivaFija: "principal" | "externo" | null;
+  /** true cuando quien negocia del lado comercial es el DUEÑO (Owner Direct). */
+  soyPropietario: boolean;
 }
 
 export interface VinculoPanel {
@@ -101,7 +107,7 @@ export interface VinculoPanel {
 
 export interface DatosPrincipales {
   esDemo: boolean;
-  propiedades: { id: string; nombre: string }[];
+  propiedades: { id: string; nombre: string; ownerDirect?: boolean }[];
   vinculos: Record<string, VinculoPanel[]>;
 }
 

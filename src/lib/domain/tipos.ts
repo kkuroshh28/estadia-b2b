@@ -45,6 +45,10 @@ export interface Propiedad {
   verificada: boolean;
   /** Solo en la vista del dueño: visible u oculta para el gremio. */
   publicada?: boolean;
+  /** Owner Direct: el dueño gestiona directo y recibe la parte comercial. */
+  ownerDirect?: boolean;
+  /** Margen comercial mínimo (pesos): precio mínimo de venta = neta + margen. */
+  margenMinimo?: number;
   amenidades: string[];
   reglas: string[];
   /** Semilla determinista para la carátula generada (sin fotos externas). */

@@ -18,6 +18,8 @@ const Cuerpo = z.object({
   reglas: z.array(z.string().max(80)).max(12),
   tarifaNetaNochePesos: z.number().int().min(50_000).max(50_000_000),
   publicada: z.boolean(),
+  ownerDirect: z.boolean().default(false),
+  margenMinimoPesos: z.number().int().min(0).max(50_000_000).default(0),
 });
 
 export async function POST(req: Request) {
@@ -56,6 +58,8 @@ const CuerpoPatch = z.object({
   reglas: z.array(z.string().max(80)).max(12).optional(),
   publicada: z.boolean().optional(),
   tarifaNetaNochePesos: z.number().int().min(50_000).max(50_000_000).optional(),
+  ownerDirect: z.boolean().optional(),
+  margenMinimoPesos: z.number().int().min(0).max(50_000_000).optional(),
 });
 
 export async function PATCH(req: Request) {

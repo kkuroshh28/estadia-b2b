@@ -85,6 +85,8 @@ export function NuevaPropiedadCliente() {
     reglas: "",
     tarifaNetaNochePesos: 800_000,
     publicada: true,
+    ownerDirect: false,
+    margenMinimoPesos: 0,
   });
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -191,6 +193,43 @@ export function NuevaPropiedadCliente() {
           <span className="font-semibold text-esmeralda">Recibes tras pasarela (~3%)</span>
           <Money valor={neto.recibe} className="text-lg font-bold text-esmeralda" />
         </div>
+        <div>
+          <span className="text-[11px] font-bold uppercase tracking-wider text-bruma-osc">
+            Margen comercial mínimo (opcional)
+          </span>
+          <input
+            type="number"
+            min={0}
+            step={50_000}
+            value={f.margenMinimoPesos}
+            onChange={(e) => setF({ ...f, margenMinimoPesos: Number(e.target.value) })}
+            className="mt-2 w-full rounded-xl border border-borde bg-panel px-4 py-3 text-sm font-bold text-tinta"
+          />
+          <p className="mt-1.5 text-[11px] text-bruma">
+            Precio mínimo de venta:{" "}
+            <Money
+              valor={(f.tarifaNetaNochePesos || 0) + (f.margenMinimoPesos || 0)}
+              className="font-bold text-tinta"
+            />{" "}
+            por noche — ninguna oferta puede cerrar por debajo.
+          </p>
+        </div>
+
+        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-tiffany-claro bg-tiffany-bruma/30 p-4">
+          <input
+            type="checkbox"
+            checked={f.ownerDirect}
+            onChange={(e) => setF({ ...f, ownerDirect: e.target.checked })}
+            className="mt-0.5 accent-tiffany"
+          />
+          <span className="text-xs leading-relaxed text-bruma">
+            <span className="font-bold text-tinta">Gestión directa (Owner Direct).</span>{" "}
+            Tú mismo atiendes las solicitudes y negocias con los socios de ventas —
+            sin socios comerciales — y recibes también la participación comercial
+            del split, además de tu tarifa neta.
+          </span>
+        </label>
+
         <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-borde bg-panel p-4">
           <input
             type="checkbox"

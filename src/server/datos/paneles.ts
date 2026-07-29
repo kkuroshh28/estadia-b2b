@@ -133,6 +133,8 @@ async function propiedadesUI(
     tarifaNetaNoche: pesos(tarifaDe.get(f.id) ?? 0),
     verificada: f.verificada,
     publicada: f.publicada,
+    ownerDirect: f.ownerDirect,
+    margenMinimo: pesos(f.margenMinimoCentavos),
     amenidades: f.amenidades,
     reglas: f.reglas,
     matiz: matizDeId(f.id),
@@ -211,8 +213,42 @@ export function datosPropietario(): Promise<DatosPropietario> {
       porMes.set(m, (porMes.get(m) ?? 0) + pesos(n.monto));
     }
 
+    // Anexo I: solicitudes pendientes de las propiedades en gestión directa.
+    const idsOD = misProps.filter((p) => p.ownerDirect).map((p) => p.id);
+    let solicitudesDirectas: SolicitudPanel[] = [];
+    if (idsOD.length) {
+      const pendientes = await db
+        .select()
+        .from(solicitudes)
+        .where(
+          and(
+            inArray(solicitudes.propiedadId, idsOD),
+            sql`(${solicitudes.estado} = 'pendiente' AND ${solicitudes.venceEn} > now())
+                OR (${solicitudes.estado} = 'aceptada' AND ${solicitudes.principalAceptanteId} = ${u.id})`,
+          ),
+        )
+        .orderBy(desc(solicitudes.creadaEn))
+        .limit(10);
+      const aliasExt = await aliasDe(db, [...new Set(pendientes.map((s) => s.externoId))]);
+      const nombreDeOD = new Map(misProps.map((p) => [p.id, p.nombre]));
+      const ahora = new Date();
+      solicitudesDirectas = pendientes.map((s) => ({
+        id: s.id,
+        propiedadId: s.propiedadId,
+        propiedadNombre: nombreDeOD.get(s.propiedadId) ?? "—",
+        aliasExterno: aliasExt.get(s.externoId) ?? "—",
+        fechas: { desde: s.desde, hasta: s.hasta },
+        noches: noches(s.desde, s.hasta),
+        huespedes: s.huespedes,
+        estado: s.estado as SolicitudPanel["estado"],
+        recibidaHace: haceCuanto(s.creadaEn, ahora),
+        vigenciaMin: Math.max(0, Math.round((s.venceEn.getTime() - ahora.getTime()) / 60_000)),
+      }));
+    }
+
     return {
       esDemo: false,
+      solicitudesDirectas,
       netoMes: porMes.get(mesActual) ?? 0,
       suscripcion: sus[0] ?? null,
       propiedades: props,
@@ -285,7 +321,7 @@ export function datosCalendario(mesPedido?: string): Promise<DatosCalendario> {
 export function datosPrincipales(): Promise<DatosPrincipales> {
   return resolverPanel("propietario", demoPrincipales, async (db, u) => {
     const misProps = await db
-      .select({ id: propiedades.id, nombre: propiedades.nombre })
+      .select({ id: propiedades.id, nombre: propiedades.nombre, ownerDirect: propiedades.ownerDirect })
       .from(propiedades)
       .where(eq(propiedades.propietarioId, u.id))
       .orderBy(asc(propiedades.creadaEn));
@@ -635,82 +671,126 @@ export function datosComisiones(rol: "principal" | "externo"): Promise<DatosComi
 
 // ─── Negociación ─────────────────────────────────────────────────────────────
 
-export function datosNegociacion(): Promise<DatosNegociacion> {
-  return resolverPanel("principal", demoNegociacion, async (db, u) => {
-    const abiertas = await db
-      .select({
-        id: negociaciones.id,
-        solicitudId: negociaciones.solicitudId,
-        tarifaNeta: negociaciones.tarifaNetaCentavos,
-        precioAcordado: negociaciones.precioAcordadoCentavos,
-        desde: solicitudes.desde,
-        hasta: solicitudes.hasta,
-        propiedadId: solicitudes.propiedadId,
-        externoId: solicitudes.externoId,
-        principalId: solicitudes.principalAceptanteId,
-      })
-      .from(negociaciones)
-      .innerJoin(solicitudes, eq(negociaciones.solicitudId, solicitudes.id))
-      .where(
-        and(
-          eq(negociaciones.estado, "abierta"),
-          sql`(${solicitudes.principalAceptanteId} = ${u.id} OR ${solicitudes.externoId} = ${u.id})`,
-        ),
-      )
-      .orderBy(desc(solicitudes.creadaEn))
-      .limit(1);
+export async function datosNegociacion(): Promise<DatosNegociacion> {
+  const { hayDb: hay } = await import("./fuente");
+  if (!hay()) return demoNegociacion();
+  const { obtenerDb } = await import("../db");
+  const { authExigida, COOKIE_SESION, validarSesion } = await import("../auth");
+  const db = obtenerDb();
+  try {
+    // Candidatos del lado comercial: socio comercial o DUEÑO (Owner Direct).
+    // La pertenencia real la valida la consulta (participante de la solicitud).
+    const { usuarioDelPanel } = await import("./fuente");
+    const candidatos: { u: NonNullable<Awaited<ReturnType<typeof usuarioDelPanel>>>; esDueno: boolean }[] = [];
+    let perspectivaFija: "principal" | "externo" | null = null;
 
-    const n = abiertas[0];
-    if (!n) return { esDemo: false, negociacion: null, perspectivaFija: null };
+    if (authExigida()) {
+      const { cookies } = await import("next/headers");
+      const { redirect } = await import("next/navigation");
+      const jar = await cookies();
+      const sesion = await validarSesion(db, jar.get(COOKIE_SESION)?.value);
+      if (!sesion) redirect("/login");
+      const roles = sesion!.roles;
+      if (!roles.some((r) => ["principal", "propietario", "externo"].includes(r))) redirect("/app");
+      const u = await usuarioDelPanel(db, "principal", sesion);
+      if (u) candidatos.push({ u, esDueno: roles.includes("propietario") && !roles.includes("principal") });
+      perspectivaFija = roles.includes("externo") ? "externo" : "principal";
+    } else {
+      for (const rol of ["principal", "propietario"] as const) {
+        const u = await usuarioDelPanel(db, rol, null);
+        if (u) candidatos.push({ u, esDueno: rol === "propietario" });
+      }
+    }
 
-    const [prop] = await db
-      .select({ nombre: propiedades.nombre })
-      .from(propiedades)
-      .where(eq(propiedades.id, n.propiedadId));
-    const alias = await aliasDe(db, [n.externoId, n.principalId].filter(Boolean) as string[]);
+    for (const { u, esDueno } of candidatos) {
+      const abiertas = await db
+        .select({
+          id: negociaciones.id,
+          solicitudId: negociaciones.solicitudId,
+          tarifaNeta: negociaciones.tarifaNetaCentavos,
+          precioAcordado: negociaciones.precioAcordadoCentavos,
+          desde: solicitudes.desde,
+          hasta: solicitudes.hasta,
+          propiedadId: solicitudes.propiedadId,
+          externoId: solicitudes.externoId,
+          principalId: solicitudes.principalAceptanteId,
+        })
+        .from(negociaciones)
+        .innerJoin(solicitudes, eq(negociaciones.solicitudId, solicitudes.id))
+        .where(
+          and(
+            eq(negociaciones.estado, "abierta"),
+            sql`(${solicitudes.principalAceptanteId} = ${u.id} OR ${solicitudes.externoId} = ${u.id})`,
+          ),
+        )
+        .orderBy(desc(solicitudes.creadaEn))
+        .limit(1);
+      const n = abiertas[0];
+      if (!n) continue;
 
-    const ofertasFilas = await db
-      .select()
-      .from(ofertas)
-      .where(eq(ofertas.negociacionId, n.id))
-      .orderBy(asc(ofertas.creadaEn));
+      const [prop] = await db
+        .select({ nombre: propiedades.nombre, margen: propiedades.margenMinimoCentavos, ownerDirect: propiedades.ownerDirect })
+        .from(propiedades)
+        .where(eq(propiedades.id, n.propiedadId));
+      const alias = await aliasDe(db, [n.externoId, n.principalId].filter(Boolean) as string[]);
+      const ofertasFilas = await db
+        .select()
+        .from(ofertas)
+        .where(eq(ofertas.negociacionId, n.id))
+        .orderBy(asc(ofertas.creadaEn));
 
-    const tarifaNetaTotal = pesos(n.tarifaNeta);
-    return {
-      esDemo: false,
-      negociacion: {
-        id: n.id,
-        solicitudId: n.solicitudId,
-        propiedadId: n.propiedadId,
-        propiedadNombre: prop?.nombre ?? "—",
-        aliasPrincipal: (n.principalId && alias.get(n.principalId)) || "—",
-        aliasExterno: alias.get(n.externoId) ?? "—",
-        noches: noches(n.desde, n.hasta),
-        fechas: { desde: n.desde, hasta: n.hasta },
-        tarifaNetaTotal,
-        precioAcordado: n.precioAcordado ? pesos(n.precioAcordado) : undefined,
-        // Rango sugerido: heurística de mercado (+10% a +25% sobre la neta).
-        rangoSugerido: {
-          min: Math.round((tarifaNetaTotal * 1.1) / 10_000) * 10_000,
-          max: Math.round((tarifaNetaTotal * 1.25) / 10_000) * 10_000,
+      const tarifaNetaTotal = pesos(n.tarifaNeta);
+      const margenMinimo = pesos(prop?.margen ?? 0);
+      return {
+        esDemo: false,
+        soyPropietario: esDueno || Boolean(prop?.ownerDirect && n.principalId === u.id),
+        negociacion: {
+          id: n.id,
+          solicitudId: n.solicitudId,
+          propiedadId: n.propiedadId,
+          propiedadNombre: prop?.nombre ?? "—",
+          margenMinimo,
+          aliasPrincipal: (n.principalId && alias.get(n.principalId)) || "PROPIETARIO",
+          aliasExterno: alias.get(n.externoId) ?? "—",
+          noches: noches(n.desde, n.hasta),
+          fechas: { desde: n.desde, hasta: n.hasta },
+          tarifaNetaTotal,
+          precioAcordado: n.precioAcordado ? pesos(n.precioAcordado) : undefined,
+          // Rango sugerido: heurística de mercado, nunca por debajo del mínimo.
+          rangoSugerido: {
+            min: Math.max(
+              tarifaNetaTotal + margenMinimo,
+              Math.round((tarifaNetaTotal * 1.1) / 10_000) * 10_000,
+            ),
+            max: Math.max(
+              tarifaNetaTotal + margenMinimo,
+              Math.round((tarifaNetaTotal * 1.25) / 10_000) * 10_000,
+            ),
+          },
+          ofertas: ofertasFilas.map((o) => ({
+            id: o.id,
+            emisor: o.emisorId === n.externoId ? ("externo" as const) : ("principal" as const),
+            monto: pesos(o.montoCentavos),
+            timestamp: new Intl.DateTimeFormat("es-CO", {
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: false,
+              timeZone: ZONA,
+            }).format(o.creadaEn),
+            vigenciaHoras: Math.max(1, Math.round((o.venceEn.getTime() - o.creadaEn.getTime()) / 3_600_000)),
+            estado: o.estado as "activa" | "contraofertada" | "aceptada" | "expirada",
+          })),
         },
-        ofertas: ofertasFilas.map((o) => ({
-          id: o.id,
-          emisor: o.emisorId === n.externoId ? ("externo" as const) : ("principal" as const),
-          monto: pesos(o.montoCentavos),
-          timestamp: new Intl.DateTimeFormat("es-CO", {
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: false,
-            timeZone: ZONA,
-          }).format(o.creadaEn),
-          vigenciaHoras: Math.max(1, Math.round((o.venceEn.getTime() - o.creadaEn.getTime()) / 3_600_000)),
-          estado: o.estado as "activa" | "contraofertada" | "aceptada" | "expirada",
-        })),
-      },
-      perspectivaFija: null,
-    };
-  });
+        perspectivaFija,
+      };
+    }
+    return { esDemo: false, negociacion: null, perspectivaFija, soyPropietario: false };
+  } catch (e) {
+    const { authExigida: exigida } = await import("../auth");
+    if (exigida()) throw e;
+    console.error("[datos] negociacion → fallback demo:", e);
+    return demoNegociacion();
+  }
 }
 
 // ─── Chat (conversación de la negociación/reserva en curso) ─────────────────
@@ -787,6 +867,7 @@ export function datosChat(): Promise<DatosChat> {
     };
   });
 }
+
 
 // ─── Ficha de propiedad (externo) ────────────────────────────────────────────
 

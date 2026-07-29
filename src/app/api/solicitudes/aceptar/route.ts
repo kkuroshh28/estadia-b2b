@@ -6,7 +6,11 @@ import { aceptarYAbrirNegociacion, OperacionError } from "@/server/servicios/sol
 import { limitar } from "@/server/rate-limit";
 
 /** "El primero que acepta gana" — la atomicidad vive en el servicio (UPDATE condicional). */
-const Cuerpo = z.object({ solicitudId: z.uuid() });
+const Cuerpo = z.object({
+  solicitudId: z.uuid(),
+  // 'propietario' = gestión directa (Anexo I): el dueño acepta él mismo.
+  como: z.enum(["principal", "propietario"]).default("principal"),
+});
 
 export async function POST(req: Request) {
   const excedido = limitar(req, "solicitudes-aceptar", 30);
@@ -17,7 +21,7 @@ export async function POST(req: Request) {
   if (!parseado.success) return NextResponse.json({ error: "Cuerpo inválido" }, { status: 400 });
 
   const db = obtenerDb();
-  const actor = await actorDePeticion(db, "principal");
+  const actor = await actorDePeticion(db, parseado.data.como);
   if (!actor) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
   try {

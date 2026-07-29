@@ -87,3 +87,19 @@ Precio de suscripción; vigencias exactas; política de cancelación; pasarela d
 - **Fase 1 MVP**: KYC 3 roles + alias, propiedades y tarifa neta, calendario con bloqueo manual, búsqueda, solicitudes, negociación, links 50/50 con split, chat con filtro, semáforo, piso programado (apagado).
 - **Fase 2**: iCal, reputación, OCR, precio sugerido, reportes.
 - **Fase 3**: expansión (Antioquia → Eje Cafetero → Costa), activación del piso.
+
+
+## Anexo I — Owner Direct (gestión directa) · 2026-07-29
+Modelo operativo alterno: el propietario gestiona su propiedad SIN socios
+comerciales y actúa él mismo como gestor comercial.
+- `propiedades.owner_direct` (por propiedad) + `margen_minimo_centavos` →
+  **precio mínimo de venta = tarifa neta + margen mínimo** (regla dura en el
+  servidor para ofertas y aceptaciones).
+- En OD solo el DUEÑO acepta solicitudes (sin vínculo) y negocia en el módulo
+  de negociación; el split vigente (regla #7: 50/40/10) le asigna
+  automáticamente la participación comercial ADEMÁS de su tarifa neta.
+- Cambio de modelo permitido solo sin reservas activas (auditable por las
+  transiciones de sus reservas).
+- NOTA pendiente de decisión: el ejemplo del anexo reparte 10% plataforma y
+  luego 60/40 del restante (≡ 54/36/10). La implementación usa la regla #7
+  vigente (50/40/10). Cambiarla es un ajuste de constantes en `src/lib/dinero`.

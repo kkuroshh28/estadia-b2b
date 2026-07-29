@@ -103,26 +103,40 @@ export async function crearSolicitud(
     })
     .returning({ id: solicitudes.id, venceEn: solicitudes.venceEn });
 
-  // Campanita a TODOS los principales vinculados: el primero que acepta gana.
-  const [nombreProp] = await db
-    .select({ nombre: propiedades.nombre })
+  // Campanita: en Owner Direct al DUEÑO; si no, a TODOS los socios vinculados.
+  const [propInfo] = await db
+    .select({
+      nombre: propiedades.nombre,
+      ownerDirect: propiedades.ownerDirect,
+      propietarioId: propiedades.propietarioId,
+    })
     .from(propiedades)
     .where(eq(propiedades.id, datos.propiedadId));
   const aliasExterno = await aliasDeUsuario(db, datos.externoId);
-  const principales = await db
-    .select({ principalId: vinculos.principalId })
-    .from(vinculos)
-    .where(and(eq(vinculos.propiedadId, datos.propiedadId), eq(vinculos.estado, "activo")));
-  await Promise.all(
-    principales.map((p) =>
-      notificarEnApp(db, p.principalId, {
-        tipo: "solicitud",
-        titulo: "Nueva solicitud entrante",
-        cuerpo: `${aliasExterno} pide ${nombreProp?.nombre ?? "una propiedad"} (${datos.desde} → ${datos.hasta}). El primero que acepte se la queda.`,
-        url: "/app/principal",
-      }),
-    ),
-  );
+  const cuerpoAviso = `${aliasExterno} pide ${propInfo?.nombre ?? "una propiedad"} (${datos.desde} → ${datos.hasta}). El primero que acepte se la queda.`;
+  if (propInfo?.ownerDirect) {
+    await notificarEnApp(db, propInfo.propietarioId, {
+      tipo: "solicitud",
+      titulo: "Nueva solicitud entrante (gestión directa)",
+      cuerpo: cuerpoAviso,
+      url: "/app/propietario",
+    });
+  } else {
+    const principales = await db
+      .select({ principalId: vinculos.principalId })
+      .from(vinculos)
+      .where(and(eq(vinculos.propiedadId, datos.propiedadId), eq(vinculos.estado, "activo")));
+    await Promise.all(
+      principales.map((p) =>
+        notificarEnApp(db, p.principalId, {
+          tipo: "solicitud",
+          titulo: "Nueva solicitud entrante",
+          cuerpo: cuerpoAviso,
+          url: "/app/principal",
+        }),
+      ),
+    );
+  }
   return { solicitudId: fila.id, venceEn: fila.venceEn };
 }
 
@@ -144,18 +158,31 @@ export async function aceptarYAbrirNegociacion(
   const [sol] = await db.select().from(solicitudes).where(eq(solicitudes.id, solicitudId));
   if (!sol) throw new OperacionError("Solicitud no encontrada.");
 
-  // Solo un principal VINCULADO (activo) a la propiedad puede aceptarla.
-  const [vinculo] = await db
-    .select({ estado: vinculosComisionista.estado })
-    .from(vinculosComisionista)
-    .where(
-      and(
-        eq(vinculosComisionista.propiedadId, sol.propiedadId),
-        eq(vinculosComisionista.principalId, principalId),
-        eq(vinculosComisionista.estado, "activo"),
-      ),
-    );
-  if (!vinculo) throw new OperacionError("No estás vinculado a esta propiedad.");
+  const [propOD] = await db
+    .select({ ownerDirect: propiedades.ownerDirect, propietarioId: propiedades.propietarioId })
+    .from(propiedades)
+    .where(eq(propiedades.id, sol.propiedadId));
+
+  if (propOD?.ownerDirect) {
+    // Anexo I: en gestión directa SOLO el dueño acepta (actúa como socio
+    // comercial y recibe esa participación del split automáticamente).
+    if (principalId !== propOD.propietarioId) {
+      throw new OperacionError("Esta propiedad es de gestión directa: solo su dueño negocia.");
+    }
+  } else {
+    // Solo un socio comercial VINCULADO (activo) a la propiedad puede aceptarla.
+    const [vinculo] = await db
+      .select({ estado: vinculosComisionista.estado })
+      .from(vinculosComisionista)
+      .where(
+        and(
+          eq(vinculosComisionista.propiedadId, sol.propiedadId),
+          eq(vinculosComisionista.principalId, principalId),
+          eq(vinculosComisionista.estado, "activo"),
+        ),
+      );
+    if (!vinculo) throw new OperacionError("No estás vinculado a esta propiedad.");
+  }
 
   const gano = await aceptarSolicitud(db, solicitudId, principalId);
   if (!gano) return { gano: false };
@@ -245,10 +272,15 @@ export async function contraofertar(
     }
 
     const piso = await obtenerPisoComision(tx as unknown as Db);
+    const [propMargen] = await tx
+      .select({ margen: propiedades.margenMinimoCentavos })
+      .from(propiedades)
+      .where(eq(propiedades.id, sol!.propiedadId));
     const validacion = validarPropuestaServidor(
       centavos(montoCentavos),
       centavos(neg.tarifaNetaCentavos),
       piso,
+      propMargen?.margen ?? 0,
     );
     if (!validacion.valida) throw new OperacionError(validacion.motivo);
 

@@ -217,6 +217,11 @@ export const propiedades = pgTable("propiedades", {
   certTradicionLibertadUrl: text("cert_tradicion_libertad_url"),
   verificada: boolean("verificada").notNull().default(false),
   publicada: boolean("publicada").notNull().default(false), // exige suscripción activa
+  // Anexo I "Owner Direct": el dueño gestiona directo (sin socios comerciales)
+  // y recibe también la participación comercial del split.
+  ownerDirect: boolean("owner_direct").notNull().default(false),
+  // Margen comercial mínimo (centavos): precio mínimo de venta = neta + margen.
+  margenMinimoCentavos: bigint("margen_minimo_centavos", { mode: "number" }).notNull().default(0),
   creadaEn: timestamp("creada_en", { withTimezone: true }).notNull().defaultNow(),
 });
 

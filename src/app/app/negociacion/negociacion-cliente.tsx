@@ -24,6 +24,9 @@ export function NegociacionCliente({ datos }: { datos: DatosNegociacion }) {
   const [perspectiva, setPerspectiva] = useState<"principal" | "externo">(
     datos.perspectivaFija ?? "principal",
   );
+  // Lado comercial: con Owner Direct quien actúa es el DUEÑO.
+  const comoComercial = datos.soyPropietario ? "propietario" : "principal";
+  const precioMinimo = neg.tarifaNetaTotal + (neg.margenMinimo ?? 0);
   const [ofertas, setOfertas] = useState<Oferta[]>(neg.ofertas);
   const [ofertasBase, setOfertasBase] = useState<Oferta[]>(neg.ofertas);
   const [linkReal, setLinkReal] = useState<string | null>(null);
@@ -53,7 +56,7 @@ export function NegociacionCliente({ datos }: { datos: DatosNegociacion }) {
         const r = await fetch("/api/negociacion/ofertar", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ negociacionId: neg.id, montoPesos: propuesta, como: perspectiva }),
+          body: JSON.stringify({ negociacionId: neg.id, montoPesos: propuesta, como: perspectiva === "principal" ? comoComercial : "externo" }),
         });
         const json = await r.json();
         if (!r.ok) throw new Error(json.error ?? "No se pudo enviar la oferta");
@@ -87,7 +90,7 @@ export function NegociacionCliente({ datos }: { datos: DatosNegociacion }) {
       const r = await fetch("/api/negociacion/aceptar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ofertaId: ultima!.id, como: perspectiva }),
+        body: JSON.stringify({ ofertaId: ultima!.id, como: perspectiva === "principal" ? comoComercial : "externo" }),
       });
       const json = await r.json();
       if (!r.ok) throw new Error(json.error ?? "No se pudo aceptar la oferta");
@@ -127,8 +130,19 @@ export function NegociacionCliente({ datos }: { datos: DatosNegociacion }) {
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card className="p-4">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-bruma-osc">Tarifa neta total (intocable)</p>
-          <Money valor={neg.tarifaNetaTotal} className="mt-1 block text-xl font-bold text-esmeralda" />
+          <p className="text-[10px] font-bold uppercase tracking-wider text-bruma-osc">
+            {neg.margenMinimo > 0 ? "Precio mínimo de venta" : "Tarifa neta total (intocable)"}
+          </p>
+          <Money
+            valor={neg.margenMinimo > 0 ? precioMinimo : neg.tarifaNetaTotal}
+            className="mt-1 block text-xl font-bold text-esmeralda"
+          />
+          {neg.margenMinimo > 0 && (
+            <p className="mt-1 text-[10px] text-bruma-osc">
+              neta <Money valor={neg.tarifaNetaTotal} /> + margen mínimo{" "}
+              <Money valor={neg.margenMinimo} />
+            </p>
+          )}
         </Card>
         <Card className="p-4">
           <p className="text-[10px] font-bold uppercase tracking-wider text-bruma-osc">Mercado · fechas similares</p>
@@ -244,8 +258,8 @@ export function NegociacionCliente({ datos }: { datos: DatosNegociacion }) {
                 </label>
                 <input
                   type="range"
-                  min={neg.tarifaNetaTotal}
-                  max={neg.tarifaNetaTotal + 1_600_000}
+                  min={precioMinimo}
+                  max={Math.max(precioMinimo, neg.tarifaNetaTotal) + 1_600_000}
                   step={10_000}
                   value={propuesta}
                   onChange={(e) => setPropuesta(Number(e.target.value))}

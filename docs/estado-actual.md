@@ -41,6 +41,21 @@
   activa del propietario obligatoria (regla #3); turnos de oferta; capacidad.
 - Suite: **91 tests** verdes.
 
+## Novedades 2026-07-29: ANEXO I — OWNER DIRECT implementado
+- Gestión directa por propiedad (`owner_direct`, migración 0004) + margen
+  comercial mínimo → precio mínimo de venta aplicado en el servidor.
+- Solo el dueño acepta/negocia sus propiedades OD (las solicitudes le
+  notifican a él); el Deal Room lo reconoce ("Actúas como PROPIETARIO",
+  slider desde el precio mínimo) vía guard multi-rol.
+- El split paga al dueño neta + participación comercial (motor intacto).
+  Cambio de modelo bloqueado con reservas activas. Alta con toggle "Gestión
+  directa" + margen; página de socios avisa en propiedades OD.
+- E2E en navegador: Cabaña del Lago Directa → solicitud → dueño acepta →
+  oferta bajo el mínimo RECHAZADA → acuerdo $6.000.000 → pago → split
+  CIR-2026-00412 con Andrés cobrando $2.500.000 + $250.000. 3 tests nuevos
+  (98 en total). PENDIENTE decisión: proporción 60/40 del anexo vs 50/40
+  vigente (regla #7).
+
 ## Novedades 2026-07-28: MODO VITRINA (data demo de vuelta, solo sin DB)
 - Kurosh necesita MOSTRAR la plataforma llena a dueños/prospectos. Sin
   DATABASE_URL, los paneles se llenan con data de demostración coherente

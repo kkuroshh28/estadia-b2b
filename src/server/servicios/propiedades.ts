@@ -26,6 +26,14 @@ import {
 
 export class PropiedadError extends Error {}
 
+function validarMargenPesos(margenPesos?: number): number {
+  const m = margenPesos ?? 0;
+  if (!Number.isSafeInteger(m) || m < 0 || m > 50_000_000) {
+    throw new PropiedadError("El margen mínimo debe estar entre $0 y $50.000.000.");
+  }
+  return m;
+}
+
 const TIPOS = ["finca", "apartamento", "casa", "glamping"] as const;
 
 export interface DatosNuevaPropiedad {
@@ -40,6 +48,10 @@ export interface DatosNuevaPropiedad {
   reglas: string[];
   tarifaNetaNochePesos: number;
   publicada: boolean;
+  /** Anexo I: gestión directa por el dueño (sin socios comerciales). */
+  ownerDirect?: boolean;
+  /** Margen comercial mínimo en pesos (0 = sin piso propio). */
+  margenMinimoPesos?: number;
 }
 
 export async function crearPropiedad(
@@ -83,6 +95,8 @@ export async function crearPropiedad(
         amenidades: datos.amenidades.map((a) => a.trim()).filter(Boolean).slice(0, 12),
         reglas: datos.reglas.map((r) => r.trim()).filter(Boolean).slice(0, 12),
         publicada: datos.publicada,
+        ownerDirect: datos.ownerDirect ?? false,
+        margenMinimoCentavos: validarMargenPesos(datos.margenMinimoPesos) * 100,
       })
       .returning({ id: propiedades.id });
 
@@ -236,6 +250,8 @@ async function contarActivos(db: Db, propiedadId: string): Promise<number> {
  * — el histórico queda intacto para reservas ya liquidadas.
  */
 export interface CambiosPropiedad {
+  ownerDirect?: boolean;
+  margenMinimoPesos?: number;
   nombre?: string;
   municipio?: string;
   zona?: string;
@@ -283,6 +299,28 @@ export async function editarPropiedad(
       campos.reglas = cambios.reglas.map((r) => r.trim()).filter(Boolean).slice(0, 12);
     }
     if (cambios.publicada !== undefined) campos.publicada = cambios.publicada;
+    if (cambios.margenMinimoPesos !== undefined) {
+      campos.margenMinimoCentavos = validarMargenPesos(cambios.margenMinimoPesos) * 100;
+    }
+    if (cambios.ownerDirect !== undefined) {
+      // Anexo I (flexibilidad): el cambio de modelo solo procede sin reservas
+      // activas que puedan verse afectadas.
+      const [{ activas }] = await tx
+        .select({ activas: sql<number>`count(*)::int` })
+        .from(reservas)
+        .where(
+          and(
+            eq(reservas.propiedadId, propiedadId),
+            sql`${reservas.estado} NOT IN ('COMPLETADA','EXPIRADA','INVALIDADA','RECHAZADA','CANCELADA')`,
+          ),
+        );
+      if (activas > 0) {
+        throw new PropiedadError(
+          "No se puede cambiar el modelo de gestión con reservas activas en curso.",
+        );
+      }
+      campos.ownerDirect = cambios.ownerDirect;
+    }
     if (Object.keys(campos).length > 0) {
       await tx.update(propiedades).set(campos).where(eq(propiedades.id, propiedadId));
     }

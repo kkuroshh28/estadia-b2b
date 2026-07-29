@@ -34,6 +34,7 @@ import {
 export function demoPropietario(): DatosPropietario {
   return {
     esDemo: true,
+    solicitudesDirectas: [],
     netoMes: 8_960_000,
     suscripcion: { estado: "activa", renuevaEn: "2026-08-01" },
     propiedades: PROPIEDADES,
@@ -98,8 +99,10 @@ export function demoNegociacion(): DatosNegociacion {
     negociacion: {
       ...NEGOCIACION_DEMO,
       propiedadNombre: propiedadPorId(NEGOCIACION_DEMO.propiedadId).nombre,
+      margenMinimo: 0,
     },
     perspectivaFija: null,
+    soyPropietario: false,
   };
 }
 

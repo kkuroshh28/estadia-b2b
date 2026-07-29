@@ -115,6 +115,14 @@ export function PrincipalesCliente({ datos }: { datos: DatosPrincipales }) {
         ))}
       </div>
 
+      {prop.ownerDirect ? (
+        <Card className="p-8 text-sm leading-relaxed text-bruma">
+          <span className="font-bold text-tinta">{prop.nombre}</span> está en{" "}
+          <span className="font-bold text-esmeralda">gestión directa</span>: tú mismo
+          atiendes las solicitudes y negocias — no necesita socios comerciales. Al
+          vender, recibes tu tarifa neta más la participación comercial del split.
+        </Card>
+      ) : (
       <Card className="overflow-hidden">
         <div className="flex items-center justify-between border-b border-borde px-6 py-4">
           <div>
@@ -204,6 +212,7 @@ export function PrincipalesCliente({ datos }: { datos: DatosPrincipales }) {
           ))}
         </div>
       </Card>
+      )}
 
       <Card className="p-5 text-[12px] leading-relaxed text-bruma">
         <span className="font-bold text-esmeralda">Cómo funciona la invitación:</span>{" "}

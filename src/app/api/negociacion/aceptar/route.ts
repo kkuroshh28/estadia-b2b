@@ -8,7 +8,7 @@ import { limitar } from "@/server/rate-limit";
 /** Acepta la oferta activa de la contraparte: el link del Pago 1 sale del MOTOR (regla #6). */
 const Cuerpo = z.object({
   ofertaId: z.uuid(),
-  como: z.enum(["principal", "externo"]),
+  como: z.enum(["principal", "externo", "propietario"]),
 });
 
 export async function POST(req: Request) {

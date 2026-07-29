@@ -5,7 +5,9 @@ import {
   linksDePago,
   negociaciones,
   ofertas,
+  propiedades,
   reservas,
+  solicitudes,
 } from "../db/schema";
 import { centavos, liquidarReserva, type Centavos } from "@/lib/dinero";
 
@@ -36,11 +38,19 @@ export function validarPropuestaServidor(
   montoCentavos: Centavos,
   tarifaNetaCentavos: Centavos,
   piso: PisoComision,
+  margenMinimoCentavos = 0,
 ): { valida: boolean; motivo?: string } {
   if (montoCentavos < tarifaNetaCentavos) {
     return {
       valida: false,
       motivo: "El precio no puede ser inferior a la tarifa neta del propietario.",
+    };
+  }
+  // Anexo I: margen comercial mínimo del dueño → precio mínimo de venta.
+  if (margenMinimoCentavos > 0 && montoCentavos < tarifaNetaCentavos + margenMinimoCentavos) {
+    return {
+      valida: false,
+      motivo: "El precio está por debajo del precio mínimo de venta fijado por el propietario.",
     };
   }
   if (piso.activo) {
@@ -100,10 +110,16 @@ export async function aceptarOfertaYGenerarLink(
     }
 
     const piso = await obtenerPisoComision(tx as unknown as Db);
+    const [propMargen] = await tx
+      .select({ margen: propiedades.margenMinimoCentavos })
+      .from(propiedades)
+      .innerJoin(solicitudes, eq(solicitudes.propiedadId, propiedades.id))
+      .where(eq(solicitudes.id, neg.solicitudId));
     const validacion = validarPropuestaServidor(
       centavos(oferta.montoCentavos),
       centavos(neg.tarifaNetaCentavos),
       piso,
+      propMargen?.margen ?? 0,
     );
     if (!validacion.valida) throw new OfertaNoAceptableError(validacion.motivo);
 

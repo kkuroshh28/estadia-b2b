@@ -7,6 +7,7 @@ import { datosPropietario } from "@/server/datos/paneles";
 import { calcularNetoPropietario } from "@/lib/domain/split";
 import { formatearFechaCO } from "@/lib/fechas";
 import { PublicarBoton } from "./publicar-boton";
+import { SolicitudesDirectas } from "./solicitudes-directas";
 
 export default async function PanelPropietario() {
   const datos = await datosPropietario();
@@ -61,6 +62,8 @@ export default async function PanelPropietario() {
         </div>
       </Card>
 
+      <SolicitudesDirectas solicitudes={datos.solicitudesDirectas} />
+
       {/* PROPIEDADES */}
       <section>
         <div className="flex flex-wrap items-end justify-between gap-3">
@@ -103,6 +106,7 @@ export default async function PanelPropietario() {
                       ) : (
                         <Badge tono="ambar">En revisión</Badge>
                       )}
+                      {p.ownerDirect && <Badge tono="azul">Gestión directa</Badge>}
                       {!datos.esDemo && (
                         <PublicarBoton propiedadId={p.id} publicada={p.publicada ?? true} />
                       )}
