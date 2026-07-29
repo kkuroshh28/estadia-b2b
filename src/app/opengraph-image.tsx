@@ -22,8 +22,11 @@ export default function OgImage() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", fontSize: 44, fontWeight: 700 }}>
-            THE CIRCLE<span style={{ color: "#c9a46b" }}>.</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 44, fontWeight: 700, color: "#c9a46b" }}>
+            <svg width="64" height="64" viewBox="0 0 100 100" fill="none">
+              <path d="M 72.9 17.2 A 40 40 0 1 0 72.9 82.8 A 37.6 37.6 0 1 1 72.9 17.2 Z" fill="#c9a46b" />
+            </svg>
+            THE CIRCLE
           </div>
           <div
             style={{

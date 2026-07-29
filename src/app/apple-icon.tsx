@@ -17,27 +17,12 @@ export default function AppleIcon() {
           background: "#101b16",
         }}
       >
-        <div
-          style={{
-            width: 104,
-            height: 104,
-            borderRadius: "50%",
-            border: "14px solid #c9a46b",
-            display: "flex",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            right: 28,
-            bottom: 30,
-            width: 24,
-            height: 24,
-            borderRadius: "50%",
-            background: "#c9a46b",
-            display: "flex",
-          }}
-        />
+        <svg width="129" height="129" viewBox="0 0 100 100" fill="none">
+          <path
+            d="M 72.9 17.2 A 40 40 0 1 0 72.9 82.8 A 37.6 37.6 0 1 1 72.9 17.2 Z"
+            fill="#c9a46b"
+          />
+        </svg>
       </div>
     ),
     size,

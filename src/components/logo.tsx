@@ -1,17 +1,18 @@
 /**
- * Logo THE CIRCLE — anillo "C" en latón dorado con THE/IRCLE a la derecha,
- * con brillo de latón en movimiento (texto por background-clip; anillo por
- * gradiente SVG animado). prefers-reduced-motion lo congela en dorado plano.
+ * Logo THE CIRCLE — fiel a la marca: la "C" es una LUNA CRECIENTE dorada
+ * (gruesa a la izquierda, puntas afiladas hacia la derecha) y THE/IRCLE
+ * viven dentro de su boca. Brillo de latón en movimiento (texto por
+ * background-clip; creciente por gradiente SVG). reduced-motion → dorado plano.
  */
 export function LogoCircle({
   className = "",
   tam = 30,
 }: {
   className?: string;
-  /** Alto aproximado del logo en px (el anillo escala proporcional). */
+  /** Alto aproximado del texto IRCLE en px (todo escala proporcional). */
   tam?: number;
 }) {
-  const anillo = tam * 1.6;
+  const anillo = tam * 2.4;
   const gid = `oro-${tam}`;
   return (
     <span
@@ -21,10 +22,10 @@ export function LogoCircle({
       <svg
         width={anillo}
         height={anillo}
-        viewBox="0 0 24 24"
+        viewBox="0 0 100 100"
         fill="none"
         aria-hidden
-        style={{ marginRight: -anillo * 0.08 }}
+        style={{ marginRight: -anillo * 0.66 }}
       >
         <defs>
           <linearGradient id={gid} x1="-1" y1="0" x2="0" y2="0" gradientUnits="objectBoundingBox">
@@ -37,11 +38,14 @@ export function LogoCircle({
             <animate attributeName="x2" values="0;3" dur="4.5s" repeatCount="indefinite" />
           </linearGradient>
         </defs>
+        {/* Creciente: arco exterior r40 + arco interior r37.6 por las mismas
+            puntas (72.9, 17.2/82.8) — grosor ~7 al lado izquierdo, puntas 0. */}
         <path
-          d="M 19.2 5.4 A 9.4 9.4 0 1 0 19.2 18.6"
-          stroke={`url(#${gid})`}
-          strokeWidth="1.4"
-          strokeLinecap="round"
+          d="M 72.9 17.2
+             A 40 40 0 1 0 72.9 82.8
+             A 37.6 37.6 0 1 1 72.9 17.2
+             Z"
+          fill={`url(#${gid})`}
         />
       </svg>
       <span className="flex flex-col" style={{ lineHeight: 1 }}>
@@ -50,15 +54,15 @@ export function LogoCircle({
           style={{
             fontSize: tam * 0.3,
             letterSpacing: "0.5em",
-            marginBottom: tam * 0.16,
-            marginLeft: tam * 0.58,
+            marginBottom: tam * 0.18,
+            marginLeft: tam * 0.06,
           }}
         >
           THE
         </span>
         <span
           className="font-display oro-brillante"
-          style={{ fontSize: tam * 0.68, letterSpacing: "0.34em", fontWeight: 480 }}
+          style={{ fontSize: tam * 0.66, letterSpacing: "0.36em", fontWeight: 460 }}
         >
           IRCLE
         </span>

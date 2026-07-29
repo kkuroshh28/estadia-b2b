@@ -17,27 +17,12 @@ export default function Icon() {
           background: "#101b16",
         }}
       >
-        <div
-          style={{
-            width: 300,
-            height: 300,
-            borderRadius: "50%",
-            border: "40px solid #c9a46b",
-            display: "flex",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            right: 76,
-            bottom: 84,
-            width: 64,
-            height: 64,
-            borderRadius: "50%",
-            background: "#c9a46b",
-            display: "flex",
-          }}
-        />
+        <svg width="368" height="368" viewBox="0 0 100 100" fill="none">
+          <path
+            d="M 72.9 17.2 A 40 40 0 1 0 72.9 82.8 A 37.6 37.6 0 1 1 72.9 17.2 Z"
+            fill="#c9a46b"
+          />
+        </svg>
       </div>
     ),
     size,
