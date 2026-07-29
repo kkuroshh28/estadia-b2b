@@ -41,6 +41,13 @@
   activa del propietario obligatoria (regla #3); turnos de oferta; capacidad.
 - Suite: **91 tests** verdes.
 
+## Novedades 2026-07-29 (2ª): SPLIT 45/45/10
+- Decisión de Kurosh: la comisión se reparte 45% Socio Comercial / 45% Socio
+  de Ventas / 10% Plataforma (antes 50/40/10). Cambiado en el motor de
+  centavos (BPS), el dominio del cliente, seed, TODOS los textos/ejemplos
+  (landing $90.000/$90.000, registro, desglose, comisiones, OG image, admin)
+  y la vitrina (splits e ingresos de demo recalculados). 98 tests al día.
+
 ## Novedades 2026-07-29: ANEXO I — OWNER DIRECT implementado
 - Gestión directa por propiedad (`owner_direct`, migración 0004) + margen
   comercial mínimo → precio mínimo de venta aplicado en el servidor.

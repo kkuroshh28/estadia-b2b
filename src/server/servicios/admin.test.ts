@@ -64,7 +64,7 @@ describe.skipIf(!HAY_DB)("integración — operaciones admin auditadas", () => {
     expect(auditorias.some((a) => a.accion === "editar_configuracion")).toBe(true);
   }, 30_000);
 
-  it("el split 50/40/10 NO es editable ni siquiera por admin", async () => {
+  it("el split 45/45/10 NO es editable ni siquiera por admin", async () => {
     await expect(editarConfiguracion(db, admin, "split", { principal: 0.9 })).rejects.toThrow(/regla de negocio/);
   });
 

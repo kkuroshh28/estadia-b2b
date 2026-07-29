@@ -103,3 +103,9 @@ comerciales y actúa él mismo como gestor comercial.
 - NOTA pendiente de decisión: el ejemplo del anexo reparte 10% plataforma y
   luego 60/40 del restante (≡ 54/36/10). La implementación usa la regla #7
   vigente (50/40/10). Cambiarla es un ajuste de constantes en `src/lib/dinero`.
+
+## Actualización regla #7 · 2026-07-29
+Por decisión de Kurosh, el split de la comisión pasa de 50/40/10 a
+**45% Socio Comercial / 45% Socio de Ventas / 10% Plataforma** (mismo motor
+de suma exacta; residuo de redondeo a la plataforma). Aplica también a
+Owner Direct: el dueño-gestor recibe el 45% comercial además de su neta.

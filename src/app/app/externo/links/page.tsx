@@ -31,7 +31,7 @@ export default async function LinksDePago() {
           detalle={`Parte de tu reputación como ${datos.aliasYo ?? "socio de ventas"}`}
           tono="esmeralda"
         />
-        <Stat etiqueta="Comisiones · este mes" valor={<Money valor={datos.comisionesMes} />} detalle="40% de cada comisión acordada" tono="oro" />
+        <Stat etiqueta="Comisiones · este mes" valor={<Money valor={datos.comisionesMes} />} detalle="45% de cada comisión acordada" tono="oro" />
         <Stat etiqueta="Links activos" valor={datos.links.filter((l) => l.estado === "activo").length} detalle="Con vigencia corriendo" />
       </div>
 

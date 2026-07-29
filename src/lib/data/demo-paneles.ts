@@ -79,7 +79,7 @@ export function demoLinksExterno(): DatosLinksExterno {
     links: LINKS_DE_PAGO,
     saldosPendientes: [],
     tasaPago: 0.92,
-    comisionesMes: 1_872_000,
+    comisionesMes: 2_106_000,
   };
 }
 

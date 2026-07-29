@@ -176,8 +176,8 @@ function Registro({ real }: { real: boolean }) {
                         {r === "Propietario"
                           ? "Publicas propiedades, fijas tu tarifa neta y controlas tu calendario."
                           : r === "Socio Comercial"
-                            ? "Gestionas solicitudes de propiedades vinculadas. Ganas 50% de la comisión."
-                            : "Traes tus clientes y vendes con inventario real. Ganas 40% de la comisión."}
+                            ? "Gestionas solicitudes de propiedades vinculadas. Ganas 45% de la comisión."
+                            : "Traes tus clientes y vendes con inventario real. Ganas 45% de la comisión."}
                       </p>
                     </button>
                   ))}

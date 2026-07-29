@@ -125,7 +125,7 @@ export default function Landing() {
         <RevealHero delay={0.1}>
           <div className="mt-16 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-borde bg-borde sm:grid-cols-4">
             {[
-              ["50 / 40 / 10", "split de la comisión"],
+              ["45 / 45 / 10", "split de la comisión"],
               ["~3%", "único costo del propietario"],
               ["1 noche – 3 meses", "rentas cortas únicamente"],
               ["0 holds", "sin reservas tentativas"],
@@ -160,14 +160,14 @@ export default function Landing() {
             },
             {
               rol: "Socio Comercial",
-              pct: "50% de la comisión",
+              pct: "45% de la comisión",
               tono: "text-oro",
               d: "Recibe las solicitudes sobre sus propiedades vinculadas — el primero en aceptar se la queda. Negocia el precio final con el socio de ventas en el módulo formal de ofertas.",
               demo: "/app/principal",
             },
             {
               rol: "Socio de Ventas",
-              pct: "40% de la comisión",
+              pct: "45% de la comisión",
               tono: "text-oro",
               d: "Trae el cliente — que es suyo, la plataforma jamás lo contacta. Busca disponibilidad real, negocia y reenvía el link de pago. Su reputación vive en su alias.",
               demo: "/app/externo",
@@ -227,8 +227,8 @@ export default function Landing() {
                 {[
                   ["Cliente paga (2 mitades de $600.000)", EJEMPLO.total.precioFinal, "text-tinta font-bold"],
                   ["Comisión acordada", EJEMPLO.total.comision, "text-tinta"],
-                  ["→ Socio Comercial (50%)", EJEMPLO.total.principal, "text-oro"],
-                  ["→ Socio de Ventas (40%)", EJEMPLO.total.externo, "text-oro"],
+                  ["→ Socio Comercial (45%)", EJEMPLO.total.principal, "text-oro"],
+                  ["→ Socio de Ventas (45%)", EJEMPLO.total.externo, "text-oro"],
                   ["→ Plataforma (10%)", EJEMPLO.total.app, "text-bruma"],
                   ["Propietario — tarifa neta", EJEMPLO.total.tarifaNeta, "text-esmeralda font-bold"],
                   ["− Pasarela (~3% del total procesado)", -EJEMPLO.total.pasarela, "text-rojo"],

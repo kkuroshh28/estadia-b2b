@@ -34,7 +34,7 @@ export function FlujoDinero({
     },
     {
       k: "Socio Comercial",
-      sub: "50% de la comisión",
+      sub: "45% de la comisión",
       v: total.principal,
       color: "var(--color-tiffany-profundo)",
       texto: "text-tinta",
@@ -42,7 +42,7 @@ export function FlujoDinero({
     },
     {
       k: "Socio de Ventas",
-      sub: "40% de la comisión",
+      sub: "45% de la comisión",
       v: total.externo,
       color: "var(--color-tiffany-claro)",
       texto: "text-tinta",

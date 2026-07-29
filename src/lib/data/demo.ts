@@ -289,12 +289,12 @@ export const LINKS_DE_PAGO: LinkDePago[] = [
 
 /** Historial de splits liquidados (para "Mis comisiones"). */
 export const SPLITS_LIQUIDADOS: SplitLiquidado[] = [
-  { fecha: "26 jul", codigo: "CIR-2026-00341", propiedad: "Penthouse Provenza 1102", mitad: 1, comisionTotal: 320_000, principal: 160_000, externo: 128_000, dispersado: true },
-  { fecha: "22 jul", codigo: "CIR-2026-00287", propiedad: "Glamping Bosque Nublado", mitad: 2, comisionTotal: 120_000, principal: 60_000, externo: 48_000, dispersado: true },
-  { fecha: "20 jul", codigo: "CIR-2026-00287", propiedad: "Glamping Bosque Nublado", mitad: 1, comisionTotal: 120_000, principal: 60_000, externo: 48_000, dispersado: true },
-  { fecha: "14 jul", codigo: "CIR-2026-00298", propiedad: "Casa Campestre Llanogrande", mitad: 2, comisionTotal: 300_000, principal: 150_000, externo: 120_000, dispersado: true },
-  { fecha: "08 jul", codigo: "CIR-2026-00298", propiedad: "Casa Campestre Llanogrande", mitad: 1, comisionTotal: 300_000, principal: 150_000, externo: 120_000, dispersado: true },
-  { fecha: "30 jun", codigo: "CIR-2026-00274", propiedad: "Finca Mirador del Peñol", mitad: 2, comisionTotal: 410_000, principal: 205_000, externo: 164_000, dispersado: true },
+  { fecha: "26 jul", codigo: "CIR-2026-00341", propiedad: "Penthouse Provenza 1102", mitad: 1, comisionTotal: 320_000, principal: 144_000, externo: 144_000, dispersado: true },
+  { fecha: "22 jul", codigo: "CIR-2026-00287", propiedad: "Glamping Bosque Nublado", mitad: 2, comisionTotal: 120_000, principal: 54_000, externo: 54_000, dispersado: true },
+  { fecha: "20 jul", codigo: "CIR-2026-00287", propiedad: "Glamping Bosque Nublado", mitad: 1, comisionTotal: 120_000, principal: 54_000, externo: 54_000, dispersado: true },
+  { fecha: "14 jul", codigo: "CIR-2026-00298", propiedad: "Casa Campestre Llanogrande", mitad: 2, comisionTotal: 300_000, principal: 135_000, externo: 135_000, dispersado: true },
+  { fecha: "08 jul", codigo: "CIR-2026-00298", propiedad: "Casa Campestre Llanogrande", mitad: 1, comisionTotal: 300_000, principal: 135_000, externo: 135_000, dispersado: true },
+  { fecha: "30 jun", codigo: "CIR-2026-00274", propiedad: "Finca Mirador del Peñol", mitad: 2, comisionTotal: 410_000, principal: 184_500, externo: 184_500, dispersado: true },
 ];
 
 export const NETO_MENSUAL_PROPIETARIO = [
@@ -315,13 +315,14 @@ export const COMISIONES_POR_MES: Record<"principal" | "externo", { mes: string; 
     { mes: "Jun", monto: 2_140_000 },
     { mes: "Jul", monto: 2_340_000 },
   ],
+  // 45/45: en los mismos negocios, ambos socios ganan lo mismo por reserva.
   externo: [
-    { mes: "Feb", monto: 784_000 },
-    { mes: "Mar", monto: 1_136_000 },
-    { mes: "Abr", monto: 920_000 },
-    { mes: "May", monto: 1_512_000 },
-    { mes: "Jun", monto: 1_712_000 },
-    { mes: "Jul", monto: 1_872_000 },
+    { mes: "Feb", monto: 882_000 },
+    { mes: "Mar", monto: 1_278_000 },
+    { mes: "Abr", monto: 1_035_000 },
+    { mes: "May", monto: 1_701_000 },
+    { mes: "Jun", monto: 1_926_000 },
+    { mes: "Jul", monto: 2_106_000 },
   ],
 };
 

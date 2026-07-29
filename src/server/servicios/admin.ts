@@ -215,7 +215,7 @@ export async function editarConfiguracion(
   const admin = exigirAdmin(actor);
   const PERMITIDAS = ["piso_comision", "vigencias", "split", "pasarela"];
   if (!PERMITIDAS.includes(clave)) throw new Error(`Clave no editable: ${clave}`);
-  if (clave === "split") throw new Error("El split 50/40/10 es regla de negocio: no se edita por UI.");
+  if (clave === "split") throw new Error("El split 45/45/10 es regla de negocio: no se edita por UI.");
   const [anterior] = await db
     .select()
     .from(configuracionPlataforma)

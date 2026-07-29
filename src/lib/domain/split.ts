@@ -1,14 +1,14 @@
 /**
  * Modelo de dinero — reglas cerradas del producto:
  *  - Comisión = precio final acordado − tarifa neta del propietario.
- *  - Split de la comisión: 50% Principal / 40% Externo / 10% App.
+ *  - Split de la comisión: 45% Socio Comercial / 45% Socio de Ventas / 10% App.
  *  - El ~3% de pasarela lo asume SOLO el propietario (informado desde antes).
  *  - Pago en dos mitades (50/50); cada mitad se reparte al entrar, sin retenciones.
  *  - Piso de comisión: lógica programada desde el MVP, APAGADA al lanzamiento.
  */
 
-export const PCT_PRINCIPAL = 0.5;
-export const PCT_EXTERNO = 0.4;
+export const PCT_PRINCIPAL = 0.45;
+export const PCT_EXTERNO = 0.45;
 export const PCT_APP = 0.1;
 export const PCT_PASARELA = 0.03;
 

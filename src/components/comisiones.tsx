@@ -7,10 +7,10 @@ import { FlujoDinero } from "@/components/flujo-dinero";
 import { formatearCOP } from "@/lib/domain/split";
 import type { DatosComisiones } from "@/lib/domain/paneles";
 
-/** Panel "Mis comisiones" compartido entre Principal (50%) y Externo (40%). */
+/** Panel "Mis comisiones" compartido: Socio Comercial y Socio de Ventas (45% cada uno). */
 export function PanelComisiones({ rol, datos }: { rol: "principal" | "externo"; datos: DatosComisiones }) {
   const alias = datos.alias ?? "—";
-  const pct = rol === "principal" ? "50%" : "40%";
+  const pct = "45%";
   const totalAno = datos.porMes.reduce((a, m) => a + m.monto, 0);
   const esteMes = datos.porMes.length ? datos.porMes[datos.porMes.length - 1].monto : 0;
   const promedio = datos.reservasCompletadas > 0 ? Math.round(totalAno / datos.reservasCompletadas) : 0;

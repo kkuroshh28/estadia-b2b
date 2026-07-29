@@ -62,7 +62,7 @@ async function main() {
   await db.insert(configuracionPlataforma).values([
     { clave: "piso_comision", valor: { activo: false, pct: 0.08 } },
     { clave: "vigencias", valor: { solicitud_min: 30, oferta_horas: 6, link_horas: 24, saldo_anticipacion_horas: 36 } },
-    { clave: "split", valor: { principal: 0.5, externo: 0.4, app: 0.1 } },
+    { clave: "split", valor: { principal: 0.45, externo: 0.45, app: 0.1 } },
   ]).onConflictDoNothing();
 
   // 3 propietarios + 8 socios (3 principales, 5 externos)

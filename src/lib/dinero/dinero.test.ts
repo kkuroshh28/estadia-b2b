@@ -36,10 +36,10 @@ describe("formatear (Intl es-CO)", () => {
 });
 
 describe("repartirComision — suma EXACTA siempre", () => {
-  it("caso del ejemplo de la spec: comisión $200.000", () => {
+  it("caso del ejemplo de la spec: comisión $200.000 (45/45/10)", () => {
     const s = repartirComision(centavos(20_000_000));
-    expect(s.principal).toBe(10_000_000); // $100.000
-    expect(s.externo).toBe(8_000_000); // $80.000
+    expect(s.principal).toBe(9_000_000); // $90.000
+    expect(s.externo).toBe(9_000_000); // $90.000
     expect(s.app).toBe(2_000_000); // $20.000
   });
 
@@ -56,10 +56,10 @@ describe("repartirComision — suma EXACTA siempre", () => {
   });
 
   it("el residuo va a la plataforma (política explícita)", () => {
-    // comisión de 101 centavos: 50% = 50.5 → 50; 40% = 40.4 → 40; app = 11
+    // comisión de 101 centavos: 45% = 45.45 → 45; 45% = 45.45 → 45; app = 11
     const s = repartirComision(centavos(101));
-    expect(s.principal).toBe(50);
-    expect(s.externo).toBe(40);
+    expect(s.principal).toBe(45);
+    expect(s.externo).toBe(45);
     expect(s.app).toBe(11);
   });
 
@@ -75,8 +75,8 @@ describe("liquidarReserva — invariantes financieros completos", () => {
     const [m1, m2] = liq.mitades;
     expect(m1.montoCliente).toBe(60_000_000);
     expect(m2.montoCliente).toBe(60_000_000);
-    expect(m1.split.principal + m2.split.principal).toBe(10_000_000);
-    expect(m1.split.externo + m2.split.externo).toBe(8_000_000);
+    expect(m1.split.principal + m2.split.principal).toBe(9_000_000);
+    expect(m1.split.externo + m2.split.externo).toBe(9_000_000);
     expect(m1.split.app + m2.split.app).toBe(2_000_000);
     // pasarela 3% de cada mitad de $600.000 = $18.000
     expect(m1.pasarela).toBe(1_800_000);

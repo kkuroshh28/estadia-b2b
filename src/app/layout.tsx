@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "THE CIRCLE — La red B2B de rentas cortas de Antioquia",
     description:
-      "La app no te quita tu cliente: te da inventario. Split automático 50/40/10, calendario que nunca miente y pago garantizado por link.",
+      "La app no te quita tu cliente: te da inventario. Split automático 45/45/10, calendario que nunca miente y pago garantizado por link.",
     url: "https://estadia-b2b.vercel.app",
     siteName: "THE CIRCLE",
     locale: "es_CO",

@@ -18,7 +18,7 @@ export default async function Configuracion() {
         <h1 className="font-display text-3xl text-tinta">Configuración de plataforma</h1>
         <p className="mt-1 text-sm text-bruma">
           Cada cambio queda auditado con tu identidad y el valor anterior. El split
-          50/40/10 es regla de negocio: no es editable.
+          45/45/10 es regla de negocio: no es editable.
         </p>
       </div>
 

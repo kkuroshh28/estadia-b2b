@@ -119,9 +119,9 @@ describe.skipIf(!HAY_DB)("Owner Direct — gestión directa del dueño", () => {
     expect(por("tarifa_neta").beneficiarioId).toBe(duenoId);
     expect(Number(por("tarifa_neta").montoCentavos)).toBe(2_500_000_00);
     expect(por("comision_principal").beneficiarioId).toBe(duenoId); // ← dueño como gestor
-    expect(Number(por("comision_principal").montoCentavos)).toBe(250_000_00);
+    expect(Number(por("comision_principal").montoCentavos)).toBe(225_000_00); // 45%
     expect(por("comision_externo").beneficiarioId).toBe(socioVentasId);
-    expect(Number(por("comision_externo").montoCentavos)).toBe(200_000_00);
+    expect(Number(por("comision_externo").montoCentavos)).toBe(225_000_00); // 45%
     expect(Number(por("comision_app").montoCentavos)).toBe(50_000_00);
 
     const [res] = await db.select().from(reservas).where(eq(reservas.id, reservaId));

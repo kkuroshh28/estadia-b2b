@@ -55,8 +55,8 @@ export function porcentajeBps(monto: Centavos, bps: number): Centavos {
 
 // ─── Split del modelo de negocio ─────────────────────────────────────────────
 
-export const BPS_PRINCIPAL = 5_000; // 50%
-export const BPS_EXTERNO = 4_000; // 40%
+export const BPS_PRINCIPAL = 4_500; // 45% (socio comercial)
+export const BPS_EXTERNO = 4_500; // 45% (socio de ventas)
 export const BPS_APP = 1_000; // 10%
 export const BPS_PASARELA = 300; // ~3%
 
@@ -68,7 +68,7 @@ export interface SplitComision {
 }
 
 /**
- * Reparte la comisión 50/40/10 con suma EXACTA.
+ * Reparte la comisión 45/45/10 con suma EXACTA.
  * Política de residuo: principal y externo se redondean hacia abajo;
  * la plataforma absorbe el residuo (queda con >= su 10% teórico − 2 centavos,
  * y la suma cuadra al centavo SIEMPRE).

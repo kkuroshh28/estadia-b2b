@@ -17,13 +17,13 @@ const ROLES = [
     href: "/app/principal",
     rol: "Socio Comercial",
     d: "Bandeja de solicitudes en tiempo real y módulo de negociación con desglose en vivo.",
-    kpi: "50% de la comisión",
+    kpi: "45% de la comisión",
   },
   {
     href: "/app/externo",
     rol: "Socio de Ventas",
     d: "Búsqueda con disponibilidad real, tarifa neta visible y links de pago para tu cliente.",
-    kpi: "40% de la comisión",
+    kpi: "45% de la comisión",
   },
 ];
 

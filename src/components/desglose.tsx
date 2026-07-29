@@ -26,8 +26,8 @@ export function DesgloseSplit({
 
   const filas = [
     { k: "Comisión total", v: total.comision, c: "text-tinta" },
-    { k: `Tú ganas (${perspectiva === "principal" ? "50%" : "40%"})`, v: tuyo, c: "text-oro font-bold" },
-    { k: `Él gana (${perspectiva === "principal" ? "40%" : "50%"})`, v: suyo, c: "text-bruma" },
+    { k: "Tú ganas (45%)", v: tuyo, c: "text-oro font-bold" },
+    { k: "Él gana (45%)", v: suyo, c: "text-bruma" },
     { k: "Plataforma (10%)", v: total.app, c: "text-bruma-osc" },
   ];
 

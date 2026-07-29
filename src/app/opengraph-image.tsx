@@ -52,7 +52,7 @@ export default function OgImage() {
             Red B2B de rentas cortas
           </div>
           <div style={{ display: "flex", fontSize: 26, color: "#0f3d3b", fontFamily: "monospace", fontWeight: 700 }}>
-            50 / 40 / 10 · el primero que paga, gana
+            45 / 45 / 10 · el primero que paga, gana
           </div>
         </div>
       </div>
