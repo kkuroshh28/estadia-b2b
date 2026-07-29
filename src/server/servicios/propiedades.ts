@@ -14,6 +14,7 @@ import {
   MIN_PRINCIPALES,
   puedeVincularPrincipal,
 } from "@/lib/domain/reglas";
+import { cifrar } from "../crypto";
 
 /**
  * Alta y gestión REAL del inventario del propietario:
@@ -52,6 +53,9 @@ export interface DatosNuevaPropiedad {
   ownerDirect?: boolean;
   /** Margen comercial mínimo en pesos (0 = sin piso propio). */
   margenMinimoPesos?: number;
+  /** Dirección real (se cifra; se revela SOLO tras pago completo — Anexo II). */
+  direccion?: string;
+  indicacionesLlegada?: string;
 }
 
 export async function crearPropiedad(
@@ -97,6 +101,8 @@ export async function crearPropiedad(
         publicada: datos.publicada,
         ownerDirect: datos.ownerDirect ?? false,
         margenMinimoCentavos: validarMargenPesos(datos.margenMinimoPesos) * 100,
+        direccionCifrada: datos.direccion?.trim() ? cifrar(datos.direccion.trim().slice(0, 200)) : null,
+        indicacionesLlegada: datos.indicacionesLlegada?.trim().slice(0, 400) || null,
       })
       .returning({ id: propiedades.id });
 
@@ -252,6 +258,8 @@ async function contarActivos(db: Db, propiedadId: string): Promise<number> {
 export interface CambiosPropiedad {
   ownerDirect?: boolean;
   margenMinimoPesos?: number;
+  direccion?: string;
+  indicacionesLlegada?: string;
   nombre?: string;
   municipio?: string;
   zona?: string;
@@ -299,6 +307,12 @@ export async function editarPropiedad(
       campos.reglas = cambios.reglas.map((r) => r.trim()).filter(Boolean).slice(0, 12);
     }
     if (cambios.publicada !== undefined) campos.publicada = cambios.publicada;
+    if (cambios.direccion !== undefined) {
+      campos.direccionCifrada = cambios.direccion.trim() ? cifrar(cambios.direccion.trim().slice(0, 200)) : null;
+    }
+    if (cambios.indicacionesLlegada !== undefined) {
+      campos.indicacionesLlegada = cambios.indicacionesLlegada.trim().slice(0, 400) || null;
+    }
     if (cambios.margenMinimoPesos !== undefined) {
       campos.margenMinimoCentavos = validarMargenPesos(cambios.margenMinimoPesos) * 100;
     }

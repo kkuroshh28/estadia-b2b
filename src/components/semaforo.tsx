@@ -15,15 +15,35 @@ export function Semaforo({
   reserva,
   propiedadNombre,
   accionesPropietario = false,
+  rolVista,
 }: {
   reserva: Reserva;
   propiedadNombre: string;
   /** true en el panel del propietario: habilita check-in/completada reales. */
   accionesPropietario?: boolean;
+  /** Con semáforo verde habilita "Datos de llegada" (revelación controlada). */
+  rolVista?: "propietario" | "principal" | "externo";
 }) {
   const router = useRouter();
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [llegada, setLlegada] = useState<{ direccion: string | null; indicaciones: string | null } | null>(null);
+
+  const verLlegada = async () => {
+    setError(null);
+    try {
+      const r = await fetch("/api/reservas/llegada", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reservaId: reserva.id, como: rolVista }),
+      });
+      const json = await r.json();
+      if (!r.ok) throw new Error(json.error ?? "No disponible");
+      setLlegada({ direccion: json.direccion, indicaciones: json.indicaciones });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No disponible");
+    }
+  };
   const verde = entregaAutorizada(reserva.estado);
   const progreso = progresoReserva(reserva.estado);
 
@@ -108,6 +128,35 @@ export function Semaforo({
           {verde ? "Entrega autorizada" : "Entrega NO autorizada"}
         </div>
       </div>
+
+      {rolVista && verde && (
+        <div className="mt-4 border-t border-borde pt-3">
+          {llegada ? (
+            <div className="rounded-xl border border-esmeralda/25 bg-esmeralda-tenue/40 p-3 text-xs leading-relaxed text-tinta">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-esmeralda">
+                Datos de llegada — solo partes de la reserva
+              </p>
+              <p className="mt-1.5">
+                <span className="font-bold">Dirección:</span>{" "}
+                {llegada.direccion ?? "el propietario aún no la registró"}
+              </p>
+              {llegada.indicaciones && (
+                <p className="mt-1">
+                  <span className="font-bold">Indicaciones:</span> {llegada.indicaciones}
+                </p>
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={verLlegada}
+              className="rounded-full border border-esmeralda/40 bg-esmeralda-tenue px-4 py-2 text-xs font-bold text-esmeralda transition hover:brightness-105"
+            >
+              Ver datos de llegada 🔓
+            </button>
+          )}
+          {error && <p className="mt-2 text-[11px] text-rojo">{error}</p>}
+        </div>
+      )}
 
       {accionesPropietario && (accion || conContrato) && (
         <div className="mt-4 flex flex-wrap items-center justify-end gap-3 border-t border-borde pt-3">

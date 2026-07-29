@@ -61,8 +61,9 @@ export async function registrarUsuario(
     });
   }
 
-  const alias =
-    datos.rol === "propietario" ? null : await asignarAliasUnico(db, u.id);
+  // Anexo II: identidad protegida para TODOS los roles — el dueño también
+  // opera con alias en las negociaciones.
+  const alias = await asignarAliasUnico(db, u.id);
 
   const { checkId } = await obtenerKyc().iniciarVerificacion(db, u.id);
   return { usuarioId: u.id, alias, kycCheckId: checkId };

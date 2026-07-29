@@ -19,6 +19,12 @@ describe("anti-fuga — bloquea", () => {
     // debe seguir detectándose aunque el número se pierda.
     ["miwhatsappes 10655 1234", "OCR degradado — canal pegado a palabras"],
     ["mi wsp3105551234 listo", "OCR degradado — canal y número pegados"],
+    // Anexo II: direcciones físicas
+    ["la finca queda en la Calle 10 # 43-25", "dirección urbana con #"],
+    ["Cra 7 No 12-34, El Poblado", "carrera con No."],
+    ["es en el km 5 vía Guatapé", "kilómetro con vía"],
+    ["vereda La Piedra, subiendo", "vereda con nombre"],
+    ["Av. 33 #74-12 apto 501", "avenida con numeración"],
   ];
   for (const [texto, caso] of casos) {
     it(caso, () => {

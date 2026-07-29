@@ -41,6 +41,17 @@
   activa del propietario obligatoria (regla #3); turnos de oferta; capacidad.
 - Suite: **91 tests** verdes.
 
+## Novedades 2026-07-29 (3ª): ANEXO II — IDENTIDAD PROTEGIDA
+- Alias para TODOS (propietarios incluidos; wizard los revela; asegurarAlias
+  al entrar al Deal Room en gestión directa).
+- Anti-fuga detecta DIRECCIONES FÍSICAS (Calle 10 # 43-25, Cra 7 No 12-34,
+  km 5 vía…, veredas) — 26 casos del filtro verdes, sin falsos positivos
+  con fechas/cantidades.
+- REVELACIÓN CONTROLADA: dirección cifrada en reposo + indicaciones de
+  llegada; solo participantes con semáforo VERDE la ven (API + botones en
+  semáforo y links). Migración 0005. Test e2e ampliado (verde revela,
+  antes no, tercero jamás; cifrada en DB).
+
 ## Novedades 2026-07-29 (2ª): SPLIT 45/45/10
 - Decisión de Kurosh: la comisión se reparte 45% Socio Comercial / 45% Socio
   de Ventas / 10% Plataforma (antes 50/40/10). Cambiado en el motor de

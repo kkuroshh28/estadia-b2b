@@ -75,3 +75,54 @@ function extraerFilasAfectadas(resultado: unknown): number {
   const r = resultado as { count?: number; rowCount?: number };
   return r.count ?? r.rowCount ?? 0;
 }
+
+/** Anexo II — Revelación controlada de los datos de llegada. */
+export class LlegadaError extends Error {
+  constructor(
+    mensaje: string,
+    public readonly codigo: "no_participante" | "sin_verde" | "no_encontrada",
+  ) {
+    super(mensaje);
+  }
+}
+
+export async function datosLlegada(
+  db: Db,
+  actorId: string,
+  reservaId: string,
+): Promise<{ propiedad: string; direccion: string | null; indicaciones: string | null }> {
+  const { propiedades } = await import("../db/schema");
+  const { descifrar } = await import("../crypto");
+  const { entregaAutorizada } = await import("@/lib/domain/reserva");
+  const { eq } = await import("drizzle-orm");
+
+  const [r] = await db
+    .select({
+      estado: reservas.estado,
+      principalId: reservas.principalId,
+      externoId: reservas.externoId,
+      propietarioId: propiedades.propietarioId,
+      nombre: propiedades.nombre,
+      direccionCifrada: propiedades.direccionCifrada,
+      indicaciones: propiedades.indicacionesLlegada,
+    })
+    .from(reservas)
+    .innerJoin(propiedades, eq(reservas.propiedadId, propiedades.id))
+    .where(eq(reservas.id, reservaId));
+  if (!r) throw new LlegadaError("Reserva no encontrada.", "no_encontrada");
+
+  if (![r.principalId, r.externoId, r.propietarioId].includes(actorId)) {
+    throw new LlegadaError("No eres parte de esta reserva.", "no_participante");
+  }
+  if (!entregaAutorizada(r.estado as import("@/lib/domain/tipos").EstadoReserva)) {
+    throw new LlegadaError(
+      "Los datos de llegada se revelan solo con el pago completo (semáforo verde).",
+      "sin_verde",
+    );
+  }
+  return {
+    propiedad: r.nombre,
+    direccion: r.direccionCifrada ? descifrar(r.direccionCifrada) : null,
+    indicaciones: r.indicaciones,
+  };
+}

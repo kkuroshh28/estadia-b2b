@@ -15,7 +15,8 @@ import {
   crearSolicitud,
   OperacionError,
 } from "./solicitudes";
-import { procesarWebhookPago, transicionPostPago } from "./pagos";
+import { generarLinkSaldo, procesarWebhookPago, transicionPostPago } from "./pagos";
+import { datosLlegada, LlegadaError } from "./reservas";
 
 const HAY_DB = Boolean(process.env.DATABASE_URL);
 
@@ -48,7 +49,7 @@ describe.skipIf(!HAY_DB)("Owner Direct — gestión directa del dueño", () => {
     socioComercialId = await crearUsuario("principal");
     socioVentasId = await crearUsuario("externo");
 
-    // Alta REAL con gestión directa + margen mínimo de $800.000.
+    // Alta REAL con gestión directa + margen mínimo de $800.000 + dirección CIFRADA.
     const r = await crearPropiedad(db, duenoId, {
       nombre: `Casa OD ${Date.now()}`,
       municipio: "Guatapé",
@@ -63,6 +64,8 @@ describe.skipIf(!HAY_DB)("Owner Direct — gestión directa del dueño", () => {
       publicada: true,
       ownerDirect: true,
       margenMinimoPesos: 800_000,
+      direccion: "Km 4 vía Guatapé, portería Los Almendros",
+      indicacionesLlegada: "QR al vigilante",
     });
     propiedadId = r.propiedadId;
     await db.update(propiedades).set({ verificada: true }).where(eq(propiedades.id, propiedadId));
@@ -126,6 +129,30 @@ describe.skipIf(!HAY_DB)("Owner Direct — gestión directa del dueño", () => {
 
     const [res] = await db.select().from(reservas).where(eq(reservas.id, reservaId));
     expect(res.principalId).toBe(duenoId);
+
+    // ── Anexo II: revelación controlada de los datos de llegada ──
+    // Con SOLO el anticipo (sin verde) nadie ve la dirección.
+    await expect(datosLlegada(db, socioVentasId, reservaId)).rejects.toThrow(LlegadaError);
+
+    // Pago 2 → verde.
+    const saldo = await generarLinkSaldo(db, reservaId, socioVentasId);
+    await procesarWebhookPago(db, {
+      pasarelaRef: `od-evt2-${Date.now()}`,
+      linkId: saldo.linkId,
+      montoCentavos: saldo.montoCentavos,
+      estado: "aprobada",
+    });
+    await transicionPostPago(db, reservaId, 2);
+
+    // Participante con verde: VE la dirección real (y cifrada en reposo).
+    const llegada = await datosLlegada(db, socioVentasId, reservaId);
+    expect(llegada.direccion).toBe("Km 4 vía Guatapé, portería Los Almendros");
+    expect(llegada.indicaciones).toBe("QR al vigilante");
+    const [propDb] = await db.select().from(propiedades).where(eq(propiedades.id, propiedadId));
+    expect(propDb.direccionCifrada).not.toContain("Guatapé"); // jamás en claro
+
+    // Un tercero NO participa: jamás la ve, ni con verde.
+    await expect(datosLlegada(db, socioComercialId, reservaId)).rejects.toThrow(/no eres parte/i);
   });
 
   it("el cambio de modelo se bloquea con reservas activas (principio de flexibilidad)", async () => {

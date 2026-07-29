@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Badge, Card, Money, Stat } from "@/components/ui";
 import { datosLinksExterno } from "@/server/datos/paneles";
 import { SaldosPendientes } from "./saldo-boton";
+import { LlegadaBoton } from "./llegada-boton";
 import type { EstadoLink } from "@/lib/domain/tipos";
 
 const TONO_LINK: Record<EstadoLink, { tono: "esmeralda" | "oro" | "rojo" | "neutro"; label: string }> = {
@@ -92,6 +93,9 @@ export default async function LinksDePago() {
                   )}
                 </div>
               </div>
+              {!datos.esDemo && l.mitad === 2 && l.estado === "pagado" && (
+                <LlegadaBoton reservaId={l.reservaId} />
+              )}
             </Card>
           );
         })}

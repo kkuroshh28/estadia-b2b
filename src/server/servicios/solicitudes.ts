@@ -169,6 +169,9 @@ export async function aceptarYAbrirNegociacion(
     if (principalId !== propOD.propietarioId) {
       throw new OperacionError("Esta propiedad es de gestión directa: solo su dueño negocia.");
     }
+    // Anexo II: el dueño también negocia con identidad protegida.
+    const { asegurarAlias } = await import("./alias");
+    await asegurarAlias(db, principalId);
   } else {
     // Solo un socio comercial VINCULADO (activo) a la propiedad puede aceptarla.
     const [vinculo] = await db

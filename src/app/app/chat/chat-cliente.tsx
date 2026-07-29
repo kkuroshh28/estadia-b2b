@@ -215,7 +215,8 @@ export function ChatCliente({ datos }: { datos: DatosChat }) {
           </div>
           <p className="mt-2 text-[10px] text-bruma-osc">
             El filtro corre ANTES del envío: números (incluso en palabras), correos,
-            @usuarios y URLs nunca llegan al otro lado. Las imágenes pasan por OCR.
+            @usuarios, URLs y direcciones físicas nunca llegan al otro lado. Las
+            imágenes pasan por OCR. La dirección real se revela sola, con el verde.
           </p>
         </div>
 

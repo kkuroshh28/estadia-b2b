@@ -109,3 +109,17 @@ Por decisión de Kurosh, el split de la comisión pasa de 50/40/10 a
 **45% Socio Comercial / 45% Socio de Ventas / 10% Plataforma** (mismo motor
 de suma exacta; residuo de redondeo a la plataforma). Aplica también a
 Owner Direct: el dueño-gestor recibe el 45% comercial además de su neta.
+
+## Anexo II — Identidad Protegida · 2026-07-29
+- Alias anónimos autogenerados para TODOS los roles, incluido el propietario
+  (antes solo socios). El wizard revela el alias a todos; el dueño en gestión
+  directa recibe alias al entrar al Deal Room si no lo tenía.
+- Anti-fuga amplía la lista bloqueada con DIRECCIONES FÍSICAS (nomenclatura
+  urbana colombiana, km/vía, veredas) además de teléfonos, correos, redes,
+  URLs y solicitudes de contacto. OCR sobre imágenes ya existía.
+- REVELACIÓN CONTROLADA: `propiedades.direccion_cifrada` (AES-GCM) +
+  indicaciones; la dirección real solo se entrega vía
+  `/api/reservas/llegada` a PARTICIPANTES de una reserva con semáforo VERDE
+  (servicio `datosLlegada`, testeado: sin verde no, tercero jamás). Botones
+  "Ver datos de llegada" en semáforo (dueño/socio comercial) y en links del
+  socio de ventas.

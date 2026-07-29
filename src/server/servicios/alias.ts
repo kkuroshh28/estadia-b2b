@@ -48,3 +48,12 @@ function esViolacionUnicidad(e: unknown): boolean {
   }
   return false;
 }
+
+/** Garantiza que un usuario tenga alias activo (dueños antiguos sin alias). */
+export async function asegurarAlias(db: Db, usuarioId: string): Promise<string> {
+  const [existente] = await db.execute(
+    sql`SELECT alias FROM alias WHERE usuario_id = ${usuarioId} AND NOT retirado LIMIT 1`,
+  ) as unknown as [{ alias: string } | undefined];
+  if (existente?.alias) return existente.alias;
+  return asignarAliasUnico(db, usuarioId);
+}

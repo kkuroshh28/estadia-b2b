@@ -87,6 +87,8 @@ export function NuevaPropiedadCliente() {
     publicada: true,
     ownerDirect: false,
     margenMinimoPesos: 0,
+    direccion: "",
+    indicacionesLlegada: "",
   });
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -173,6 +175,29 @@ export function NuevaPropiedadCliente() {
           onCambio={(v) => setF({ ...f, reglas: v })}
           placeholder="No fiestas después de 11 pm, Check-in 3 pm"
         />
+        <div className="rounded-xl border border-borde bg-panel p-4">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-bruma-osc">
+            Datos de llegada — identidad protegida
+          </p>
+          <p className="mt-1 text-[11px] leading-relaxed text-bruma">
+            La dirección se guarda CIFRADA y solo se revela a las partes de una
+            reserva con pago completo. Jamás aparece en la búsqueda ni en el chat.
+          </p>
+          <div className="mt-3 space-y-3">
+            <CampoTexto
+              etiqueta="Dirección exacta"
+              valor={f.direccion}
+              onCambio={(v) => setF({ ...f, direccion: v })}
+              placeholder="Km 4 vía Guatapé–El Peñol, portería Los Almendros"
+            />
+            <CampoTexto
+              etiqueta="Indicaciones de llegada"
+              valor={f.indicacionesLlegada}
+              onCambio={(v) => setF({ ...f, indicacionesLlegada: v })}
+              placeholder="Entrada por la portería norte; el QR se muestra al vigilante"
+            />
+          </div>
+        </div>
       </Card>
 
       <Card className="space-y-4 p-6">

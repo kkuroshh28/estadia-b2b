@@ -97,7 +97,6 @@ function Registro({ real }: { real: boolean }) {
   const [aliasReal, setAliasReal] = useState<string | null>(null);
   const aliasDemo = useMemo(() => generarAlias(), []);
   const alias = aliasReal ?? aliasDemo;
-  const esComisionista = rol !== "Propietario";
 
   // Biometría simulada: 2.4 s de "escaneo" y confirma.
   useEffect(() => {
@@ -141,7 +140,7 @@ function Registro({ real }: { real: boolean }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ checkId: json.kycCheckId }),
       }).catch(() => null);
-      setPaso(esComisionista ? 4 : 5);
+      setPaso(4);
     } catch (e) {
       setErrorRegistro(e instanceof Error ? e.message : "No se pudo crear la cuenta");
     } finally {
@@ -190,7 +189,7 @@ function Registro({ real }: { real: boolean }) {
               <motion.div key="datos" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }}>
                 <h1 className="font-display text-2xl text-tinta">Tus datos reales</h1>
                 <p className="mt-1 text-xs text-bruma">
-                  Solo para verificación, pagos y contratos. {esComisionista && "Otros usuarios jamás los verán: operarás con un alias."}
+                  Solo para verificación, pagos y contratos. Otros usuarios jamás los verán: operarás con un alias.
                 </p>
                 <div className="mt-6 space-y-4">
                   <Campo etiqueta="Nombre completo" placeholder="Como aparece en tu cédula" valor={datos.nombre} onCambio={(v) => setDatos((d) => ({ ...d, nombre: v }))} />

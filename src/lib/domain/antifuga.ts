@@ -47,6 +47,20 @@ const PATRONES: { patron: RegExp; motivo: string }[] = [
     patron: /\b(?:ll[aá]mame|escr[ií]beme|mi\s+n[uú]mero|te\s+paso\s+el\s+(?:dato|n[uú]mero)|marcame|m[aá]rcame)\b/i,
     motivo: "Solicitud de contacto por fuera",
   },
+  // Anexo II: direcciones físicas — nomenclatura colombiana con numeración
+  // ("Calle 10 # 43-25", "Cra 7 No 12-34", "Av. 33 #74-12") y referencias
+  // rurales ("km 5 vía Guatapé", "vereda La Piedra"). La dirección REAL viaja
+  // por la revelación controlada tras el pago completo, jamás por el chat.
+  {
+    patron:
+      /\b(?:calle|cll?e?|carrera|cra|kra|cr|diagonal|diag|transversal|tra?nsv|avenida|av|autopista|circular)\.?\s*\d+[a-z]?\s*(?:#|n[oº°]\.?|num\.?|numero)\s*\d+/i,
+    motivo: "Dirección física",
+  },
+  {
+    patron: /\b(?:km|kil[oó]metro)\.?\s*\d+\s+(?:v[ií]a|autopista|carretera)\b/i,
+    motivo: "Dirección física",
+  },
+  { patron: /\bvereda\s+[a-záéíóúñ]{2,}/i, motivo: "Dirección física" },
 ];
 
 export function filtrarMensaje(texto: string): ResultadoFiltro {

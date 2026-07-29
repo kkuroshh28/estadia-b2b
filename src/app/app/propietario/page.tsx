@@ -147,7 +147,7 @@ export default async function PanelPropietario() {
         ) : (
           <div className="mt-5 grid gap-4 lg:grid-cols-2">
             {datos.reservas.map((r) => (
-              <Semaforo key={r.id} reserva={r} propiedadNombre={r.propiedadNombre} accionesPropietario={!datos.esDemo} />
+              <Semaforo key={r.id} reserva={r} propiedadNombre={r.propiedadNombre} accionesPropietario={!datos.esDemo} rolVista={datos.esDemo ? undefined : "propietario"} />
             ))}
           </div>
         )}
