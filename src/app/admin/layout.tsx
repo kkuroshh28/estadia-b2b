@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LogoCircle } from "@/components/logo";
 import { protegerAdmin } from "@/server/auth/guardia";
 import { Badge } from "@/components/ui";
 
@@ -20,7 +21,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <aside className="hidden w-60 shrink-0 flex-col border-r border-borde bg-panel lg:flex">
         <Link href="/" className="border-b border-borde px-6 py-5">
           <p className="font-display text-xl text-tinta">
-            THE CIRCLE<span className="text-rojo">.</span>
+            <LogoCircle tam={26} />
           </p>
           <p className="mt-0.5 text-[10px] uppercase tracking-[0.2em] text-bruma-osc">
             Consola de operación

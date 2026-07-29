@@ -221,7 +221,7 @@ export function NegociacionCliente({ datos }: { datos: DatosNegociacion }) {
                 </p>
                 <Link
                   href={`/pago/${linkReal ?? "lnk-7f3a"}`}
-                  className="mt-4 inline-block rounded-full bg-tiffany px-6 py-2.5 text-xs font-bold text-tinta transition hover:bg-tiffany-claro"
+                  className="mt-4 inline-block rounded-full bg-tiffany px-6 py-2.5 text-xs font-bold text-noche transition hover:bg-tiffany-claro"
                 >
                   Ver checkout del cliente →
                 </Link>
@@ -275,7 +275,7 @@ export function NegociacionCliente({ datos }: { datos: DatosNegociacion }) {
                   {ultima && (
                     <button
                       onClick={aceptar}
-                      className="rounded-full bg-tiffany px-5 py-3 text-xs font-bold text-tinta transition hover:bg-tiffany-claro"
+                      className="rounded-full bg-tiffany px-5 py-3 text-xs font-bold text-noche transition hover:bg-tiffany-claro"
                     >
                       Aceptar la última oferta (<Money valor={ultima.monto} />)
                     </button>

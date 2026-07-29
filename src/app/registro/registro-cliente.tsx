@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
+import { LogoCircle } from "@/components/logo";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
@@ -69,7 +70,7 @@ function BotonSiguiente({ onClick, children = "Continuar →" }: { onClick: () =
   return (
     <button
       onClick={onClick}
-      className="mt-6 w-full rounded-full bg-tiffany py-3.5 text-sm font-bold text-tinta transition hover:bg-tiffany-claro"
+      className="mt-6 w-full rounded-full bg-tiffany py-3.5 text-sm font-bold text-noche transition hover:bg-tiffany-claro"
     >
       {children}
     </button>
@@ -151,7 +152,7 @@ function Registro({ real }: { real: boolean }) {
   return (
     <main className="atmosfera flex min-h-screen flex-col items-center px-6 py-10">
       <Link href="/" className="font-display text-2xl text-tinta">
-        THE CIRCLE<span className="text-tiffany">.</span>
+        <LogoCircle tam={34} />
       </Link>
 
       <div className="mt-8 w-full max-w-lg">
@@ -307,7 +308,7 @@ function Registro({ real }: { real: boolean }) {
                 {aceptaBan && aceptaInterno ? (
                   <Link
                     href="/app"
-                    className="mt-6 block w-full rounded-full bg-tiffany py-3.5 text-center text-sm font-bold text-tinta transition hover:bg-tiffany-claro"
+                    className="mt-6 block w-full rounded-full bg-tiffany py-3.5 text-center text-sm font-bold text-noche transition hover:bg-tiffany-claro"
                   >
                     Crear mi cuenta y entrar →
                   </Link>

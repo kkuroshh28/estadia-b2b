@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { LogoCircle } from "@/components/logo";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
@@ -43,7 +44,7 @@ export default function Login() {
   return (
     <main className="atmosfera flex min-h-screen flex-col items-center justify-center px-6">
       <Link href="/" className="font-display text-2xl text-tinta">
-        THE CIRCLE<span className="text-tiffany">.</span>
+        <LogoCircle tam={34} />
       </Link>
       <motion.div
         initial={{ opacity: 0, y: 16 }}
@@ -75,7 +76,7 @@ export default function Login() {
             <button
               onClick={pedirCodigo}
               disabled={cargando || !email.includes("@")}
-              className="mt-5 w-full rounded-full bg-tiffany py-3.5 text-sm font-bold text-tinta transition hover:bg-tiffany-claro disabled:opacity-50"
+              className="mt-5 w-full rounded-full bg-tiffany py-3.5 text-sm font-bold text-noche transition hover:bg-tiffany-claro disabled:opacity-50"
             >
               {cargando ? "Enviando…" : "Enviar código"}
             </button>
@@ -97,7 +98,7 @@ export default function Login() {
             <button
               onClick={entrar}
               disabled={cargando || codigo.length !== 6}
-              className="mt-5 w-full rounded-full bg-tiffany py-3.5 text-sm font-bold text-tinta transition hover:bg-tiffany-claro disabled:opacity-50"
+              className="mt-5 w-full rounded-full bg-tiffany py-3.5 text-sm font-bold text-noche transition hover:bg-tiffany-claro disabled:opacity-50"
             >
               {cargando ? "Verificando…" : "Entrar"}
             </button>

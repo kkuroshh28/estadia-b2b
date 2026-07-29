@@ -128,15 +128,15 @@ export function Cover({ matiz, className = "" }: { matiz: number; className?: st
       className={`relative overflow-hidden ${className}`}
       style={{
         background: `
-          radial-gradient(ellipse 80% 70% at 25% 20%, hsl(${matiz} 52% 62% / 0.55), transparent 60%),
-          radial-gradient(ellipse 70% 60% at 80% 75%, hsl(${(matiz + 45) % 360} 55% 55% / 0.5), transparent 65%),
-          linear-gradient(160deg, hsl(${matiz} 45% 82%), hsl(${(matiz + 20) % 360} 38% 68%))`,
+          radial-gradient(ellipse 80% 70% at 25% 20%, hsl(${matiz} 38% 30% / 0.85), transparent 60%),
+          radial-gradient(ellipse 70% 60% at 80% 75%, hsl(${(matiz + 45) % 360} 42% 24% / 0.8), transparent 65%),
+          linear-gradient(160deg, hsl(${matiz} 32% 16%), hsl(${(matiz + 20) % 360} 26% 11%))`,
       }}
     >
       <div
         className="absolute inset-0 opacity-25"
         style={{
-          backgroundImage: `repeating-linear-gradient(115deg, transparent 0 22px, hsl(${matiz} 45% 40% / 0.18) 22px 23px)`,
+          backgroundImage: `repeating-linear-gradient(115deg, transparent 0 22px, rgba(201, 164, 107, 0.10) 22px 23px)`,
         }}
       />
     </div>

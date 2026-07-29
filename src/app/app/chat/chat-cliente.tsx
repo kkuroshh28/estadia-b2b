@@ -208,7 +208,7 @@ export function ChatCliente({ datos }: { datos: DatosChat }) {
             <button
               onClick={enviar}
               disabled={baneado || (!datos.esDemo && !datos.solicitudId)}
-              className="rounded-full bg-tiffany px-6 text-sm font-bold text-tinta transition hover:bg-tiffany-claro disabled:opacity-40"
+              className="rounded-full bg-tiffany px-6 text-sm font-bold text-noche transition hover:bg-tiffany-claro disabled:opacity-40"
             >
               Enviar
             </button>

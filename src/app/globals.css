@@ -1,45 +1,48 @@
 @import "tailwindcss";
 
-/* ─── THE CIRCLE · sistema "Tiffany + blanco" ───
-   Luminoso, premium, joyería/fintech boutique. La jerarquía en tema claro se
-   construye con sombras suaves + bordes 1px + peso tipográfico (no con brillo).
-   Semánticos del dinero: confirmado (esmeralda profundo) / pendiente (ámbar) /
-   error — el Tiffany es MARCA, nunca significa "dinero confirmado".
+/* ─── THE CIRCLE · sistema "Bosque + Oro" ───
+   Verde bosque profundo con acentos de latón dorado: lujo sobrio, joyería
+   nocturna. La jerarquía en tema oscuro se construye con contraste de
+   superficie + bordes 1px + destellos dorados (no con sombras grises).
+   Semánticos del dinero: confirmado (esmeralda viva) / pendiente (ámbar) /
+   error — el DORADO es MARCA, nunca significa "dinero confirmado".
 
    Nota de compatibilidad de tokens: los nombres históricos se conservan y se
-   remapean — `esmeralda`≡confirmado, `oro`/`ambar`≡pendiente, `rojo`≡error.
-   Cambiar un token aquí cambia toda la app. */
+   remapean — `tiffany`≡dorado de marca, `esmeralda`≡confirmado,
+   `oro`/`ambar`≡pendiente, `rojo`≡error. Cambiar un token aquí cambia toda
+   la app. */
 
 @theme {
-  /* Marca */
-  --color-tiffany: #81d8d0; /* PMS 1837 aprox. — el color EXACTO de la caja Tiffany & Co. */
-  --color-tiffany-claro: #b7ebe6;
-  --color-tiffany-bruma: #e9f8f7;
-  --color-tiffany-profundo: #0abab5; /* variante digital profunda — hovers/acentos */
+  /* Marca — latón dorado del logo */
+  --color-tiffany: #c9a46b; /* dorado THE CIRCLE */
+  --color-tiffany-claro: #e0c18a; /* hover / brillo */
+  --color-tiffany-bruma: #c9a46b24; /* lavado dorado sobre verde (chips, selección) */
+  --color-tiffany-profundo: #b18c4f; /* variante profunda — acentos */
 
-  /* Neutros (física del tema claro) */
-  --color-fondo: #f7fafa; /* hueso: el fondo general — las tarjetas blancas flotan */
-  --color-panel: #ffffff;
-  --color-tarjeta: #ffffff;
-  --color-tarjeta-alta: #e9f8f7; /* tarjeta destacada = tiffany-bruma */
-  --color-borde: #e3eceb;
-  --color-borde-claro: #c8dbd9;
+  /* Neutros (física del tema oscuro — verde bosque) */
+  --color-fondo: #101b16; /* el verde profundo del logo */
+  --color-panel: #15221c;
+  --color-tarjeta: #17251e;
+  --color-tarjeta-alta: #1d2d25;
+  --color-borde: #253a2f;
+  --color-borde-claro: #33493c;
+  --color-noche: #101b16; /* texto sobre superficies doradas */
 
-  --color-tinta: #0f3d3b; /* texto principal — verde azulado profundo, jamás negro puro */
-  --color-bruma: #5a7573; /* texto secundario (AA sobre blanco) */
-  --color-bruma-osc: #5f7876; /* captions (AA sobre blanco) */
+  --color-tinta: #f1ebdd; /* texto principal — crema cálida, jamás blanco puro */
+  --color-bruma: #a7b8ab; /* texto secundario (AA sobre verde profundo) */
+  --color-bruma-osc: #8b9d90; /* captions */
 
   /* Semánticos del dinero (significado intacto) */
-  --color-esmeralda: #047857; /* confirmado */
-  --color-esmeralda-tenue: #ecfdf5;
-  --color-oro: #b45309; /* pendiente / negociación */
-  --color-oro-tenue: #fffbeb;
-  --color-ambar: #b45309;
-  --color-ambar-tenue: #fffbeb;
-  --color-rojo: #b91c1c; /* error / ban */
-  --color-rojo-tenue: #fef2f2;
-  --color-azul: #1d6fa5; /* informativo (iCal) — texto AA sobre claro */
-  --color-azul-tenue: #eff6ff;
+  --color-esmeralda: #3fcf8e; /* confirmado — viva sobre oscuro */
+  --color-esmeralda-tenue: #3fcf8e1a;
+  --color-oro: #eda23b; /* pendiente / negociación — ámbar, distinto del latón */
+  --color-oro-tenue: #eda23b1a;
+  --color-ambar: #eda23b;
+  --color-ambar-tenue: #eda23b1a;
+  --color-rojo: #f07c6c; /* error / ban */
+  --color-rojo-tenue: #f07c6c1a;
+  --color-azul: #7db8e8; /* informativo (iCal) */
+  --color-azul-tenue: #7db8e81a;
 }
 
 @theme inline {
@@ -55,15 +58,15 @@ body {
 }
 
 .font-display {
-  font-weight: 640;
-  letter-spacing: -0.025em;
+  font-weight: 560;
+  letter-spacing: -0.02em;
 }
 .font-display em {
   font-style: normal;
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--color-tiffany) 28%, transparent);
+  background: color-mix(in srgb, var(--color-tiffany) 35%, transparent);
 }
 
 * {
@@ -71,48 +74,48 @@ body {
   scrollbar-color: var(--color-borde-claro) transparent;
 }
 
-/* Focus ring de marca: visible sobre blanco, con offset */
+/* Focus ring de marca: dorado sobre verde, con offset */
 :focus-visible {
-  outline: 2px solid var(--color-tiffany-profundo);
+  outline: 2px solid var(--color-tiffany);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
-/* Elevación del tema claro: sombra suave; mayor para modales/toasts */
+/* Elevación del tema oscuro: profundidad negra + filo dorado sutil arriba */
 .elevada {
-  box-shadow: 0 1px 3px rgba(15, 61, 59, 0.08), 0 1px 2px rgba(15, 61, 59, 0.04);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.25);
 }
 .elevada-alta {
-  box-shadow: 0 8px 30px rgba(15, 61, 59, 0.14);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(201, 164, 107, 0.12);
 }
 
-/* Banda oscura ("joya sobre terciopelo"): hero y footer en tinta */
+/* Banda de marca ("joya sobre terciopelo"): verde profundo con destello dorado */
 .terciopelo {
-  /* Banda de marca: el Tiffany de la caja (#81D8D0) como protagonista.
-     Texto en tinta (7.23:1 AA). La joya es blanca y flota encima. */
   background:
-    radial-gradient(ellipse 55% 50% at 20% 8%, rgba(255, 255, 255, 0.4), transparent 60%),
-    radial-gradient(ellipse 45% 40% at 85% 18%, rgba(10, 186, 181, 0.22), transparent 60%),
-    #81d8d0;
+    radial-gradient(ellipse 55% 50% at 20% 8%, rgba(201, 164, 107, 0.16), transparent 60%),
+    radial-gradient(ellipse 45% 40% at 85% 18%, rgba(201, 164, 107, 0.08), transparent 60%),
+    #0c1511;
   color: var(--color-tinta);
 }
 
-/* Atmósfera clara para páginas públicas (checkout, login, registro) */
+/* Atmósfera para páginas públicas (checkout, login, registro) */
 .atmosfera {
   background:
-    radial-gradient(ellipse 60% 45% at 18% 0%, rgba(10, 186, 181, 0.07), transparent 60%),
-    radial-gradient(ellipse 45% 40% at 90% 15%, rgba(129, 216, 208, 0.08), transparent 60%),
+    radial-gradient(ellipse 60% 45% at 18% 0%, rgba(201, 164, 107, 0.07), transparent 60%),
+    radial-gradient(ellipse 45% 40% at 90% 15%, rgba(201, 164, 107, 0.05), transparent 60%),
     var(--color-fondo);
 }
 
-/* El grano queda casi imperceptible en claro */
+/* Grano sutil del terciopelo */
 .grano::before {
   content: "";
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 50;
-  opacity: 0.015;
+  opacity: 0.02;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
@@ -124,27 +127,27 @@ body {
   animation: pulso 2.2s ease-out infinite;
 }
 
-/* Línea decorativa de marca */
+/* Línea decorativa de marca — hilo de oro */
 .linea-oro {
   background: linear-gradient(90deg, transparent, var(--color-tiffany) 30%, var(--color-tiffany-claro) 70%, transparent);
   height: 1px;
 }
 
-/* Números tabulares en mono: la firma financiera, ahora en tinta */
+/* Números tabulares en mono: la firma financiera */
 .cifra {
   font-family: var(--font-jetbrains), monospace;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
 }
 
-/* Skeletons: shimmer gris-Tiffany muy sutil sobre hueso */
+/* Skeletons: shimmer dorado muy sutil sobre verde */
 @keyframes brillar {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
 .esqueleto {
   border-radius: 0.75rem;
-  background: linear-gradient(90deg, #eef4f4 25%, var(--color-tiffany-bruma) 50%, #eef4f4 75%);
+  background: linear-gradient(90deg, #1a2921 25%, #23331f40 50%, #1a2921 75%);
   background-size: 200% 100%;
   animation: brillar 1.6s ease-in-out infinite;
 }
@@ -153,13 +156,35 @@ body {
 .rayado {
   background-image: repeating-linear-gradient(
     -45deg,
-    rgba(90, 117, 115, 0.22) 0 4px,
+    rgba(241, 235, 221, 0.14) 0 4px,
     transparent 4px 9px
   );
 }
 
+/* Brillo de latón en movimiento — la firma del logo */
+@keyframes brillo-oro {
+  0% { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+.oro-brillante {
+  background: linear-gradient(
+    100deg,
+    var(--color-tiffany) 30%,
+    #f4e3b8 47%,
+    #fff6dd 50%,
+    #f4e3b8 53%,
+    var(--color-tiffany) 70%
+  );
+  background-size: 250% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: brillo-oro 4.5s linear infinite;
+}
 @media (prefers-reduced-motion: reduce) {
-  .pulso, .esqueleto {
+  .oro-brillante {
     animation: none;
+    background: none;
+    color: var(--color-tiffany);
   }
 }

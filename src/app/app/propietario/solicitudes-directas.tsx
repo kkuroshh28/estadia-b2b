@@ -85,7 +85,7 @@ export function SolicitudesDirectas({ solicitudes }: { solicitudes: SolicitudPan
                       </Badge>
                       <button
                         onClick={() => aceptar(s.id)}
-                        className="rounded-full bg-tiffany px-5 py-2.5 text-xs font-bold text-tinta transition hover:bg-tiffany-claro"
+                        className="rounded-full bg-tiffany px-5 py-2.5 text-xs font-bold text-noche transition hover:bg-tiffany-claro"
                       >
                         Aceptar solicitud
                       </button>

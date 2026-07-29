@@ -74,7 +74,7 @@ export default async function PanelPropietario() {
             </Link>
             <Link
               href="/app/propietario/nueva"
-              className="rounded-full bg-tiffany px-5 py-2.5 text-xs font-bold text-tinta transition hover:bg-tiffany-claro"
+              className="rounded-full bg-tiffany px-5 py-2.5 text-xs font-bold text-noche transition hover:bg-tiffany-claro"
             >
               + Nueva propiedad
             </Link>

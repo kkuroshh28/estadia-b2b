@@ -16,20 +16,20 @@ export default function OgImage() {
           flexDirection: "column",
           justifyContent: "space-between",
           padding: 72,
-          background: "linear-gradient(150deg, #81d8d0 55%, #a7e4de 100%)",
-          color: "#0f3d3b",
+          background: "linear-gradient(150deg, #0c1511 55%, #16241d 100%)",
+          color: "#f1ebdd",
           fontFamily: "sans-serif",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", fontSize: 44, fontWeight: 700 }}>
-            THE CIRCLE<span style={{ color: "#ffffff" }}>.</span>
+            THE CIRCLE<span style={{ color: "#c9a46b" }}>.</span>
           </div>
           <div
             style={{
               display: "flex",
               background: "#ffffff",
-              color: "#0f3d3b",
+              color: "#f1ebdd",
               fontSize: 22,
               fontWeight: 700,
               padding: "10px 22px",
@@ -48,10 +48,10 @@ export default function OgImage() {
           </div>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ display: "flex", fontSize: 28, color: "#0f3d3b", opacity: 0.75 }}>
+          <div style={{ display: "flex", fontSize: 28, color: "#f1ebdd", opacity: 0.75 }}>
             Red B2B de rentas cortas
           </div>
-          <div style={{ display: "flex", fontSize: 26, color: "#0f3d3b", fontFamily: "monospace", fontWeight: 700 }}>
+          <div style={{ display: "flex", fontSize: 26, color: "#f1ebdd", fontFamily: "monospace", fontWeight: 700 }}>
             45 / 45 / 10 · el primero que paga, gana
           </div>
         </div>

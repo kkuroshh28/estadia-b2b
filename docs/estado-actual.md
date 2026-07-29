@@ -41,6 +41,19 @@
   activa del propietario obligatoria (regla #3); turnos de oferta; capacidad.
 - Suite: **91 tests** verdes.
 
+## Novedades 2026-07-29 (4ª): REBRAND VISUAL — "Bosque + Oro" + logo real
+- Nuevo tema por decisión de Kurosh (logo verde profundo + latón dorado):
+  tokens redefinidos en globals.css — fondo #101b16, superficies verdes,
+  texto crema #f1ebdd, MARCA dorado #c9a46b (token `tiffany` remapeado),
+  semánticos intactos (esmeralda=confirmado, ámbar=pendiente). Física de
+  tema oscuro (bordes + destellos, sombras negras), covers joya oscura,
+  botones dorados con texto noche (combos bg/text corregidos en 22 archivos).
+- LOGO real como componente `LogoCircle`: anillo "C" dorado + THE/IRCLE,
+  con BRILLO DE LATÓN EN MOVIMIENTO (background-clip animado en el texto +
+  gradiente SVG SMIL en el anillo; prefers-reduced-motion lo congela).
+  Montado en landing, shell, registro, login, checkout, admin y errores.
+- Íconos/favicon/OG/manifest/themeColor en verde+oro.
+
 ## Novedades 2026-07-29 (3ª): ANEXO II — IDENTIDAD PROTEGIDA
 - Alias para TODOS (propietarios incluidos; wizard los revela; asegurarAlias
   al entrar al Deal Room en gestión directa).

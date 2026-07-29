@@ -113,7 +113,7 @@ export function Checkout({ link, vitrina = false }: { link: LinkDePago; vitrina?
               <button
                 onClick={pagar}
                 disabled={fase === "procesando"}
-                className="w-full rounded-xl bg-tiffany py-3.5 text-sm font-bold text-tinta transition hover:bg-tiffany-claro disabled:opacity-70"
+                className="w-full rounded-xl bg-tiffany py-3.5 text-sm font-bold text-noche transition hover:bg-tiffany-claro disabled:opacity-70"
               >
                 {fase === "procesando" ? (
                   <motion.span

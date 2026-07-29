@@ -9,8 +9,8 @@ export default function manifest(): MetadataRoute.Manifest {
       "La red B2B de rentas cortas de Antioquia. El primero que paga, gana.",
     start_url: "/app",
     display: "standalone",
-    background_color: "#f7fafa",
-    theme_color: "#81d8d0",
+    background_color: "#101b16",
+    theme_color: "#101b16",
     lang: "es-CO",
     icons: [
       { src: "/icon", sizes: "512x512", type: "image/png", purpose: "any" },

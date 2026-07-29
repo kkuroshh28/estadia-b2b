@@ -161,7 +161,7 @@ export function BusquedaExternoCliente({ datos }: { datos: DatosBusquedaExterno 
                   </div>
                   <Link
                     href={`/app/externo/propiedad/${p.id}${datos.fechas ? `?mes=${datos.fechas.desde.slice(0, 7)}` : ""}`}
-                    className="rounded-full bg-tiffany px-4 py-2 text-[11px] font-bold text-tinta transition hover:bg-tiffany-claro"
+                    className="rounded-full bg-tiffany px-4 py-2 text-[11px] font-bold text-noche transition hover:bg-tiffany-claro"
                   >
                     Elegir fechas →
                   </Link>

@@ -235,7 +235,7 @@ export function FichaPropiedad({ datos }: { datos: DatosFicha }) {
                   <button
                     onClick={solicitar}
                     disabled={enviando}
-                    className="rounded-full bg-tiffany px-6 py-3 text-xs font-bold text-tinta transition hover:bg-tiffany-claro disabled:opacity-60"
+                    className="rounded-full bg-tiffany px-6 py-3 text-xs font-bold text-noche transition hover:bg-tiffany-claro disabled:opacity-60"
                   >
                     {enviando ? "Enviando…" : "Solicitar estas fechas"}
                   </button>

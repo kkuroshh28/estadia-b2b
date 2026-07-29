@@ -136,7 +136,7 @@ export function PrincipalesCliente({ datos }: { datos: DatosPrincipales }) {
               <button
                 onClick={invitar}
                 disabled={invitando}
-                className="rounded-full bg-tiffany px-5 py-2.5 text-xs font-bold text-tinta transition hover:bg-tiffany-claro disabled:opacity-60"
+                className="rounded-full bg-tiffany px-5 py-2.5 text-xs font-bold text-noche transition hover:bg-tiffany-claro disabled:opacity-60"
               >
                 {invitando ? "Invitación enviada ✓" : "Invitar socio"}
               </button>
@@ -151,7 +151,7 @@ export function PrincipalesCliente({ datos }: { datos: DatosPrincipales }) {
                 <button
                   onClick={invitar}
                   disabled={invitando}
-                  className="rounded-full bg-tiffany px-5 py-2.5 text-xs font-bold text-tinta transition hover:bg-tiffany-claro disabled:opacity-60"
+                  className="rounded-full bg-tiffany px-5 py-2.5 text-xs font-bold text-noche transition hover:bg-tiffany-claro disabled:opacity-60"
                 >
                   {invitando ? "Vinculando…" : "Vincular"}
                 </button>

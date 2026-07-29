@@ -74,7 +74,7 @@ export function SincronizacionIcal({
             </code>
             <button
               onClick={copiar}
-              className="shrink-0 rounded-full bg-tiffany px-4 py-2 text-[11px] font-bold text-tinta transition hover:bg-tiffany-claro"
+              className="shrink-0 rounded-full bg-tiffany px-4 py-2 text-[11px] font-bold text-noche transition hover:bg-tiffany-claro"
             >
               {copiado ? "Copiada ✓" : "Copiar"}
             </button>
@@ -114,7 +114,7 @@ export function SincronizacionIcal({
               <button
                 onClick={() => llamar({ accion: "agregar", url })}
                 disabled={cargando || !url}
-                className="shrink-0 rounded-full bg-tiffany px-4 py-2 text-[11px] font-bold text-tinta transition hover:bg-tiffany-claro disabled:opacity-50"
+                className="shrink-0 rounded-full bg-tiffany px-4 py-2 text-[11px] font-bold text-noche transition hover:bg-tiffany-claro disabled:opacity-50"
               >
                 Conectar
               </button>

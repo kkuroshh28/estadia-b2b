@@ -21,7 +21,7 @@ import type { EstadoDia } from "@/lib/domain/tipos";
 const ESTILO_DIA: Record<EstadoDia, string> = {
   disponible:
     "border-borde bg-panel text-tinta hover:border-tiffany hover:bg-tiffany-bruma cursor-pointer",
-  reservado_app: "border-tiffany bg-tiffany font-bold text-tinta cursor-not-allowed",
+  reservado_app: "border-tiffany bg-tiffany font-bold text-noche cursor-not-allowed",
   bloqueado_manual: "rayado border-borde-claro bg-panel text-bruma cursor-pointer",
   bloqueado_ical: "border-tiffany-claro bg-tiffany-claro/45 text-tinta cursor-not-allowed",
 };
@@ -250,7 +250,7 @@ export function CalendarioCliente({ datos }: { datos: DatosCalendario }) {
                       initial={{ scale: 0, rotate: -35, opacity: 0 }}
                       animate={{ scale: 1, rotate: 0, opacity: 1 }}
                       transition={{ type: "spring", stiffness: 420, damping: 18 }}
-                      className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-tinta text-[9px] text-white"
+                      className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-tiffany text-[9px] text-noche"
                     >
                       🔒
                     </motion.span>
@@ -309,7 +309,7 @@ export function CalendarioCliente({ datos }: { datos: DatosCalendario }) {
             <button
               onClick={guardarTarifa}
               disabled={guardandoTarifa || tarifa === prop.tarifaNetaNoche}
-              className="mt-4 w-full rounded-full bg-tiffany py-3 text-xs font-bold text-tinta transition hover:bg-tiffany-claro disabled:opacity-50"
+              className="mt-4 w-full rounded-full bg-tiffany py-3 text-xs font-bold text-noche transition hover:bg-tiffany-claro disabled:opacity-50"
             >
               {tarifaGuardada
                 ? "Tarifa guardada ✓"

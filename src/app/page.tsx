@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LogoCircle } from "@/components/logo";
 import { Badge, Money } from "@/components/ui";
 import { Reveal, RevealHero } from "@/components/motion";
 import { FlujoDinero } from "@/components/flujo-dinero";
@@ -53,7 +54,7 @@ export default function Landing() {
       <div className="terciopelo">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <p className="font-display text-2xl text-tinta">
-          THE CIRCLE<span className="text-white">.</span>
+          <LogoCircle tam={34} />
         </p>
         <div className="hidden items-center gap-8 text-sm text-tinta/75 sm:flex">
           <a href="#modelo" className="transition hover:text-tinta">Modelo</a>
@@ -63,13 +64,13 @@ export default function Landing() {
         <div className="flex items-center gap-3">
           <Link
             href="/app"
-            className="hidden rounded-full border border-tinta/30 px-5 py-2 text-sm font-semibold text-tinta transition hover:bg-white/50 sm:block"
+            className="hidden rounded-full border border-tinta/30 px-5 py-2 text-sm font-semibold text-tinta transition hover:bg-tiffany-bruma sm:block"
           >
             Entrar
           </Link>
           <Link
             href="/registro"
-            className="rounded-full bg-tinta px-5 py-2 text-sm font-bold text-white transition hover:bg-tinta/85"
+            className="rounded-full bg-tiffany px-5 py-2 text-sm font-bold text-noche transition hover:bg-tiffany-claro"
           >
             Crear cuenta
           </Link>
@@ -89,7 +90,7 @@ export default function Landing() {
             <RevealHero delay={0.08}>
               <h1 className="mt-6 font-display text-4xl leading-[1.05] text-tinta sm:text-6xl">
                 La app no te quita tu cliente.{" "}
-                <em className="rounded-xl bg-white/80 px-2 text-tinta">Te da inventario.</em>
+                <em className="text-tiffany">Te da inventario.</em>
               </h1>
             </RevealHero>
             <RevealHero delay={0.16}>
@@ -104,13 +105,13 @@ export default function Landing() {
               <div className="mt-9 flex flex-wrap items-center gap-4">
                 <Link
                   href="/registro"
-                  className="rounded-full bg-tinta px-7 py-3.5 text-sm font-bold text-white transition hover:bg-tinta/85"
+                  className="rounded-full bg-tiffany px-7 py-3.5 text-sm font-bold text-noche transition hover:bg-tiffany-claro"
                 >
                   Empezar registro →
                 </Link>
                 <Link
                   href="/app"
-                  className="rounded-full border border-tinta/35 px-7 py-3.5 text-sm font-semibold text-tinta transition hover:bg-white/50"
+                  className="rounded-full border border-tinta/35 px-7 py-3.5 text-sm font-semibold text-tinta transition hover:bg-tiffany-bruma"
                 >
                   Explorar la plataforma
                 </Link>
@@ -181,7 +182,7 @@ export default function Landing() {
                 <div className="mt-auto flex gap-3 pt-6">
                   <Link
                     href={`/registro?rol=${encodeURIComponent(r.rol)}`}
-                    className="rounded-full bg-tiffany px-4 py-2 text-xs font-bold text-tinta transition hover:bg-tiffany"
+                    className="rounded-full bg-tiffany px-4 py-2 text-xs font-bold text-noche transition hover:bg-tiffany"
                   >
                     Registrarme
                   </Link>
@@ -410,7 +411,7 @@ export default function Landing() {
         <div className="mx-auto max-w-6xl px-6 py-24 text-center">
           <Reveal>
             <h2 className="mx-auto max-w-3xl font-display text-5xl leading-tight text-tinta">
-              Fugarse cuesta más <em className="rounded-xl bg-white/80 px-2">de lo que ahorra.</em>
+              Fugarse cuesta más <em className="text-tiffany">de lo que ahorra.</em>
             </h2>
             <p className="mx-auto mt-5 max-w-xl text-tinta/85">
               Calendario que nunca miente, pago garantizado con split automático,
@@ -420,13 +421,13 @@ export default function Landing() {
             <div className="mt-10 flex flex-wrap justify-center gap-4">
               <Link
                 href="/registro"
-                className="rounded-full bg-tinta px-8 py-4 text-sm font-bold text-white transition hover:bg-tinta/85"
+                className="rounded-full bg-tiffany px-8 py-4 text-sm font-bold text-noche transition hover:bg-tiffany-claro"
               >
                 Crear mi cuenta →
               </Link>
               <Link
                 href="/app"
-                className="rounded-full border border-tinta/35 px-8 py-4 text-sm font-semibold text-tinta transition hover:bg-white/50"
+                className="rounded-full border border-tinta/35 px-8 py-4 text-sm font-semibold text-tinta transition hover:bg-tiffany-bruma"
               >
                 Ver la plataforma
               </Link>
@@ -435,7 +436,7 @@ export default function Landing() {
         </div>
         <footer className="border-t border-tinta/15">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-8 text-xs text-tinta/70">
-            <p className="font-display text-lg text-tinta">THE CIRCLE<span className="text-white">.</span></p>
+            <p className="font-display text-lg text-tinta"><LogoCircle tam={34} /></p>
             <p>Antioquia, Colombia · Piloto Oriente Antioqueño · Demo de producto — no es asesoría legal</p>
           </div>
         </footer>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { LogoCircle } from "@/components/logo";
 
 export default function ErrorGlobal({
   error,
@@ -17,7 +18,7 @@ export default function ErrorGlobal({
   return (
     <main className="atmosfera flex min-h-screen flex-col items-center justify-center px-6 text-center">
       <p className="font-display text-2xl text-tinta">
-        THE CIRCLE<span className="text-tiffany">.</span>
+        <LogoCircle tam={34} />
       </p>
       <p className="cifra mt-8 text-6xl font-bold text-borde-claro">500</p>
       <h1 className="mt-3 font-display text-3xl text-tinta">Algo salió mal de nuestro lado</h1>
@@ -30,7 +31,7 @@ export default function ErrorGlobal({
       )}
       <button
         onClick={reset}
-        className="mt-8 rounded-full bg-tiffany px-6 py-3 text-sm font-bold text-tinta transition hover:bg-tiffany-claro"
+        className="mt-8 rounded-full bg-tiffany px-6 py-3 text-sm font-bold text-noche transition hover:bg-tiffany-claro"
       >
         Reintentar
       </button>

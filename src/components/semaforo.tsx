@@ -173,7 +173,7 @@ export function Semaforo({
             <button
               onClick={transicionar}
               disabled={cargando}
-              className="rounded-full bg-esmeralda px-5 py-2 text-xs font-bold text-white transition hover:brightness-110 disabled:opacity-60"
+              className="rounded-full bg-esmeralda px-5 py-2 text-xs font-bold text-noche transition hover:brightness-110 disabled:opacity-60"
             >
               {cargando ? "Guardando…" : accion.label}
             </button>

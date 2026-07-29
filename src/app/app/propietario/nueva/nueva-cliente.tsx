@@ -276,7 +276,7 @@ export function NuevaPropiedadCliente() {
       <button
         onClick={crear}
         disabled={enviando}
-        className="w-full rounded-full bg-tiffany py-3.5 text-sm font-bold text-tinta transition hover:bg-tiffany-claro disabled:opacity-60"
+        className="w-full rounded-full bg-tiffany py-3.5 text-sm font-bold text-noche transition hover:bg-tiffany-claro disabled:opacity-60"
       >
         {enviando ? "Creando…" : "Crear propiedad →"}
       </button>

@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm";
+import { LogoCircle } from "@/components/logo";
 import { notFound } from "next/navigation";
 import { Checkout } from "@/components/checkout";
 import { LINKS_DE_PAGO } from "@/lib/data/demo";
@@ -80,7 +81,7 @@ export default async function CheckoutCliente({
   return (
     <main className="atmosfera flex min-h-screen flex-col items-center justify-center px-6 py-16">
       <p className="font-display text-2xl text-tinta">
-        THE CIRCLE<span className="text-tiffany">.</span>
+        <LogoCircle tam={34} />
       </p>
       <p className="mb-8 mt-1 text-[11px] uppercase tracking-[0.22em] text-bruma-osc">
         Pago seguro con tarjeta

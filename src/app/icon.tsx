@@ -14,7 +14,7 @@ export default function Icon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(160deg, #81d8d0 0%, #0abab5 100%)",
+          background: "#101b16",
         }}
       >
         <div
@@ -22,7 +22,7 @@ export default function Icon() {
             width: 300,
             height: 300,
             borderRadius: "50%",
-            border: "56px solid #0f3d3b",
+            border: "40px solid #c9a46b",
             display: "flex",
           }}
         />
@@ -34,7 +34,7 @@ export default function Icon() {
             width: 64,
             height: 64,
             borderRadius: "50%",
-            background: "#ffffff",
+            background: "#c9a46b",
             display: "flex",
           }}
         />
