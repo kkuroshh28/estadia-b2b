@@ -126,7 +126,7 @@ export default function Landing() {
         <RevealHero delay={0.1}>
           <div className="mt-16 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-borde bg-borde sm:grid-cols-4">
             {[
-              ["45 / 45 / 10", "split de la comisión"],
+              ["45% + 45%", "de la comisión, para los socios"],
               ["~3%", "único costo del propietario"],
               ["1 noche – 3 meses", "rentas cortas únicamente"],
               ["0 holds", "sin reservas tentativas"],
@@ -142,35 +142,60 @@ export default function Landing() {
       </div>
       {/* fin banda terciopelo */}
 
-      {/* ROLES — 3 caminos */}
+      {/* CÓMO FUNCIONA — el camino exacto de cada usuario */}
       <section className="mx-auto max-w-6xl px-6 py-24">
         <Reveal>
-          <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-esmeralda">Tres roles, un gremio</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-esmeralda">Cómo funciona</p>
           <h2 className="mt-2 max-w-2xl font-display text-4xl text-tinta">
-            Cada quien hace lo que sabe hacer. La plataforma reparte.
+            Tres roles. Un estándar. Cero improvisación.
           </h2>
+          <p className="mt-4 max-w-2xl text-bruma">
+            Cada usuario tiene un camino exacto dentro de THE CIRCLE. Verificación
+            una sola vez, reglas iguales para todos y dinero que se reparte solo.
+          </p>
         </Reveal>
         <div className="mt-12 grid gap-5 md:grid-cols-3">
           {[
             {
               rol: "Propietario",
-              pct: "tarifa neta completa",
+              pct: "recibe su tarifa neta completa",
               tono: "text-esmeralda",
-              d: "Fija su tarifa neta y siempre la recibe entera. Único con acceso de escritura al calendario. Vincula de 3 a 5 socios comerciales de su confianza. Paga suscripción para publicar.",
+              lema: "Tu propiedad produce. Tú decides cuánto vale.",
+              pasos: [
+                "Verifica tu identidad y tu propiedad: cédula, biometría y certificado de tradición.",
+                "Publica con tu tarifa neta. La fijas tú y nadie la toca: la comisión se negocia por encima.",
+                "Elige tu modelo: vincula de 3 a 5 socios comerciales de confianza, o actívate en Gestión Directa y negocia tú mismo con un margen mínimo garantizado.",
+                "Cada pago confirmado te dispersa tu tarifa neta directo a tu cuenta certificada, sin retenciones.",
+                "Entregas la propiedad solo con el semáforo en verde: Pago completo ✓.",
+              ],
               demo: "/app/propietario",
             },
             {
               rol: "Socio Comercial",
               pct: "45% de la comisión",
               tono: "text-oro",
-              d: "Recibe las solicitudes sobre sus propiedades vinculadas — el primero en aceptar se la queda. Negocia el precio final con el socio de ventas en el módulo formal de ofertas.",
+              lema: "Gestionas la propiedad. La red te trae las ventas.",
+              pasos: [
+                "Verifícate una vez y opera para siempre con tu alias: tu identidad queda protegida.",
+                "Acepta la vinculación de los propietarios que confían en ti.",
+                "Recibe las solicitudes sobre tus propiedades: el primero en aceptar se queda la carrera.",
+                "Negocia el precio final con el socio de ventas en el Deal Room, con ofertas formales y trazables.",
+                "Cobra tu 45% de la comisión en cada pago, dispersado automático.",
+              ],
               demo: "/app/principal",
             },
             {
               rol: "Socio de Ventas",
               pct: "45% de la comisión",
               tono: "text-oro",
-              d: "Trae el cliente — que es suyo, la plataforma jamás lo contacta. Busca disponibilidad real, negocia y reenvía el link de pago. Su reputación vive en su alias.",
+              lema: "Tu cliente es tuyo. Siempre.",
+              pasos: [
+                "Verifícate y entra a un inventario que antes no tenías. La plataforma jamás contacta a tu cliente.",
+                "Busca disponibilidad real por fechas: el calendario nunca miente.",
+                "Solicita la propiedad y negocia el precio final en el Deal Room.",
+                "Reenvía el link de pago a tu cliente: 50% reserva, 50% al ingreso. Él nunca entra a la app.",
+                "Cobra tu 45% de la comisión en cada mitad, automático, y construye reputación con tu alias.",
+              ],
               demo: "/app/externo",
             },
           ].map((r, i) => (
@@ -178,11 +203,21 @@ export default function Landing() {
               <div className="group flex h-full flex-col rounded-2xl border border-borde bg-tarjeta p-7 transition hover:border-tiffany hover:bg-tarjeta-alta">
                 <p className={`cifra text-[11px] font-bold uppercase tracking-[0.18em] ${r.tono}`}>{r.pct}</p>
                 <h3 className="mt-3 font-display text-2xl text-tinta">{r.rol}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-bruma">{r.d}</p>
-                <div className="mt-auto flex gap-3 pt-6">
+                <p className="mt-1.5 text-sm font-semibold text-tinta/90">{r.lema}</p>
+                <ol className="mt-5 space-y-3">
+                  {r.pasos.map((p, n) => (
+                    <li key={n} className="flex gap-3 text-sm leading-relaxed text-bruma">
+                      <span className="cifra mt-0.5 shrink-0 text-[11px] font-bold text-tiffany">
+                        {String(n + 1).padStart(2, "0")}
+                      </span>
+                      {p}
+                    </li>
+                  ))}
+                </ol>
+                <div className="mt-auto flex gap-3 pt-7">
                   <Link
                     href={`/registro?rol=${encodeURIComponent(r.rol)}`}
-                    className="rounded-full bg-tiffany px-4 py-2 text-xs font-bold text-noche transition hover:bg-tiffany"
+                    className="rounded-full bg-tiffany px-4 py-2 text-xs font-bold text-noche transition hover:bg-tiffany-claro"
                   >
                     Registrarme
                   </Link>
@@ -205,7 +240,7 @@ export default function Landing() {
           <Reveal>
             <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-oro">El modelo de dinero</p>
             <h2 className="mt-2 max-w-2xl font-display text-4xl text-tinta">
-              Comisión = precio acordado − tarifa neta. Ni un peso escondido.
+              Comisión = precio acordado − tarifa neta. Así de simple.
             </h2>
             <p className="mt-4 max-w-2xl text-bruma">
               Ejemplo real: tarifa neta de <Money valor={1_000_000} className="text-tinta" /> y
@@ -220,9 +255,8 @@ export default function Landing() {
                 <div className="flex items-center justify-center bg-esmeralda-tenue text-esmeralda" style={{ width: "83.3%" }}>
                   TARIFA NETA
                 </div>
-                <div className="flex items-center justify-center bg-oro/80 text-fondo" style={{ width: "8.3%" }}>50</div>
-                <div className="flex items-center justify-center bg-oro/55 text-fondo" style={{ width: "6.7%" }}>40</div>
-                <div className="flex items-center justify-center bg-oro/30 text-tinta" style={{ width: "1.7%" }} title="App 10%" />
+                <div className="flex items-center justify-center bg-oro/80 text-fondo" style={{ width: "8.35%" }} title="Socio Comercial 45%">45</div>
+                <div className="flex items-center justify-center bg-oro/55 text-fondo" style={{ width: "8.35%" }} title="Socio de Ventas 45%">45</div>
               </div>
               <div className="mt-6 divide-y divide-borde rounded-2xl border border-borde bg-tarjeta">
                 {[
@@ -230,7 +264,6 @@ export default function Landing() {
                   ["Comisión acordada", EJEMPLO.total.comision, "text-tinta"],
                   ["→ Socio Comercial (45%)", EJEMPLO.total.principal, "text-oro"],
                   ["→ Socio de Ventas (45%)", EJEMPLO.total.externo, "text-oro"],
-                  ["→ Plataforma (10%)", EJEMPLO.total.app, "text-bruma"],
                   ["Propietario — tarifa neta", EJEMPLO.total.tarifaNeta, "text-esmeralda font-bold"],
                   ["− Pasarela (~3% del total procesado)", -EJEMPLO.total.pasarela, "text-rojo"],
                   ["Propietario neto", EJEMPLO.total.propietarioNeto, "text-esmeralda font-bold"],

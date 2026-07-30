@@ -48,14 +48,6 @@ export function FlujoDinero({
       texto: "text-tinta",
       borde: "border-borde",
     },
-    {
-      k: "Plataforma",
-      sub: "10% de la comisión",
-      v: total.app,
-      color: "var(--color-bruma)",
-      texto: "text-bruma",
-      borde: "border-borde",
-    },
   ];
 
   return (
@@ -78,7 +70,7 @@ export function FlujoDinero({
       </div>
 
       {/* Canales */}
-      <div className="mt-2 grid grid-cols-2 gap-x-4 sm:grid-cols-4">
+      <div className="mt-2 grid grid-cols-3 gap-x-4">
         {destinos.map((d, i) => (
           <div key={d.k} className="flex flex-col items-center">
             <div className="relative h-14 w-px overflow-hidden sm:h-20">
