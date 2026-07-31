@@ -95,10 +95,10 @@ export default function Landing() {
             </RevealHero>
             <RevealHero delay={0.16}>
               <p className="mt-6 max-w-xl text-lg leading-relaxed text-tinta/85">
-                La red que conecta propietarios de rentas cortas en Antioquia con su
-                red de socios. Calendario que nunca miente, negociación con
-                las cartas sobre la mesa y split automático en cada pago. El cliente
-                final nunca entra: solo recibe un link.
+                La red privada donde propietarios verificados y socios de élite
+                cierran negocios bajo un mismo estándar: calendario que nunca
+                miente, negociación formal y dinero que se reparte automático en
+                el instante del pago. Tu cliente nunca entra: solo recibe un link.
               </p>
             </RevealHero>
             <RevealHero delay={0.24}>
@@ -136,6 +136,75 @@ export default function Landing() {
                 <p className="mt-1 text-xs text-bruma">{k}</p>
               </div>
             ))}
+          </div>
+        </RevealHero>
+
+        {/* EL ESTÁNDAR — cómo funciona y las reglas, en 20 segundos */}
+        <RevealHero delay={0.16}>
+          <div className="mt-14 grid gap-10 rounded-2xl border border-tinta/15 bg-fondo/50 p-8 sm:p-10 lg:grid-cols-2">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-tiffany">
+                Cómo funciona
+              </p>
+              <h2 className="mt-2 font-display text-2xl text-tinta">
+                Tres movimientos. Cero fricción.
+              </h2>
+              <div className="mt-6 space-y-5">
+                {[
+                  {
+                    t: "Conecta",
+                    d: "El propietario publica con su tarifa neta protegida. Los socios acceden a un inventario verificado que antes no existía.",
+                  },
+                  {
+                    t: "Negocia",
+                    d: "El precio final se acuerda en el Deal Room: ofertas formales, cartas sobre la mesa, cero informalidad.",
+                  },
+                  {
+                    t: "Cobra",
+                    d: "El cliente paga por link seguro — 50% reserva, 50% al ingreso — y cada peso se dispersa automático a cada cuenta certificada.",
+                  },
+                ].map((p, i) => (
+                  <div key={p.t} className="flex gap-4">
+                    <span className="cifra mt-0.5 text-sm font-bold text-tiffany">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <div>
+                      <p className="font-display text-lg text-tinta">{p.t}</p>
+                      <p className="mt-1 text-sm leading-relaxed text-tinta/75">{p.d}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="lg:border-l lg:border-tinta/15 lg:pl-10">
+              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-esmeralda">
+                El estándar del Círculo
+              </p>
+              <h2 className="mt-2 font-display text-2xl text-tinta">
+                Reglas de acero. Por eso funciona.
+              </h2>
+              <ul className="mt-6 space-y-3.5">
+                {[
+                  "El primero que paga, gana. Sin holds ni palabras.",
+                  "La tarifa neta del propietario es intocable.",
+                  "Identidad verificada una vez; operación anónima siempre.",
+                  "Todo sucede dentro de la app. La fuga es expulsión perpetua.",
+                  "Sin semáforo en verde no se entregan llaves.",
+                  "Efectivo prohibido. Solo dinero rastreable y protegido.",
+                ].map((r) => (
+                  <li key={r} className="flex items-start gap-3 text-sm leading-relaxed text-tinta/85">
+                    <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-tiffany" />
+                    {r}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-6 border-t border-tinta/15 pt-4 text-sm font-semibold text-tinta">
+                Quien opera aquí, opera en serio.{" "}
+                <Link href="/registro" className="text-tiffany hover:underline">
+                  Únete al Círculo →
+                </Link>
+              </p>
+            </div>
           </div>
         </RevealHero>
       </header>
