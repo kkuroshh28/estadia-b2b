@@ -80,7 +80,12 @@ export function FichaPropiedad({ datos }: { datos: DatosFicha }) {
   };
 
   const noches = rango.desde !== null && rango.hasta !== null ? rango.hasta - rango.desde : 0;
-  const netaTotal = noches * propiedad.tarifaNetaNoche;
+  // Huéspedes por encima de los incluidos suman tarifa adicional (del propietario).
+  const adicionales =
+    propiedad.huespedesIncluidos != null && (propiedad.tarifaAdicional ?? 0) > 0
+      ? Math.max(0, huespedes - propiedad.huespedesIncluidos)
+      : 0;
+  const netaTotal = noches * (propiedad.tarifaNetaNoche + adicionales * (propiedad.tarifaAdicional ?? 0));
   const enRango = (d: number) =>
     rango.desde !== null && rango.hasta !== null && d >= rango.desde && d <= rango.hasta;
 
@@ -109,6 +114,12 @@ export function FichaPropiedad({ datos }: { datos: DatosFicha }) {
             </p>
             <Money valor={propiedad.tarifaNetaNoche} className="text-2xl font-bold text-esmeralda" />
             <p className="text-[10px] text-oro">tu margen se negocia por encima</p>
+            {propiedad.huespedesIncluidos != null && (propiedad.tarifaAdicional ?? 0) > 0 && (
+              <p className="mt-1 text-[10px] text-bruma">
+                incluye {propiedad.huespedesIncluidos} huéspedes ·{" "}
+                <Money valor={propiedad.tarifaAdicional ?? 0} /> por adicional / noche
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -212,7 +223,11 @@ export function FichaPropiedad({ datos }: { datos: DatosFicha }) {
                     {rango.desde} → {rango.hasta} · {noches} {noches === 1 ? "noche" : "noches"}
                   </p>
                   <p className="text-xs text-bruma">
-                    Tarifa neta total <MoneyAnimado valor={netaTotal} className="font-bold text-esmeralda" /> — tu precio al cliente lo negocias con el socio comercial.
+                    Tarifa neta total <MoneyAnimado valor={netaTotal} className="font-bold text-esmeralda" />
+                    {adicionales > 0 && (
+                      <span className="text-bruma-osc"> (incluye {adicionales} {adicionales === 1 ? "adicional" : "adicionales"})</span>
+                    )}{" "}
+                    — tu precio al cliente lo negocias con el socio comercial.
                   </p>
                   {error && (
                     <p className="mt-2 rounded-lg border border-rojo/30 bg-rojo-tenue p-2 text-[11px] text-rojo">

@@ -87,6 +87,8 @@ export function NuevaPropiedadCliente() {
     publicada: true,
     ownerDirect: false,
     margenMinimoPesos: 0,
+    huespedesIncluidos: 0,
+    tarifaAdicionalPesos: 0,
     direccion: "",
     indicacionesLlegada: "",
   });
@@ -103,6 +105,8 @@ export function NuevaPropiedadCliente() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...f,
+          // 0 = sin adicionales: se omite para que toda la capacidad quede incluida.
+          huespedesIncluidos: f.huespedesIncluidos > 0 ? f.huespedesIncluidos : undefined,
           amenidades: f.amenidades.split(",").map((s) => s.trim()).filter(Boolean),
           reglas: f.reglas.split(",").map((s) => s.trim()).filter(Boolean),
         }),
@@ -238,6 +242,46 @@ export function NuevaPropiedadCliente() {
             />{" "}
             por noche — ninguna oferta puede cerrar por debajo.
           </p>
+        </div>
+
+        <div className="rounded-xl border border-borde bg-panel p-4">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-bruma-osc">
+            Huéspedes adicionales (opcional)
+          </p>
+          <p className="mt-1 text-[11px] leading-relaxed text-bruma">
+            Tu tarifa base cubre hasta cierto número de huéspedes; por cada
+            persona extra se suma una tarifa por noche que es TUYA — entra
+            directo a tu tarifa neta.
+          </p>
+          <div className="mt-3 grid gap-4 sm:grid-cols-2">
+            <CampoNumero
+              etiqueta="Huéspedes incluidos (0 = todos)"
+              valor={f.huespedesIncluidos}
+              onCambio={(v) => setF({ ...f, huespedesIncluidos: v })}
+              min={0}
+              max={f.capacidad}
+            />
+            <CampoNumero
+              etiqueta="Tarifa por adicional / noche ($)"
+              valor={f.tarifaAdicionalPesos}
+              onCambio={(v) => setF({ ...f, tarifaAdicionalPesos: v })}
+              min={0}
+              max={5_000_000}
+            />
+          </div>
+          {f.huespedesIncluidos > 0 && f.tarifaAdicionalPesos > 0 && (
+            <p className="mt-2 text-[11px] text-bruma">
+              Ejemplo: {f.capacidad} huéspedes ={" "}
+              <Money
+                valor={
+                  (f.tarifaNetaNochePesos || 0) +
+                  Math.max(0, f.capacidad - f.huespedesIncluidos) * f.tarifaAdicionalPesos
+                }
+                className="font-bold text-esmeralda"
+              />{" "}
+              netos por noche para ti.
+            </p>
+          )}
         </div>
 
         <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-tiffany-claro bg-tiffany-bruma/30 p-4">

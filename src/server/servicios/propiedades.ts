@@ -35,6 +35,23 @@ function validarMargenPesos(margenPesos?: number): number {
   return m;
 }
 
+/** Huéspedes adicionales: incluidos ∈ [1, capacidad]; tarifa por persona-noche ≥ 0. */
+function validarAdicionales(
+  incluidos: number | undefined | null,
+  adicionalPesos: number | undefined,
+  capacidad: number,
+): void {
+  const a = adicionalPesos ?? 0;
+  if (!Number.isSafeInteger(a) || a < 0 || a > 5_000_000) {
+    throw new PropiedadError("La tarifa por huésped adicional debe estar entre $0 y $5.000.000.");
+  }
+  if (incluidos !== undefined && incluidos !== null) {
+    if (!Number.isSafeInteger(incluidos) || incluidos < 1 || incluidos > capacidad) {
+      throw new PropiedadError("Los huéspedes incluidos deben estar entre 1 y la capacidad.");
+    }
+  }
+}
+
 const TIPOS = ["finca", "apartamento", "casa", "glamping"] as const;
 
 export interface DatosNuevaPropiedad {
@@ -53,6 +70,10 @@ export interface DatosNuevaPropiedad {
   ownerDirect?: boolean;
   /** Margen comercial mínimo en pesos (0 = sin piso propio). */
   margenMinimoPesos?: number;
+  /** Huéspedes cubiertos por la tarifa base (vacío = toda la capacidad). */
+  huespedesIncluidos?: number;
+  /** Tarifa POR PERSONA POR NOCHE sobre los incluidos — es del propietario. */
+  tarifaAdicionalPesos?: number;
   /** Dirección real (se cifra; se revela SOLO tras pago completo — Anexo II). */
   direccion?: string;
   indicacionesLlegada?: string;
@@ -83,6 +104,7 @@ export async function crearPropiedad(
   ) {
     throw new PropiedadError("La tarifa neta por noche debe estar entre $50.000 y $50.000.000.");
   }
+  validarAdicionales(datos.huespedesIncluidos, datos.tarifaAdicionalPesos, datos.capacidad);
 
   return await db.transaction(async (tx) => {
     const [p] = await tx
@@ -101,6 +123,8 @@ export async function crearPropiedad(
         publicada: datos.publicada,
         ownerDirect: datos.ownerDirect ?? false,
         margenMinimoCentavos: validarMargenPesos(datos.margenMinimoPesos) * 100,
+        huespedesIncluidos: datos.huespedesIncluidos ?? null,
+        tarifaAdicionalCentavos: (datos.tarifaAdicionalPesos ?? 0) * 100,
         direccionCifrada: datos.direccion?.trim() ? cifrar(datos.direccion.trim().slice(0, 200)) : null,
         indicacionesLlegada: datos.indicacionesLlegada?.trim().slice(0, 400) || null,
       })
@@ -270,6 +294,9 @@ export interface CambiosPropiedad {
   reglas?: string[];
   publicada?: boolean;
   tarifaNetaNochePesos?: number;
+  /** null = volver a incluir toda la capacidad en la tarifa base. */
+  huespedesIncluidos?: number | null;
+  tarifaAdicionalPesos?: number;
 }
 
 export async function editarPropiedad(
@@ -280,7 +307,7 @@ export async function editarPropiedad(
 ): Promise<void> {
   await db.transaction(async (tx) => {
     const [prop] = await tx
-      .select({ id: propiedades.id })
+      .select({ id: propiedades.id, capacidad: propiedades.capacidad })
       .from(propiedades)
       .where(and(eq(propiedades.id, propiedadId), eq(propiedades.propietarioId, propietarioId)))
       .for("update");
@@ -315,6 +342,14 @@ export async function editarPropiedad(
     }
     if (cambios.margenMinimoPesos !== undefined) {
       campos.margenMinimoCentavos = validarMargenPesos(cambios.margenMinimoPesos) * 100;
+    }
+    if (cambios.huespedesIncluidos !== undefined || cambios.tarifaAdicionalPesos !== undefined) {
+      const capacidadFinal = cambios.capacidad ?? prop.capacidad;
+      validarAdicionales(cambios.huespedesIncluidos, cambios.tarifaAdicionalPesos, capacidadFinal);
+      if (cambios.huespedesIncluidos !== undefined) campos.huespedesIncluidos = cambios.huespedesIncluidos;
+      if (cambios.tarifaAdicionalPesos !== undefined) {
+        campos.tarifaAdicionalCentavos = cambios.tarifaAdicionalPesos * 100;
+      }
     }
     if (cambios.ownerDirect !== undefined) {
       // Anexo I (flexibilidad): el cambio de modelo solo procede sin reservas

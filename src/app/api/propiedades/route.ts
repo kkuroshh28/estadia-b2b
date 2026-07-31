@@ -20,6 +20,8 @@ const Cuerpo = z.object({
   publicada: z.boolean(),
   ownerDirect: z.boolean().default(false),
   margenMinimoPesos: z.number().int().min(0).max(50_000_000).default(0),
+  huespedesIncluidos: z.number().int().min(1).max(50).optional(),
+  tarifaAdicionalPesos: z.number().int().min(0).max(5_000_000).default(0),
   direccion: z.string().max(200).optional(),
   indicacionesLlegada: z.string().max(400).optional(),
 });
@@ -62,6 +64,8 @@ const CuerpoPatch = z.object({
   tarifaNetaNochePesos: z.number().int().min(50_000).max(50_000_000).optional(),
   ownerDirect: z.boolean().optional(),
   margenMinimoPesos: z.number().int().min(0).max(50_000_000).optional(),
+  huespedesIncluidos: z.number().int().min(1).max(50).nullable().optional(),
+  tarifaAdicionalPesos: z.number().int().min(0).max(5_000_000).optional(),
   direccion: z.string().max(200).optional(),
   indicacionesLlegada: z.string().max(400).optional(),
 });

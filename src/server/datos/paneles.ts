@@ -135,6 +135,8 @@ async function propiedadesUI(
     publicada: f.publicada,
     ownerDirect: f.ownerDirect,
     margenMinimo: pesos(f.margenMinimoCentavos),
+    huespedesIncluidos: f.huespedesIncluidos,
+    tarifaAdicional: pesos(f.tarifaAdicionalCentavos),
     amenidades: f.amenidades,
     reglas: f.reglas,
     matiz: matizDeId(f.id),

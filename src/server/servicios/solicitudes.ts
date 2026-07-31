@@ -48,15 +48,39 @@ async function vigencias(db: Db): Promise<{ solicitudMin: number; ofertaHoras: n
   return { solicitudMin: v.solicitud_min ?? 30, ofertaHoras: v.oferta_horas ?? 6 };
 }
 
-/** Tarifa neta TOTAL (centavos) para el rango: tarifa vigente × noches. */
-async function tarifaNetaTotal(db: Db, propiedadId: string, desde: string, hasta: string): Promise<number> {
+/**
+ * Tarifa neta TOTAL (centavos) para el rango: tarifa vigente × noches, MÁS los
+ * huéspedes adicionales (por encima de los incluidos) × tarifa adicional ×
+ * noches — ese extra también es del propietario (audio del socio: "los
+ * adicionales también tienen que ganar el propietario").
+ */
+async function tarifaNetaTotal(
+  db: Db,
+  propiedadId: string,
+  desde: string,
+  hasta: string,
+  huespedes: number,
+): Promise<number> {
   const filas = await db
     .select()
     .from(tarifas)
     .where(eq(tarifas.propiedadId, propiedadId));
   const vigente = filas.find((t) => t.desde <= desde && desde <= t.hasta) ?? filas[0];
   if (!vigente) throw new OperacionError("La propiedad no tiene tarifa configurada.");
-  return vigente.netaNocheCentavos * nochesEntre(desde, hasta);
+  const noches = nochesEntre(desde, hasta);
+
+  const [prop] = await db
+    .select({
+      incluidos: propiedades.huespedesIncluidos,
+      adicionalCentavos: propiedades.tarifaAdicionalCentavos,
+    })
+    .from(propiedades)
+    .where(eq(propiedades.id, propiedadId));
+  const extra =
+    prop?.incluidos != null && prop.adicionalCentavos > 0
+      ? Math.max(0, huespedes - prop.incluidos) * prop.adicionalCentavos * noches
+      : 0;
+  return vigente.netaNocheCentavos * noches + extra;
 }
 
 export async function crearSolicitud(
@@ -190,7 +214,7 @@ export async function aceptarYAbrirNegociacion(
   const gano = await aceptarSolicitud(db, solicitudId, principalId);
   if (!gano) return { gano: false };
 
-  const neta = await tarifaNetaTotal(db, sol.propiedadId, sol.desde, sol.hasta);
+  const neta = await tarifaNetaTotal(db, sol.propiedadId, sol.desde, sol.hasta, sol.huespedes);
 
   for (let intento = 0; intento < 3; intento++) {
     try {

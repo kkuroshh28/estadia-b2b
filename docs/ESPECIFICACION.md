@@ -123,3 +123,18 @@ Owner Direct: el dueño-gestor recibe el 45% comercial además de su neta.
   (servicio `datosLlegada`, testeado: sin verde no, tercero jamás). Botones
   "Ver datos de llegada" en semáforo (dueño/socio comercial) y en links del
   socio de ventas.
+
+## Huéspedes adicionales · 2026-07-30
+Pedido por el socio (audio 29-jul): "los adicionales también tienen que ganar
+el propietario; se organiza con cada propietario, con cada propiedad".
+- `propiedades.huespedes_incluidos` (NULL = toda la capacidad incluida) +
+  `tarifa_adicional_centavos` (POR PERSONA POR NOCHE), CHECK en DB
+  (incluidos ∈ [1, capacidad], adicional ≥ 0). Migración `0006`.
+- La neta de la negociación se calcula UNA vez al aceptar la solicitud:
+  `neta = tarifa_noche × noches + max(0, huéspedes − incluidos) × adicional × noches`.
+  Todo lo aguas abajo (precio mínimo de venta, links 50/50, split, payout del
+  propietario) hereda esa neta — el extra es SIEMPRE del propietario.
+- UI: formulario de alta (opcional, 0 = sin adicionales), ficha del socio de
+  ventas (política visible + cotización en vivo con adicionales).
+- Tests `adicionales.test.ts`: neta con extra, mínimo sobre neta con extra,
+  split exacto, sin extra dentro de los incluidos, validaciones.

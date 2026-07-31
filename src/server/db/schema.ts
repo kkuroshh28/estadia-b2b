@@ -226,6 +226,11 @@ export const propiedades = pgTable("propiedades", {
   indicacionesLlegada: text("indicaciones_llegada"),
   // Margen comercial mínimo (centavos): precio mínimo de venta = neta + margen.
   margenMinimoCentavos: bigint("margen_minimo_centavos", { mode: "number" }).notNull().default(0),
+  // Huéspedes cubiertos por la tarifa base; NULL = toda la capacidad incluida.
+  // Por encima se cobra la tarifa adicional POR PERSONA POR NOCHE, que es del
+  // propietario: se suma a la tarifa neta antes de negociar la comisión.
+  huespedesIncluidos: smallint("huespedes_incluidos"),
+  tarifaAdicionalCentavos: bigint("tarifa_adicional_centavos", { mode: "number" }).notNull().default(0),
   creadaEn: timestamp("creada_en", { withTimezone: true }).notNull().defaultNow(),
 });
 

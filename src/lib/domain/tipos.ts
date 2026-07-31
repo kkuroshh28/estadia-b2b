@@ -49,6 +49,10 @@ export interface Propiedad {
   ownerDirect?: boolean;
   /** Margen comercial mínimo (pesos): precio mínimo de venta = neta + margen. */
   margenMinimo?: number;
+  /** Huéspedes cubiertos por la tarifa base; null/ausente = todos incluidos. */
+  huespedesIncluidos?: number | null;
+  /** Tarifa por huésped adicional POR NOCHE (pesos) — es del propietario. */
+  tarifaAdicional?: number;
   amenidades: string[];
   reglas: string[];
   /** Semilla determinista para la carátula generada (sin fotos externas). */

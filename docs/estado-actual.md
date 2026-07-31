@@ -272,3 +272,11 @@ siguiendo `docs/credenciales-necesarias.md` — cero código adicional.
    abogado (contratos/T&C/split), RNT del piloto.
 4. Conectar dashboards de la demo a datos por sesión (hoy la demo pública usa
    datos simulados coherentes; los servicios ya son reales por debajo).
+
+## 2026-07-30 — Landing "Cómo funciona" + huéspedes adicionales
+- Landing: nueva sección "Cómo funciona" (camino de 5 pasos por rol);
+  participación de la plataforma retirada de TODO lo visible (stats, barra,
+  tabla del modelo, FlujoDinero, DesgloseSplit).
+- Huéspedes adicionales (audio del socio): tarifa por persona-noche del
+  propietario, sumada a la neta antes de negociar. Migración 0006 + servicio +
+  API + formulario + ficha + 3 tests (106 verdes).
