@@ -34,6 +34,33 @@ const REGLAS_DE_ORO = [
   },
 ];
 
+const POLITICAS = [
+  {
+    t: "Gestión Directa",
+    d: "El propietario que quiere el control, lo tiene. Activa el modo directo, acepta y negocia él mismo en el Deal Room — y suma la participación comercial además de su tarifa neta. Cambiar de modelo solo procede sin reservas activas.",
+  },
+  {
+    t: "Precio mínimo de venta",
+    d: "Cada propiedad define su margen comercial mínimo. El sistema rechaza cualquier oferta por debajo de tarifa neta + margen: la comisión de los socios tiene piso garantizado, propiedad por propiedad.",
+  },
+  {
+    t: "Huéspedes adicionales",
+    d: "La tarifa base cubre un número de huéspedes definido por el propietario. Cada persona extra suma una tarifa por noche que es suya y entra directo a su neta — acordada con cada propiedad, aplicada por el sistema.",
+  },
+  {
+    t: "Identidad Protegida",
+    d: "Todos operan con alias — incluido el propietario. Teléfonos, correos, redes y direcciones físicas se bloquean en el chat ANTES de enviarse; el intento queda registrado como evidencia.",
+  },
+  {
+    t: "Revelación controlada",
+    d: "La dirección exacta y las indicaciones de llegada viajan cifradas. Solo se revelan a las partes de la reserva cuando el semáforo está en verde. Ni antes, ni a terceros. Jamás.",
+  },
+  {
+    t: "Tolerancia cero a la fuga",
+    d: "Tres intentos de sacar el negocio de la app = expulsión perpetua de la identidad: cédula y biometría en lista negra, alias retirado, reputación perdida. Sin apelación por reincidencia.",
+  },
+];
+
 const FLUJO = [
   "Solicitada",
   "Aceptada",
@@ -59,6 +86,7 @@ export default function Landing() {
         <div className="hidden items-center gap-8 text-sm text-tinta/75 sm:flex">
           <a href="#modelo" className="transition hover:text-tinta">Modelo</a>
           <a href="#reglas" className="transition hover:text-tinta">Reglas</a>
+          <a href="#politicas" className="transition hover:text-tinta">Políticas y privacidad</a>
           <a href="#confianza" className="transition hover:text-tinta">Confianza</a>
         </div>
         <div className="flex items-center gap-3">
@@ -403,6 +431,55 @@ export default function Landing() {
               </div>
             </Reveal>
           ))}
+        </div>
+      </section>
+
+      {/* POLÍTICAS DEL CÍRCULO */}
+      <section id="politicas" className="border-t border-borde bg-fondo/60 py-24">
+        <div className="mx-auto max-w-6xl px-6">
+          <Reveal>
+            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-tiffany">
+              Políticas y privacidad
+            </p>
+            <h2 className="mt-2 max-w-2xl font-display text-4xl text-tinta">
+              Escritas para que nadie pierda.{" "}
+              <em className="text-tiffany">Aplicadas por el sistema, no por confianza.</em>
+            </h2>
+            <p className="mt-4 max-w-2xl text-bruma">
+              Cada política vive en el servidor: no es un manual de buenas
+              intenciones, es código que se ejecuta en cada operación.
+            </p>
+          </Reveal>
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {POLITICAS.map((p, i) => (
+              <Reveal key={p.t} delay={(i % 3) * 0.08}>
+                <div className="h-full rounded-2xl border border-borde bg-tarjeta p-6 transition hover:border-tiffany">
+                  <p className="cifra text-xs text-tiffany">{String(i + 1).padStart(2, "0")}</p>
+                  <h3 className="mt-2 font-display text-xl text-tinta">{p.t}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-bruma">{p.d}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+          <Reveal delay={0.1}>
+            <div className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-tiffany/25 bg-tiffany-bruma/30 px-7 py-6">
+              <div>
+                <h3 className="font-display text-xl text-tinta">Privacidad de grado bancario</h3>
+                <p className="mt-1.5 max-w-3xl text-sm leading-relaxed text-bruma">
+                  Cédulas, teléfonos, cuentas bancarias y direcciones se guardan
+                  CIFRADAS. Ningún miembro ve los datos personales de otro: se usan
+                  únicamente para verificar identidades y dispersar pagos. Aquí tu
+                  información vale tanto como tu dinero — y se protege igual.
+                </p>
+              </div>
+              <Link
+                href="/registro"
+                className="shrink-0 rounded-full bg-tiffany px-6 py-3 text-xs font-bold text-noche transition hover:bg-tiffany-claro"
+              >
+                Solicitar acceso →
+              </Link>
+            </div>
+          </Reveal>
         </div>
       </section>
 
