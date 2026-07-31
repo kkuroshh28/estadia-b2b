@@ -78,27 +78,36 @@ export default function Landing() {
       </nav>
 
       {/* HERO */}
-      <header className="mx-auto max-w-6xl px-6 pb-20 pt-12 sm:pt-16">
+      <header className="relative mx-auto max-w-6xl px-6 pb-20 pt-12 sm:pt-16">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-28 left-1/3 h-[460px] w-[700px] -translate-x-1/2 rounded-full opacity-20 blur-3xl"
+          style={{ background: "radial-gradient(closest-side, #c9a46b66, transparent)" }}
+        />
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
             <RevealHero>
               <div className="flex flex-wrap items-center gap-2">
-                <Badge tono="esmeralda" vivo>Piloto · Oriente Antioqueño</Badge>
-                <Badge tono="oro">100% B2B</Badge>
+                <Badge tono="esmeralda" vivo>Operación piloto · Oriente Antioqueño</Badge>
+                <Badge tono="oro">Red privada · Solo verificados</Badge>
               </div>
             </RevealHero>
             <RevealHero delay={0.08}>
-              <h1 className="mt-6 font-display text-4xl leading-[1.05] text-tinta sm:text-6xl">
-                La app no te quita tu cliente.{" "}
-                <em className="text-tiffany">Te da inventario.</em>
+              <p className="mt-7 text-[11px] font-bold uppercase tracking-[0.3em] text-tiffany">
+                La red privada del negocio de rentas cortas
+              </p>
+              <h1 className="mt-3 font-display text-4xl leading-[1.06] text-tinta text-balance sm:text-5xl xl:text-6xl">
+                Tu cliente es tuyo. Tu tarifa, sagrada.{" "}
+                <em className="oro-brillante not-italic">Tu dinero llega solo.</em>
               </h1>
             </RevealHero>
             <RevealHero delay={0.16}>
               <p className="mt-6 max-w-xl text-lg leading-relaxed text-tinta/85">
-                La red privada donde propietarios verificados y socios de élite
-                cierran negocios bajo un mismo estándar: calendario que nunca
-                miente, negociación formal y dinero que se reparte automático en
-                el instante del pago. Tu cliente nunca entra: solo recibe un link.
+                THE CIRCLE es la red privada que conecta propietarios verificados
+                con socios de élite en el negocio de rentas cortas. Inventario
+                real, negociación formal y un split que dispersa cada peso a su
+                dueño en el instante del pago. Tu cliente jamás ve la plataforma:
+                solo recibe un link.
               </p>
             </RevealHero>
             <RevealHero delay={0.24}>
@@ -107,15 +116,22 @@ export default function Landing() {
                   href="/registro"
                   className="rounded-full bg-tiffany px-7 py-3.5 text-sm font-bold text-noche transition hover:bg-tiffany-claro"
                 >
-                  Empezar registro →
+                  Solicitar acceso →
                 </Link>
                 <Link
                   href="/app"
                   className="rounded-full border border-tinta/35 px-7 py-3.5 text-sm font-semibold text-tinta transition hover:bg-tiffany-bruma"
                 >
-                  Explorar la plataforma
+                  Ver la plataforma en vivo
                 </Link>
               </div>
+              <p className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-semibold uppercase tracking-wider text-tinta/55">
+                <span>Verificación con cédula y biometría</span>
+                <span className="text-tiffany">·</span>
+                <span>Pagos por pasarela certificada</span>
+                <span className="text-tiffany">·</span>
+                <span>Contrato automático en cada reserva</span>
+              </p>
             </RevealHero>
           </div>
           <RevealHero delay={0.2}>
@@ -126,10 +142,10 @@ export default function Landing() {
         <RevealHero delay={0.1}>
           <div className="mt-16 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-borde bg-borde sm:grid-cols-4">
             {[
-              ["45% + 45%", "de la comisión, para los socios"],
+              ["45% + 45%", "la comisión completa es de los socios"],
               ["~3%", "único costo del propietario"],
-              ["1 noche – 3 meses", "rentas cortas únicamente"],
-              ["0 holds", "sin reservas tentativas"],
+              ["Al instante", "cada pago se dispersa solo"],
+              ["0 holds", "el calendario solo obedece al dinero"],
             ].map(([v, k]) => (
               <div key={k} className="bg-panel px-6 py-5">
                 <p className="cifra text-xl font-bold text-tinta">{v}</p>
