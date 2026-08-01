@@ -280,3 +280,25 @@ siguiendo `docs/credenciales-necesarias.md` — cero código adicional.
 - Huéspedes adicionales (audio del socio): tarifa por persona-noche del
   propietario, sumada a la neta antes de negociar. Migración 0006 + servicio +
   API + formulario + ficha + 3 tests (106 verdes).
+
+## 2026-07-31 — Auditoría fría sin piedad (110 tests)
+Tres revisores adversariales (dinero/concurrencia, seguridad, reglas-vs-promesas)
++ remediación completa. Fallas cerradas:
+- **Dinero/concurrencia**: código de reserva atómico (secuencia, migr 0007);
+  aceptación+reserva+negociación en una transacción; transiciones dentro de la
+  tx del link; tabla `compensaciones` (migr 0008) para cobros aprobados no
+  aplicables (antes se perdían: el "job de compensación" nunca existió);
+  noches semiabiertas [desde,hasta) → reservas back-to-back; reembolso íntegro
+  por reserva con pasarela fuera de la tx (idempotente, sin doble reembolso) y
+  guard de splits dispersados; vigencias re-entrante; zona Colombia en cierres;
+  venceEn de links capeado al check-in en hora CO; beneficiario neta nunca null.
+- **Seguridad**: `config.ts` fail-closed (secretos obligatorios en prod +
+  simuladores de pago/KYC bloqueados en prod real); aceptarOferta exige
+  participante (IDOR); el chat nunca envía texto bloqueado en la API;
+  indicaciones de llegada cifradas; HMAC/TOTP de tiempo constante; rate-limit
+  en 2FA; allow-list anti-SSRF + tope de tamaño en import iCal.
+- **Copy/marca**: 10% de la plataforma retirado del Deal Room (única fuga
+  visible); textos de "dispersión" a lenguaje honesto; strikes coherente (3);
+  dominios estadia→thecircle.
+Nuevo `robustez.test.ts` (back-to-back, compensación, reembolso íntegro,
+tarifa noche-a-noche). Migraciones 0007 y 0008.
