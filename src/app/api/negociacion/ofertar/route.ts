@@ -8,7 +8,7 @@ import { limitar } from "@/server/rate-limit";
 /** Contraoferta formal: turnos, >= tarifa neta y piso se validan en el servicio. */
 const Cuerpo = z.object({
   negociacionId: z.uuid(),
-  montoPesos: z.number().int().min(1),
+  montoPesos: z.number().int().min(1).max(500_000_000),
   como: z.enum(["principal", "externo", "propietario"]),
 });
 

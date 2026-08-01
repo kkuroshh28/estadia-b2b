@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { obtenerDb } from "@/server/db";
 import { obtenerKyc } from "@/server/adaptadores/kyc";
-import { hmacFirma } from "@/server/crypto";
+import { hmacFirma, igualdadSegura } from "@/server/crypto";
+import { secretoObligatorio } from "@/server/config";
 
 /**
  * Callback del proveedor KYC (o del simulador en desarrollo).
@@ -17,8 +18,8 @@ const Cuerpo = z.object({
 
 export async function POST(req: Request) {
   const crudo = await req.text();
-  const secreto = process.env.KYC_CALLBACK_SECRET ?? "dev-kyc-secret";
-  if (hmacFirma(crudo, secreto) !== (req.headers.get("x-firma-kyc") ?? "")) {
+  const secreto = secretoObligatorio("KYC_CALLBACK_SECRET") ?? "dev-kyc-secret";
+  if (!igualdadSegura(hmacFirma(crudo, secreto), req.headers.get("x-firma-kyc") ?? "")) {
     return NextResponse.json({ error: "firma inválida" }, { status: 401 });
   }
   const parseado = Cuerpo.safeParse(JSON.parse(crudo));

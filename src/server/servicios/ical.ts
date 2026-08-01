@@ -1,7 +1,8 @@
 import { and, eq, gte, sql } from "drizzle-orm";
 import type { Db } from "../db";
 import { alertasAdmin, calendarioDias, propiedades, sincronizacionesIcal } from "../db/schema";
-import { hmacFirma } from "../crypto";
+import { hmacFirma, igualdadSegura } from "../crypto";
+import { secretoObligatorio } from "../config";
 
 /**
  * iCal bidireccional (regla #15).
@@ -11,12 +12,41 @@ import { hmacFirma } from "../crypto";
  * alerta a admin + NO se pisa la reserva: el dinero manda.
  */
 
+/**
+ * Anti-SSRF: solo se importan calendarios de dominios conocidos (Airbnb,
+ * Booking, Google, VRBO…). Bloquea URLs internas/metadata cloud y esquemas
+ * distintos de https.
+ */
+const DOMINIOS_ICAL = [
+  "airbnb.com",
+  "airbnb.es",
+  "booking.com",
+  "admin.booking.com",
+  "ical.booking.com",
+  "calendar.google.com",
+  "vrbo.com",
+  "homeaway.com",
+  "expedia.com",
+];
+export function urlIcalSegura(url: string): boolean {
+  let u: URL;
+  try {
+    u = new URL(url);
+  } catch {
+    return false;
+  }
+  if (u.protocol !== "https:") return false;
+  const host = u.hostname.toLowerCase();
+  return DOMINIOS_ICAL.some((d) => host === d || host.endsWith(`.${d}`));
+}
+
 export function tokenIcal(propiedadId: string): string {
-  return hmacFirma(`ical:${propiedadId}`, process.env.ICAL_SECRET ?? "dev-ical-secret").slice(0, 32);
+  const secreto = secretoObligatorio("ICAL_SECRET") ?? "dev-ical-secret";
+  return hmacFirma(`ical:${propiedadId}`, secreto).slice(0, 32);
 }
 
 export function verificarTokenIcal(propiedadId: string, token: string): boolean {
-  return tokenIcal(propiedadId) === token;
+  return igualdadSegura(tokenIcal(propiedadId), token);
 }
 
 /** Exporta los días NO disponibles como eventos (lo que Airbnb/Booking esperan). */
@@ -40,7 +70,7 @@ export async function exportarIcs(db: Db, propiedadId: string): Promise<string> 
       const siguiente = fechaMas1(d.fecha).replaceAll("-", "");
       return [
         "BEGIN:VEVENT",
-        `UID:estadia-${propiedadId}-${ymd}@estadia.app`,
+        `UID:thecircle-${propiedadId}-${ymd}@thecircle.app`,
         `DTSTART;VALUE=DATE:${ymd}`,
         `DTEND;VALUE=DATE:${siguiente}`,
         `SUMMARY:${d.estado === "reservado_app" ? "Reservado (THE CIRCLE)" : "No disponible"}`,
@@ -52,7 +82,7 @@ export async function exportarIcs(db: Db, propiedadId: string): Promise<string> 
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//ESTADIA//Calendario//ES",
+    "PRODID:-//THE CIRCLE//Calendario//ES",
     `X-WR-CALNAME:${prop.nombre} (THE CIRCLE)`,
     eventos,
     "END:VCALENDAR",

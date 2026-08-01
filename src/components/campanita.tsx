@@ -29,7 +29,7 @@ const ICONO: Record<string, string> = {
 
 const VITRINA: Noti[] = [
   { id: "v1", tipo: "solicitud", titulo: "Nueva solicitud entrante", cuerpo: "GUACAMAYA-256 pide Finca Mirador del Peñol (2026-08-07 → 2026-08-10). El primero que acepte se la queda.", url: "/app/principal", leida: false },
-  { id: "v2", tipo: "pago", titulo: "Pago 1 de 2 (anticipo) confirmado ✓", cuerpo: "Casa Campestre Llanogrande · CIR-2026-00358 · $ 2.025.000. Split dispersado automáticamente.", url: "/app/propietario", leida: false },
+  { id: "v2", tipo: "pago", titulo: "Pago 1 de 2 (anticipo) confirmado ✓", cuerpo: "Casa Campestre Llanogrande · CIR-2026-00358 · $ 2.025.000. Split registrado a cada cuenta certificada.", url: "/app/propietario", leida: false },
   { id: "v3", tipo: "oferta", titulo: "Tienes una oferta nueva", cuerpo: "CONDOR-472 propone $ 5.250.000. Vence en horas: responde.", url: "/app/negociacion", leida: true },
 ];
 

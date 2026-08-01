@@ -50,6 +50,20 @@
       "when": 1785440689992,
       "tag": "0006_huespedes_adicionales",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1785527089992,
+      "tag": "0007_secuencia_codigo_reserva",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1785613489992,
+      "tag": "0008_compensaciones",
+      "breakpoints": true
     }
   ]
 }

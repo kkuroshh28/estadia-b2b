@@ -21,7 +21,7 @@ export function PanelComisiones({ rol, datos }: { rol: "principal" | "externo"; 
         <h1 className="font-display text-3xl text-tinta">Mis comisiones</h1>
         <p className="mt-1 text-sm text-bruma">
           <span className="font-mono text-oro">{alias}</span> · recibes el {pct} de la
-          comisión de cada mitad, dispersado automático a tu cuenta certificada.
+          comisión de cada mitad, liquidado automático a tu cuenta certificada.
         </p>
       </div>
 

@@ -16,7 +16,7 @@ export async function GET(
   return new NextResponse(ics, {
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
-      "Content-Disposition": "attachment; filename=estadia.ics",
+      "Content-Disposition": "attachment; filename=thecircle.ics",
     },
   });
 }

@@ -120,9 +120,15 @@ export async function datosLlegada(
       "sin_verde",
     );
   }
+  // Las indicaciones también viajan CIFRADAS en reposo (Anexo II). Formato
+  // "iv.tag.datos"; una entrada antigua en texto plano se devuelve tal cual.
+  const desInd = (v: string | null): string | null => {
+    if (!v) return null;
+    return v.split(".").length === 3 ? descifrar(v) : v;
+  };
   return {
     propiedad: r.nombre,
     direccion: r.direccionCifrada ? descifrar(r.direccionCifrada) : null,
-    indicaciones: r.indicaciones,
+    indicaciones: desInd(r.indicaciones),
   };
 }

@@ -314,10 +314,9 @@ export function NegociacionCliente({ datos }: { datos: DatosNegociacion }) {
             return (
               <Card className="p-4 text-[11px] leading-relaxed text-bruma">
                 Cada mitad del pago (<Money valor={porMitad.precioFinal} className="text-tinta" />)
-                dispersa automáticamente:{" "}
+                se reparte automáticamente:{" "}
                 <Money valor={porMitad.principal} className="text-oro" /> al socio comercial,{" "}
-                <Money valor={porMitad.externo} className="text-oro" /> al socio de ventas,{" "}
-                <Money valor={porMitad.app} className="text-bruma" /> a la plataforma y{" "}
+                <Money valor={porMitad.externo} className="text-oro" /> al socio de ventas y{" "}
                 <Money valor={porMitad.tarifaNeta} className="text-esmeralda" /> al
                 propietario. Sin retenciones.
               </Card>

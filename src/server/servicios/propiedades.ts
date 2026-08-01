@@ -126,7 +126,10 @@ export async function crearPropiedad(
         huespedesIncluidos: datos.huespedesIncluidos ?? null,
         tarifaAdicionalCentavos: (datos.tarifaAdicionalPesos ?? 0) * 100,
         direccionCifrada: datos.direccion?.trim() ? cifrar(datos.direccion.trim().slice(0, 200)) : null,
-        indicacionesLlegada: datos.indicacionesLlegada?.trim().slice(0, 400) || null,
+        // Anexo II: las indicaciones también se cifran en reposo.
+        indicacionesLlegada: datos.indicacionesLlegada?.trim()
+          ? cifrar(datos.indicacionesLlegada.trim().slice(0, 400))
+          : null,
       })
       .returning({ id: propiedades.id });
 
@@ -338,7 +341,9 @@ export async function editarPropiedad(
       campos.direccionCifrada = cambios.direccion.trim() ? cifrar(cambios.direccion.trim().slice(0, 200)) : null;
     }
     if (cambios.indicacionesLlegada !== undefined) {
-      campos.indicacionesLlegada = cambios.indicacionesLlegada.trim().slice(0, 400) || null;
+      campos.indicacionesLlegada = cambios.indicacionesLlegada.trim()
+        ? cifrar(cambios.indicacionesLlegada.trim().slice(0, 400))
+        : null;
     }
     if (cambios.margenMinimoPesos !== undefined) {
       campos.margenMinimoCentavos = validarMargenPesos(cambios.margenMinimoPesos) * 100;

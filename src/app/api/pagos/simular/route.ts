@@ -2,17 +2,19 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { firmarEventoSimulado } from "@/server/adaptadores/pasarela";
 import { tokenAleatorio } from "@/server/crypto";
+import { simuladorPermitido } from "@/server/config";
 import { POST as webhookPost } from "../../webhooks/pasarela/route";
 
 /**
  * "Pago de prueba" del driver simulado: construye el evento y lo entrega al
  * MISMO webhook (misma firma, misma idempotencia) que usaría la pasarela real.
- * Solo existe con PASARELA_DRIVER=simulado.
+ * JAMÁS responde en producción real (fabricaría pagos aprobados sin dinero),
+ * aunque el driver haya quedado en "simulado" por olvido.
  */
 const Cuerpo = z.object({ linkId: z.string().uuid(), montoCentavos: z.number().int() });
 
 export async function POST(req: Request) {
-  if ((process.env.PASARELA_DRIVER ?? "simulado") !== "simulado") {
+  if (!simuladorPermitido() || (process.env.PASARELA_DRIVER ?? "simulado") !== "simulado") {
     return NextResponse.json({ error: "Solo disponible con pasarela simulada" }, { status: 404 });
   }
   const parseado = Cuerpo.safeParse(await req.json().catch(() => null));

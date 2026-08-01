@@ -1,14 +1,17 @@
-import { and, eq, gte, lte, sql } from "drizzle-orm";
+import { and, eq, gte, lt, sql } from "drizzle-orm";
 import type { Db } from "../db";
 import {
   calendarioDias,
+  compensaciones,
   eventosPasarela,
   linksDePago,
   propiedades,
   reservas,
   splits,
   transacciones,
+  usuarios,
 } from "../db/schema";
+import { notificarEnApp } from "./notificaciones";
 import { transicionarReserva } from "./reservas";
 import { centavos, liquidarReserva, type Centavos } from "@/lib/dinero";
 
@@ -42,6 +45,52 @@ export type ResultadoPago =
   | { resultado: "link_no_activo" };
 
 /**
+ * Un cobro APROBADO que no pudo aplicarse (link vencido/invalidado o carrera
+ * perdida) es dinero del cliente en el aire: queda registrado como
+ * COMPENSACIÓN PENDIENTE en la misma transacción del evento — jamás se pierde
+ * en silencio — y se avisa a los admins para reembolsar de inmediato.
+ */
+async function registrarCompensacion(
+  tx: Db,
+  evento: EventoPago,
+  motivo: "link_vencido" | "link_no_activo" | "fechas_tomadas",
+  reservaId: string | null,
+): Promise<void> {
+  await tx
+    .insert(compensaciones)
+    .values({
+      pasarelaRef: evento.pasarelaRef,
+      linkId: evento.linkId,
+      reservaId,
+      montoCentavos: evento.montoCentavos,
+      motivo,
+    })
+    .onConflictDoNothing();
+}
+
+/** Aviso in-app a todos los admins (fuera de la tx del dinero). */
+async function avisarAdminsCompensacion(db: Db, evento: EventoPago, motivo: string): Promise<void> {
+  try {
+    const admins = await db
+      .select({ id: usuarios.id })
+      .from(usuarios)
+      .where(sql`'admin' = ANY(${usuarios.roles})`);
+    await Promise.all(
+      admins.map((a) =>
+        notificarEnApp(db, a.id, {
+          tipo: "pago",
+          titulo: "⚠️ Compensación pendiente",
+          cuerpo: `Cobro aprobado sobre un link no aplicable (${motivo}). Ref ${evento.pasarelaRef} — requiere reembolso inmediato.`,
+          url: "/admin/dinero",
+        }),
+      ),
+    );
+  } catch (e) {
+    console.error("[pagos] aviso de compensación falló (la compensación SÍ quedó registrada):", e);
+  }
+}
+
+/**
  * Procesa un evento de pago confirmado. TODO ocurre en UNA transacción:
  *  1. Idempotencia: INSERT del evento — duplicado ⇒ no-op.
  *  2. Lock del link (FOR UPDATE) y validación de estado.
@@ -59,7 +108,11 @@ export async function procesarWebhookPago(db: Db, evento: EventoPago): Promise<R
   // es correcto y seguro.
   for (let intento = 1; ; intento++) {
     try {
-      return await procesarUnaVez(db, evento);
+      const r = await procesarUnaVez(db, evento);
+      if (r.resultado === "fechas_tomadas" || r.resultado === "link_no_activo") {
+        await avisarAdminsCompensacion(db, evento, r.resultado);
+      }
+      return r;
     } catch (e) {
       if (esDeadlock(e) && intento < 3) continue;
       throw e;
@@ -92,10 +145,16 @@ async function procesarUnaVez(db: Db, evento: EventoPago): Promise<ResultadoPago
       .from(linksDePago)
       .where(eq(linksDePago.id, evento.linkId))
       .for("update");
-    if (!link || link.estado !== "activo") return { resultado: "link_no_activo" };
+    if (!link || link.estado !== "activo") {
+      // Cobro aprobado sobre link inexistente/invalidado/pagado: el dinero del
+      // cliente queda en compensación pendiente, jamás en el aire.
+      await registrarCompensacion(tx as unknown as Db, evento, "link_no_activo", link?.reservaId ?? null);
+      return { resultado: "link_no_activo" };
+    }
     // Un link vencido JAMÁS se cobra, aunque siga marcado 'activo' en DB.
     if (link.venceEn.getTime() < Date.now()) {
       await tx.update(linksDePago).set({ estado: "expirado" }).where(eq(linksDePago.id, link.id));
+      await registrarCompensacion(tx as unknown as Db, evento, "link_vencido", link.reservaId);
       return { resultado: "link_no_activo" };
     }
     if (link.montoCentavos !== evento.montoCentavos) {
@@ -112,6 +171,9 @@ async function procesarUnaVez(db: Db, evento: EventoPago): Promise<ResultadoPago
     if (!reserva) throw new Error(`Reserva no encontrada para link ${link.id}`);
 
     if (link.mitad === 1) {
+      // Las NOCHES ocupadas son [desde, hasta): el día de salida (checkout)
+      // NO se bloquea — una reserva que entra el mismo día que otra sale
+      // (back-to-back) es el caso normal del negocio y debe caber.
       // 3a · Materializar las filas del rango que aún no existan (un día sin
       // fila cuenta como disponible, pero SIN fila no hay nada que lockear y
       // la carrera no se serializaría). ON CONFLICT DO NOTHING: bajo carrera,
@@ -119,10 +181,10 @@ async function procesarUnaVez(db: Db, evento: EventoPago): Promise<ResultadoPago
       await tx.execute(sql`
         INSERT INTO calendario_dias (propiedad_id, fecha, estado)
         SELECT ${reserva.propiedadId}, d::date, 'disponible'
-        FROM generate_series(${reserva.desde}::date, ${reserva.hasta}::date, interval '1 day') d
+        FROM generate_series(${reserva.desde}::date, ${reserva.hasta}::date - 1, interval '1 day') d
         ON CONFLICT (propiedad_id, fecha) DO NOTHING`);
 
-      // 3b · Lock de los días del rango — aquí se decide la carrera
+      // 3b · Lock de las noches del rango — aquí se decide la carrera
       const dias = await tx
         .select()
         .from(calendarioDias)
@@ -130,24 +192,24 @@ async function procesarUnaVez(db: Db, evento: EventoPago): Promise<ResultadoPago
           and(
             eq(calendarioDias.propiedadId, reserva.propiedadId),
             gte(calendarioDias.fecha, reserva.desde),
-            lte(calendarioDias.fecha, reserva.hasta),
+            lt(calendarioDias.fecha, reserva.hasta),
           ),
         )
         .for("update");
 
       const tomado = dias.some((d) => d.estado !== "disponible");
       if (tomado) {
-        // Perdió la carrera: link invalidado; el checkout mostrará
-        // "Fechas ya no disponibles". La anulación del cobro en la pasarela
-        // la ejecuta el job de compensación (ver runbook).
+        // Perdió la carrera: link invalidado y COMPENSACIÓN registrada en esta
+        // misma transacción — el cobro del cliente jamás queda en el aire.
         await tx
           .update(linksDePago)
           .set({ estado: "invalidado" })
           .where(eq(linksDePago.id, link.id));
+        await registrarCompensacion(tx as unknown as Db, evento, "fechas_tomadas", link.reservaId);
         return { resultado: "fechas_tomadas" };
       }
 
-      // 4a · Bloqueo en firme de los días
+      // 4a · Bloqueo en firme de las noches
       await tx
         .update(calendarioDias)
         .set({ estado: "reservado_app", reservaId: reserva.id, actualizadoEn: sql`now()` })
@@ -155,11 +217,12 @@ async function procesarUnaVez(db: Db, evento: EventoPago): Promise<ResultadoPago
           and(
             eq(calendarioDias.propiedadId, reserva.propiedadId),
             gte(calendarioDias.fecha, reserva.desde),
-            lte(calendarioDias.fecha, reserva.hasta),
+            lt(calendarioDias.fecha, reserva.hasta),
           ),
         );
 
       // 4b · Invalidar links activos competidores solapados (misma propiedad).
+      // Solape de NOCHES semiabierto: back-to-back NO es solape.
       // SKIP LOCKED evita el deadlock: si el rival tiene SU link bloqueado es
       // porque su webhook está corriendo — perderá la carrera de días y se
       // auto-invalidará. Jamás esperamos su lock mientras él espera los días.
@@ -173,7 +236,7 @@ async function procesarUnaVez(db: Db, evento: EventoPago): Promise<ResultadoPago
             AND lp.id <> ${link.id}
             AND r.propiedad_id = ${reserva.propiedadId}
             AND r.id <> ${reserva.id}
-            AND r.desde <= ${reserva.hasta} AND r.hasta >= ${reserva.desde}
+            AND r.desde < ${reserva.hasta} AND r.hasta > ${reserva.desde}
           FOR UPDATE OF lp SKIP LOCKED
         )`);
     }
@@ -185,6 +248,13 @@ async function procesarUnaVez(db: Db, evento: EventoPago): Promise<ResultadoPago
     );
     const mitad = liq.mitades[link.mitad === 1 ? 0 : 1];
     verificarCuadre(mitad.montoCliente, mitad.tarifaNeta, mitad.split.comision);
+    // La mitad recalculada debe ser EXACTAMENTE lo que el link cobró — si el
+    // precio de la reserva divergió del link por cualquier vía, se detiene todo.
+    if (mitad.montoCliente !== link.montoCentavos) {
+      throw new Error(
+        `CONCILIACIÓN ROTA: mitad recalculada (${mitad.montoCliente}) ≠ monto del link (${link.montoCentavos})`,
+      );
+    }
 
     const [trx] = await tx
       .insert(transacciones)
@@ -202,6 +272,11 @@ async function procesarUnaVez(db: Db, evento: EventoPago): Promise<ResultadoPago
       .select({ propietarioId: propiedades.propietarioId })
       .from(propiedades)
       .where(eq(propiedades.id, reserva.propiedadId));
+    if (!prop?.propietarioId) {
+      throw new Error(
+        `Propiedad ${reserva.propiedadId} sin propietario: la tarifa neta no tiene beneficiario — se detiene el procesamiento`,
+      );
+    }
 
     await tx.insert(splits).values([
       { transaccionId: trx.id, beneficiarioId: null, concepto: "comision_app", montoCentavos: mitad.split.app },
@@ -209,7 +284,7 @@ async function procesarUnaVez(db: Db, evento: EventoPago): Promise<ResultadoPago
       { transaccionId: trx.id, beneficiarioId: reserva.externoId, concepto: "comision_externo", montoCentavos: mitad.split.externo },
       // El propietario recibe tarifa neta; el fee de pasarela se descuenta en la
       // dispersión y se concilia contra el fee real reportado por la pasarela.
-      { transaccionId: trx.id, beneficiarioId: prop?.propietarioId ?? null, concepto: "tarifa_neta", montoCentavos: mitad.tarifaNeta },
+      { transaccionId: trx.id, beneficiarioId: prop.propietarioId, concepto: "tarifa_neta", montoCentavos: mitad.tarifaNeta },
     ]);
 
     await tx
@@ -261,6 +336,23 @@ export async function generarLinkSaldo(
   reservaId: string,
   actorId: string,
 ): Promise<{ linkId: string; montoCentavos: number; yaExistia: boolean }> {
+  // Retry ante 40P01: este camino lockea reserva→link mientras el webhook de
+  // la mitad 2 lockea link→reserva; si chocan, la víctima reintenta limpia.
+  for (let intento = 1; ; intento++) {
+    try {
+      return await generarLinkSaldoUnaVez(db, reservaId, actorId);
+    } catch (e) {
+      if (esDeadlock(e) && intento < 3) continue;
+      throw e;
+    }
+  }
+}
+
+async function generarLinkSaldoUnaVez(
+  db: Db,
+  reservaId: string,
+  actorId: string,
+): Promise<{ linkId: string; montoCentavos: number; yaExistia: boolean }> {
   return await db.transaction(async (tx) => {
     const [reserva] = await tx
       .select()
@@ -279,6 +371,11 @@ export async function generarLinkSaldo(
       .from(linksDePago)
       .where(and(eq(linksDePago.reservaId, reservaId), eq(linksDePago.mitad, 2)))
       .for("update");
+    if (existente && existente.estado === "invalidado") {
+      // Un link invalidado (reembolso / carrera) NO es cobrable: jamás se
+      // devuelve como si lo fuera ni se revive en silencio.
+      throw new SaldoError("El link del saldo fue invalidado. Contacta al administrador.");
+    }
     if (existente && existente.estado !== "expirado") {
       return { linkId: existente.id, montoCentavos: existente.montoCentavos, yaExistia: true };
     }
@@ -286,14 +383,21 @@ export async function generarLinkSaldo(
     if (!existente && reserva.estado !== "ANTICIPO_PAGADO") {
       throw new SaldoError("El saldo solo se genera con el anticipo pagado.");
     }
+    // Vigencia: 24 h, capeada al FIN del día de check-in en HORA COLOMBIA
+    // (el saldo se paga el día de ingreso — antes moría a las 7 pm del día
+    // anterior por el cast en UTC); mínimo 2 h si el cap ya pasó.
+    const venceSaldo = sql`GREATEST(
+      LEAST(
+        now() + interval '24 hours',
+        ((${reserva.desde}::date + 1)::timestamp AT TIME ZONE 'America/Bogota')
+      ),
+      now() + interval '2 hours'
+    )`;
     if (existente) {
       // Regeneración tras expirar: nueva vigencia, misma mitad y monto.
       await tx
         .update(linksDePago)
-        .set({
-          estado: "activo",
-          venceEn: sql`LEAST(now() + interval '24 hours', ${reserva.desde}::timestamp)`,
-        })
+        .set({ estado: "activo", venceEn: venceSaldo })
         .where(eq(linksDePago.id, existente.id));
       return { linkId: existente.id, montoCentavos: existente.montoCentavos, yaExistia: false };
     }
@@ -309,8 +413,13 @@ export async function generarLinkSaldo(
         mitad: 2,
         montoCentavos: liq.mitades[1].montoCliente,
         url: `/pago/${crypto.randomUUID()}`,
-        // 24 h de vigencia, pero nunca más allá de la medianoche del check-in.
-        venceEn: sql`LEAST(now() + interval '24 hours', ${reserva.desde}::timestamp)` as unknown as Date,
+        venceEn: sql`GREATEST(
+          LEAST(
+            now() + interval '24 hours',
+            ((${reserva.desde}::date + 1)::timestamp AT TIME ZONE 'America/Bogota')
+          ),
+          now() + interval '2 hours'
+        )` as unknown as Date,
       })
       .returning({ id: linksDePago.id, montoCentavos: linksDePago.montoCentavos });
 

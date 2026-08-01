@@ -46,7 +46,33 @@ export async function POST(req: Request) {
       // con la plantilla según duración e identidades reales SOLO adentro.
       if (link.mitad === 1) await generarContrato(db, link.reservaId);
     }
+  } else if (resultado.resultado === "duplicado") {
+    // RECONCILIACIÓN: si el dinero se procesó pero el proceso murió antes de
+    // la transición (respuesta 500 → reintento de la pasarela), la reserva
+    // quedó atrás respecto a su link pagado. El reintento la rescata aquí:
+    // sin esto sería un zombie con dinero cobrado para siempre.
+    await reconciliarPostPago(db, evento.linkId);
   }
   // 200 también en duplicado/fechas_tomadas: la pasarela no debe reintentar.
   return NextResponse.json(resultado);
+}
+
+async function reconciliarPostPago(db: ReturnType<typeof obtenerDb>, linkId: string) {
+  const [link] = await db
+    .select({ reservaId: linksDePago.reservaId, mitad: linksDePago.mitad, estado: linksDePago.estado })
+    .from(linksDePago)
+    .where(eq(linksDePago.id, linkId));
+  if (!link || link.estado !== "pagado") return;
+  const { reservas } = await import("@/server/db/schema");
+  const [res] = await db
+    .select({ estado: reservas.estado })
+    .from(reservas)
+    .where(eq(reservas.id, link.reservaId));
+  const atrasada =
+    (link.mitad === 1 && res?.estado === "LINK_1_ENVIADO") ||
+    (link.mitad === 2 && res?.estado === "SALDO_LINK_ENVIADO");
+  if (!atrasada) return;
+  await transicionPostPago(db, link.reservaId, link.mitad);
+  await notificarPagoConfirmado(db, link.reservaId, link.mitad);
+  if (link.mitad === 1) await generarContrato(db, link.reservaId);
 }

@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import type { Db } from "../db";
 import { notificaciones, propiedades, reservas, usuarios } from "../db/schema";
 import { obtenerEmail } from "../adaptadores/email";
-import { formatear, centavos } from "@/lib/dinero";
+import { formatear, centavos, liquidarReserva } from "@/lib/dinero";
 
 /**
  * Notificaciones por evento del negocio. Canal email por adaptador (simulado →
@@ -83,11 +83,13 @@ export async function notificarPagoConfirmado(db: Db, reservaId: string, mitad: 
   const [principal] = await db.select({ email: usuarios.email }).from(usuarios).where(eq(usuarios.id, r.principalId));
   const [externo] = await db.select({ email: usuarios.email }).from(usuarios).where(eq(usuarios.id, r.externoId));
 
+  // Monto EXACTO de la mitad (el saldo lleva el centavo impar), no floor(/2).
+  const liq = liquidarReserva(centavos(r.precioFinalCentavos), centavos(r.tarifaNetaCentavos));
   const datos = {
     codigo: r.codigo,
     propiedad: prop.nombre,
     mitad: mitad === 1 ? "1 de 2 (anticipo)" : "2 de 2 (saldo)",
-    monto: formatear(centavos(Math.floor(r.precioFinalCentavos / 2))),
+    monto: formatear(liq.mitades[mitad === 1 ? 0 : 1].montoCliente),
   };
   for (const p of [...partes, principal, externo].filter(Boolean)) {
     await notificar(db, "pago_confirmado", p.email, datos);
@@ -95,7 +97,7 @@ export async function notificarPagoConfirmado(db: Db, reservaId: string, mitad: 
 
   // Campanita para las 3 partes.
   const titulo = `Pago ${datos.mitad} confirmado ✓`;
-  const cuerpo = `${prop.nombre} · ${r.codigo} · ${datos.monto}. Split dispersado automáticamente.`;
+  const cuerpo = `${prop.nombre} · ${r.codigo} · ${datos.monto}. Split registrado a cada cuenta certificada.`;
   await notificarEnApp(db, prop.propietarioId, { tipo: "pago", titulo, cuerpo, url: "/app/propietario" });
   await notificarEnApp(db, r.principalId, { tipo: "pago", titulo, cuerpo, url: "/app/principal" });
   await notificarEnApp(db, r.externoId, { tipo: "pago", titulo, cuerpo, url: "/app/externo/links" });

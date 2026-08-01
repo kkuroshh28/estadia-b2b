@@ -165,12 +165,15 @@ describe.skipIf(!HAY_DB)("integración — concurrencia financiera", () => {
       .where(sql`id = ${perdedor.linkId}`);
     expect(linkPerdedor.estado).toBe("invalidado");
 
-    // Los días quedaron bloqueados por el ganador
+    // Las NOCHES [desde, hasta) quedaron bloqueadas por el ganador; el día de
+    // salida (checkout) queda LIBRE para una entrada back-to-back.
     const dias = await db
       .select()
       .from(calendarioDias)
       .where(sql`propiedad_id = ${propiedadId} AND fecha BETWEEN '2026-08-10' AND '2026-08-12'`);
-    for (const d of dias) expect(d.estado).toBe("reservado_app");
+    for (const d of dias) {
+      expect(d.estado).toBe(d.fecha < "2026-08-12" ? "reservado_app" : "disponible");
+    }
   }, 30_000);
 
   it("idempotencia: el MISMO webhook dos veces jamás duplica un split", async () => {

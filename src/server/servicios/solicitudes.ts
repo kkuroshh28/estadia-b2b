@@ -14,7 +14,7 @@ import {
 import { nochesEntre, validarDuracion } from "@/lib/domain/reglas";
 import { centavos } from "@/lib/dinero";
 import { aceptarOfertaYGenerarLink, obtenerPisoComision, validarPropuestaServidor } from "./negociacion";
-import { aceptarSolicitud, transicionarReserva } from "./reservas";
+import { aceptarSolicitud } from "./reservas";
 import { notificarEnApp } from "./notificaciones";
 import { alias as tablaAlias, vinculosComisionista as vinculos } from "../db/schema";
 import { formatear, centavos as aCentavos } from "@/lib/dinero";
@@ -48,11 +48,20 @@ async function vigencias(db: Db): Promise<{ solicitudMin: number; ofertaHoras: n
   return { solicitudMin: v.solicitud_min ?? 30, ofertaHoras: v.oferta_horas ?? 6 };
 }
 
+/** Suma días a una fecha-calendario ISO sin pasar por la zona del proceso. */
+function fechaMasDias(iso: string, dias: number): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  const f = new Date(Date.UTC(y, m - 1, d + dias, 12));
+  return f.toISOString().slice(0, 10);
+}
+
 /**
- * Tarifa neta TOTAL (centavos) para el rango: tarifa vigente × noches, MÁS los
- * huéspedes adicionales (por encima de los incluidos) × tarifa adicional ×
- * noches — ese extra también es del propietario (audio del socio: "los
- * adicionales también tienen que ganar el propietario").
+ * Tarifa neta TOTAL (centavos) para el rango, calculada NOCHE A NOCHE: cada
+ * noche usa la tarifa vigente de SU fecha (los cruces de temporada se cobran
+ * exactos, sin extrapolar el período del check-in). Sin vigencia para alguna
+ * noche → error, jamás una tarifa arbitraria. Los huéspedes adicionales (por
+ * encima de los incluidos) suman tarifa por persona-noche — ese extra también
+ * es del propietario.
  */
 async function tarifaNetaTotal(
   db: Db,
@@ -65,8 +74,7 @@ async function tarifaNetaTotal(
     .select()
     .from(tarifas)
     .where(eq(tarifas.propiedadId, propiedadId));
-  const vigente = filas.find((t) => t.desde <= desde && desde <= t.hasta) ?? filas[0];
-  if (!vigente) throw new OperacionError("La propiedad no tiene tarifa configurada.");
+  if (filas.length === 0) throw new OperacionError("La propiedad no tiene tarifa configurada.");
   const noches = nochesEntre(desde, hasta);
 
   const [prop] = await db
@@ -76,11 +84,21 @@ async function tarifaNetaTotal(
     })
     .from(propiedades)
     .where(eq(propiedades.id, propiedadId));
-  const extra =
+  const extraPorNoche =
     prop?.incluidos != null && prop.adicionalCentavos > 0
-      ? Math.max(0, huespedes - prop.incluidos) * prop.adicionalCentavos * noches
+      ? Math.max(0, huespedes - prop.incluidos) * prop.adicionalCentavos
       : 0;
-  return vigente.netaNocheCentavos * noches + extra;
+
+  let total = 0;
+  for (let i = 0; i < noches; i++) {
+    const fecha = fechaMasDias(desde, i);
+    const vigente = filas.find((t) => t.desde <= fecha && fecha <= t.hasta);
+    if (!vigente) {
+      throw new OperacionError(`No hay tarifa vigente para la noche del ${fecha}.`);
+    }
+    total += vigente.netaNocheCentavos + extraPorNoche;
+  }
+  return total;
 }
 
 export async function crearSolicitud(
@@ -164,14 +182,17 @@ export async function crearSolicitud(
   return { solicitudId: fila.id, venceEn: fila.venceEn };
 }
 
-/** Código legible y único de reserva: CIR-YYYY-NNNNN (secuencia por año). */
+/**
+ * Código legible y único de reserva: CIR-YYYY-NNNNN. Secuencia ATÓMICA de
+ * Postgres (migración 0007): nextval jamás repite, ni con dos aceptaciones
+ * en el mismo microsegundo. (El count(*) anterior colisionaba en carrera.)
+ */
 async function generarCodigoReserva(db: Db): Promise<string> {
   const ano = new Date().getFullYear();
   const [{ n }] = (await db.execute(
-    sql`SELECT count(*)::int AS n FROM reservas WHERE codigo LIKE ${"CIR-" + ano + "-%"}`,
+    sql`SELECT nextval('reservas_codigo_seq')::int AS n`,
   )) as unknown as [{ n: number }];
-  // Colisión bajo concurrencia → el índice único de codigo la detecta y se reintenta.
-  return `CIR-${ano}-${String(400 + n + 1).padStart(5, "0")}`;
+  return `CIR-${ano}-${String(n).padStart(5, "0")}`;
 }
 
 export async function aceptarYAbrirNegociacion(
@@ -211,53 +232,46 @@ export async function aceptarYAbrirNegociacion(
     if (!vinculo) throw new OperacionError("No estás vinculado a esta propiedad.");
   }
 
-  const gano = await aceptarSolicitud(db, solicitudId, principalId);
-  if (!gano) return { gano: false };
-
+  // Cálculos de solo-lectura ANTES de la transacción.
   const neta = await tarifaNetaTotal(db, sol.propiedadId, sol.desde, sol.hasta, sol.huespedes);
+  const codigo = await generarCodigoReserva(db);
 
-  for (let intento = 0; intento < 3; intento++) {
-    try {
-      const codigo = await generarCodigoReserva(db);
-      const resultado = await db.transaction(async (tx) => {
-        const [res] = await tx
-          .insert(reservas)
-          .values({
-            codigo,
-            solicitudId,
-            propiedadId: sol.propiedadId,
-            principalId,
-            externoId: sol.externoId,
-            desde: sol.desde,
-            hasta: sol.hasta,
-            estado: "NEGOCIACION",
-            precioFinalCentavos: 0,
-            tarifaNetaCentavos: neta,
-          })
-          .returning({ id: reservas.id });
-        const [neg] = await tx
-          .insert(negociaciones)
-          .values({ solicitudId, tarifaNetaCentavos: neta })
-          .returning({ id: negociaciones.id });
-        return { reservaId: res.id, negociacionId: neg.id };
-      });
-      await notificarEnApp(db, sol.externoId, {
-        tipo: "aceptada",
-        titulo: "Tu solicitud fue aceptada",
-        cuerpo: `${await aliasDeUsuario(db, principalId)} tomó tu solicitud. La negociación formal está abierta.`,
-        url: "/app/negociacion",
-      });
-      return { gano: true, ...resultado };
-    } catch (e) {
-      if (esUnicidad(e) && intento < 2) continue; // codigo en carrera: reintenta
-      throw e;
-    }
-  }
-  throw new OperacionError("No fue posible crear la reserva.");
-}
+  // TODO-O-NADA: ganar la carrera + crear reserva + abrir negociación en UNA
+  // transacción. Si algo falla, el UPDATE se revierte y la solicitud vuelve a
+  // estar disponible para otro socio (antes quedaba "aceptada" huérfana).
+  const resultado = await db.transaction(async (tx) => {
+    const gano = await aceptarSolicitud(tx as unknown as Db, solicitudId, principalId);
+    if (!gano) return null;
+    const [res] = await tx
+      .insert(reservas)
+      .values({
+        codigo,
+        solicitudId,
+        propiedadId: sol.propiedadId,
+        principalId,
+        externoId: sol.externoId,
+        desde: sol.desde,
+        hasta: sol.hasta,
+        estado: "NEGOCIACION",
+        precioFinalCentavos: 0,
+        tarifaNetaCentavos: neta,
+      })
+      .returning({ id: reservas.id });
+    const [neg] = await tx
+      .insert(negociaciones)
+      .values({ solicitudId, tarifaNetaCentavos: neta })
+      .returning({ id: negociaciones.id });
+    return { reservaId: res.id, negociacionId: neg.id };
+  });
+  if (!resultado) return { gano: false };
 
-function esUnicidad(e: unknown): boolean {
-  return Boolean(e && typeof e === "object" && "code" in e && (e as { code: string }).code === "23505");
+  await notificarEnApp(db, sol.externoId, {
+    tipo: "aceptada",
+    titulo: "Tu solicitud fue aceptada",
+    cuerpo: `${await aliasDeUsuario(db, principalId)} tomó tu solicitud. La negociación formal está abierta.`,
+    url: "/app/negociacion",
+  });
+  return { gano: true, ...resultado };
 }
 
 /**
@@ -284,7 +298,8 @@ export async function contraofertar(
       .from(solicitudes)
       .where(eq(solicitudes.id, neg.solicitudId))
       .for("update");
-    const participantes = [sol?.externoId, sol?.principalAceptanteId];
+    if (!sol) throw new OperacionError("La solicitud de esta negociación no existe.");
+    const participantes = [sol.externoId, sol.principalAceptanteId];
     if (!participantes.includes(emisorId)) {
       throw new OperacionError("No eres parte de esta negociación.");
     }
@@ -302,7 +317,7 @@ export async function contraofertar(
     const [propMargen] = await tx
       .select({ margen: propiedades.margenMinimoCentavos })
       .from(propiedades)
-      .where(eq(propiedades.id, sol!.propiedadId));
+      .where(eq(propiedades.id, sol.propiedadId));
     const validacion = validarPropuestaServidor(
       centavos(montoCentavos),
       centavos(neg.tarifaNetaCentavos),
@@ -327,7 +342,7 @@ export async function contraofertar(
         venceEn: sql`now() + (${ofertaHoras} * interval '1 hour')` as unknown as Date,
       })
       .returning({ id: ofertas.id });
-    const contraparte = sol!.externoId === emisorId ? sol!.principalAceptanteId : sol!.externoId;
+    const contraparte = sol.externoId === emisorId ? sol.principalAceptanteId : sol.externoId;
     return { ofertaId: nueva.id, contraparte };
   }).then(async (r) => {
     if (r.contraparte) {
@@ -351,22 +366,16 @@ export async function aceptarOferta(
   ofertaId: string,
   aceptanteId: string,
 ): Promise<{ linkId: string; montoCentavos: number; reservaId: string }> {
+  // Las transiciones a PRECIO_ACORDADO y LINK_1_ENVIADO ocurren DENTRO de la
+  // transacción del link (negociacion.ts) — aquí solo queda avisar.
   const r = await aceptarOfertaYGenerarLink(db, ofertaId, aceptanteId);
 
   const [of] = await db.select().from(ofertas).where(eq(ofertas.id, ofertaId));
-  const [neg] = await db
-    .select()
-    .from(negociaciones)
-    .where(eq(negociaciones.id, of.negociacionId));
-  const [res] = await db.select().from(reservas).where(eq(reservas.solicitudId, neg.solicitudId));
-
-  await transicionarReserva(db, res.id, "PRECIO_ACORDADO", aceptanteId);
-  await transicionarReserva(db, res.id, "LINK_1_ENVIADO", "sistema");
   await notificarEnApp(db, of.emisorId, {
     tipo: "acuerdo",
     titulo: "Precio acordado — link del anticipo generado",
     cuerpo: `${await aliasDeUsuario(db, aceptanteId)} aceptó tu oferta de ${formatear(aCentavos(of.montoCentavos))}. Reenvía el link a tu cliente: el primero que paga gana.`,
     url: "/app/externo/links",
   });
-  return { ...r, reservaId: res.id };
+  return r;
 }

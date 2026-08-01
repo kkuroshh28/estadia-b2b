@@ -1,14 +1,24 @@
-import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes } from "node:crypto";
+import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { secretoObligatorio } from "./config";
 
 /**
  * Criptografía central. En producción ENCRYPTION_KEY/HASH_PEPPER vienen de env
- * (ver .env.example); el default SOLO existe para desarrollo/tests locales.
+ * (ver .env.example); el default SOLO existe para desarrollo/tests locales y
+ * `secretoObligatorio` LANZA si falta en producción (fail-closed).
  */
 const DEV_KEY = "dev-key-no-usar-en-produccion-0000000000000000";
 
 function claveAes(): Buffer {
-  const hex = process.env.ENCRYPTION_KEY;
+  const hex = secretoObligatorio("ENCRYPTION_KEY");
   return hex ? Buffer.from(hex, "hex") : createHash("sha256").update(DEV_KEY).digest();
+}
+
+/** Comparación de tiempo constante para firmas/códigos (anti timing side-channel). */
+export function igualdadSegura(a: string, b: string): boolean {
+  const ba = Buffer.from(a);
+  const bb = Buffer.from(b);
+  if (ba.length !== bb.length) return false;
+  return timingSafeEqual(ba, bb);
 }
 
 export function sha256Hex(texto: string): string {
@@ -17,7 +27,7 @@ export function sha256Hex(texto: string): string {
 
 /** Hash de cédula con pepper: identifica sin exponer (lista negra, unicidad). */
 export function hashCedula(cedula: string): string {
-  const pepper = process.env.HASH_PEPPER ?? DEV_KEY;
+  const pepper = secretoObligatorio("HASH_PEPPER") ?? DEV_KEY;
   return createHmac("sha256", pepper).update(cedula.trim()).digest("hex");
 }
 
@@ -85,9 +95,8 @@ export function codigoTotp(secretoBase32: string, epocaMs = Date.now()): string 
   return String(codigo % 1_000_000).padStart(6, "0");
 }
 
-/** Ventana ±1 periodo (desfase de reloj del teléfono). */
+/** Ventana ±1 periodo (desfase de reloj del teléfono). Comparación constante. */
 export function verificarTotp(secretoBase32: string, codigo: string, epocaMs = Date.now()): boolean {
-  return [-1, 0, 1].some(
-    (d) => codigoTotp(secretoBase32, epocaMs + d * 30_000) === codigo.trim(),
-  );
+  const limpio = codigo.trim();
+  return [-1, 0, 1].some((d) => igualdadSegura(codigoTotp(secretoBase32, epocaMs + d * 30_000), limpio));
 }

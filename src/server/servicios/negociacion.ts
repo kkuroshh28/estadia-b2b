@@ -10,6 +10,7 @@ import {
   solicitudes,
 } from "../db/schema";
 import { centavos, liquidarReserva, type Centavos } from "@/lib/dinero";
+import { transicionarReserva } from "./reservas";
 
 /**
  * Regla #6: el link de pago se genera EXCLUSIVAMENTE del precio aceptado por
@@ -79,7 +80,7 @@ export async function aceptarOfertaYGenerarLink(
   db: Db,
   ofertaId: string,
   aceptanteId: string,
-): Promise<{ linkId: string; montoCentavos: number }> {
+): Promise<{ linkId: string; montoCentavos: number; reservaId: string }> {
   // Vigencia ANTES de la transacción: si venció, la marca debe sobrevivir
   // (dentro de la tx el throw la revertiría).
   const [previa] = await db.select().from(ofertas).where(eq(ofertas.id, ofertaId));
@@ -96,6 +97,11 @@ export async function aceptarOfertaYGenerarLink(
     if (!oferta || oferta.estado !== "activa") {
       throw new OfertaNoAceptableError("La oferta no está activa (expiró o fue contraofertada).");
     }
+    // Vigencia re-validada DENTRO de la tx: una oferta que venció mientras
+    // esperábamos el lock no puede aceptarse (TOCTOU cerrado).
+    if (oferta.venceEn.getTime() < Date.now()) {
+      throw new OfertaNoAceptableError("La oferta venció: pide una nueva propuesta.");
+    }
     if (oferta.emisorId === aceptanteId) {
       throw new OfertaNoAceptableError("No puedes aceptar tu propia oferta.");
     }
@@ -107,6 +113,19 @@ export async function aceptarOfertaYGenerarLink(
       .for("update");
     if (!neg || neg.estado !== "abierta") {
       throw new OfertaNoAceptableError("La negociación no está abierta.");
+    }
+
+    // Solo un PARTICIPANTE de la negociación acepta — conocer el UUID de la
+    // oferta jamás es autorización suficiente.
+    const [solNeg] = await tx
+      .select({
+        externoId: solicitudes.externoId,
+        principalAceptanteId: solicitudes.principalAceptanteId,
+      })
+      .from(solicitudes)
+      .where(eq(solicitudes.id, neg.solicitudId));
+    if (!solNeg || ![solNeg.externoId, solNeg.principalAceptanteId].includes(aceptanteId)) {
+      throw new OfertaNoAceptableError("No eres parte de esta negociación.");
     }
 
     const piso = await obtenerPisoComision(tx as unknown as Db);
@@ -158,10 +177,24 @@ export async function aceptarOfertaYGenerarLink(
         mitad: 1,
         montoCentavos: monto1,
         url: `/pago/${crypto.randomUUID()}`,
-        venceEn: sql`now() + interval '24 hours'` as unknown as Date,
+        // 24 h, capeado al FIN del día de check-in en hora Colombia (un
+        // acuerdo cerrado la víspera no permite pagar ya iniciada la estadía);
+        // mínimo 2 h para acuerdos de último minuto.
+        venceEn: sql`GREATEST(
+          LEAST(
+            now() + interval '24 hours',
+            ((${reserva.desde}::date + 1)::timestamp AT TIME ZONE 'America/Bogota')
+          ),
+          now() + interval '2 hours'
+        )` as unknown as Date,
       })
       .returning({ id: linksDePago.id, montoCentavos: linksDePago.montoCentavos });
 
-    return { linkId: link.id, montoCentavos: link.montoCentavos };
+    // Las transiciones viven en la MISMA transacción del link: jamás puede
+    // existir un link cobrable con la reserva atrás en NEGOCIACION.
+    await transicionarReserva(tx as unknown as Db, reserva.id, "PRECIO_ACORDADO", aceptanteId);
+    await transicionarReserva(tx as unknown as Db, reserva.id, "LINK_1_ENVIADO", "sistema");
+
+    return { linkId: link.id, montoCentavos: link.montoCentavos, reservaId: reserva.id };
   });
 }

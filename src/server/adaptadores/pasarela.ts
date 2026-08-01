@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { hmacFirma, tokenAleatorio } from "../crypto";
+import { hmacFirma, igualdadSegura, tokenAleatorio } from "../crypto";
 import type { EventoPago } from "../servicios/pagos";
 
 /**
@@ -46,7 +46,7 @@ const simulado: PasarelaPagos = {
     return { url: `/pago/sim/${referencia}`, ref: `sim-link-${tokenAleatorio(8)}` };
   },
   verificarFirma(cuerpoCrudo, firma) {
-    if (firmarEventoSimulado(cuerpoCrudo) !== firma) {
+    if (!igualdadSegura(firmarEventoSimulado(cuerpoCrudo), firma)) {
       throw new FirmaInvalidaError("Firma de webhook inválida (simulado).");
     }
     const e = JSON.parse(cuerpoCrudo) as EventoPago;
@@ -102,7 +102,7 @@ const wompi: PasarelaPagos = {
     const esperado = createHash("sha256")
       .update(`${valores}${evento.timestamp}${process.env.WOMPI_EVENTS_SECRET ?? ""}`)
       .digest("hex");
-    if (esperado !== evento.signature.checksum || esperado !== firmaRecibida) {
+    if (!igualdadSegura(esperado, evento.signature.checksum) || !igualdadSegura(esperado, firmaRecibida)) {
       throw new FirmaInvalidaError("Checksum de evento Wompi inválido.");
     }
     const t = evento.data.transaction;

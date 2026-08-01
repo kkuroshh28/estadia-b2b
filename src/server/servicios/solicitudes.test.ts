@@ -187,7 +187,7 @@ describe.skipIf(!HAY_DB)("operación — solicitud a link, reglas en servidor", 
     const bloqueados = dias.filter(
       (d) => d.fecha >= "2026-09-10" && d.fecha <= "2026-09-13" && d.estado === "reservado_app",
     );
-    expect(bloqueados).toHaveLength(4); // 10, 11, 12 y 13 (incluye salida)
+    expect(bloqueados).toHaveLength(3); // 10, 11 y 12 — la salida (13) queda libre
 
     // ── Saldo (mitad 2): solo participantes, idempotente, monto del motor ──
     const intruso2 = await crearUsuario("externo", "sx");

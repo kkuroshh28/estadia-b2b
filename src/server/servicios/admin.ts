@@ -19,6 +19,24 @@ async function auditar(db: Db, admin: UsuarioSesion, accion: string, detalle?: o
   await db.insert(auditoriaAdmin).values({ adminId: admin.id, accion, detalle: detalle ?? null });
 }
 
+/** Retry ante deadlock 40P01 — la víctima se revierte completa y reintenta. */
+async function conRetryDeadlock<T>(fn: () => Promise<T>): Promise<T> {
+  for (let intento = 1; ; intento++) {
+    try {
+      return await fn();
+    } catch (e) {
+      let actual = e as { code?: string; cause?: unknown } | undefined;
+      let esDeadlock = false;
+      for (let i = 0; actual && i < 5; i++) {
+        if (actual.code === "40P01") { esDeadlock = true; break; }
+        actual = actual.cause as { code?: string; cause?: unknown } | undefined;
+      }
+      if (esDeadlock && intento < 3) continue;
+      throw e;
+    }
+  }
+}
+
 // ── 1 · Verificaciones ───────────────────────────────────────────────────────
 
 export async function aprobarPropiedad(db: Db, actor: UsuarioSesion | null, propiedadId: string) {
@@ -113,57 +131,110 @@ export async function reembolsar(
   if (confirmacion !== "CONFIRMO REEMBOLSO") {
     throw new Error("Confirmación incorrecta: escribe la frase exacta.");
   }
-  return await db.transaction(async (tx) => {
-    const [t] = await tx
-      .select()
-      .from(transacciones)
-      .where(and(eq(transacciones.id, transaccionId), eq(transacciones.estado, "aprobada")))
-      .for("update");
-    if (!t) throw new Error("Transacción no encontrada o no reembolsable.");
 
-    const { refundRef } = await obtenerPasarela().reembolsar(t.pasarelaRef, t.montoCentavos);
-    await tx.update(transacciones).set({ estado: "reversada" }).where(eq(transacciones.id, t.id));
-    // Contra-splits en UN insert: la conciliación sigue cuadrando al centavo.
-    const filas = await tx.select().from(splits).where(eq(splits.transaccionId, t.id));
-    if (filas.length) {
-      await tx.insert(splits).values(
-        filas.map((s) => ({
-          transaccionId: t.id,
-          beneficiarioId: s.beneficiarioId,
-          concepto: s.concepto,
-          montoCentavos: -s.montoCentavos,
-          dispersado: false,
-          pasarelaPayoutRef: refundRef,
-        })),
-      );
-    }
-    await tx
-      .insert(auditoriaAdmin)
-      .values({ adminId: admin.id, accion: "reembolso", detalle: { transaccionId, refundRef } });
+  // FASE 1 — LECTURA: alcance del reembolso. Es ÍNTEGRO por reserva: si la
+  // reserva tiene dos mitades aprobadas, se devuelven AMBAS (antes cancelaba
+  // la reserva devolviendo solo una y retenía la otra al cliente).
+  const [t] = await db
+    .select()
+    .from(transacciones)
+    .where(and(eq(transacciones.id, transaccionId), eq(transacciones.estado, "aprobada")));
+  if (!t) throw new Error("Transacción no encontrada o no reembolsable.");
+  const [linkBase] = await db.select().from(linksDePago).where(eq(linksDePago.id, t.linkId));
+  const reservaIdObjetivo = linkBase?.reservaId ?? null;
 
-    // El reembolso CANCELA la reserva EN LA MISMA tx (la reserva queda
-    // lockeada): días liberados, links invalidados y transición auditada —
-    // o todo o nada con el dinero.
-    const [link] = await tx.select().from(linksDePago).where(eq(linksDePago.id, t.linkId));
-    const [reserva] = link
-      ? await tx.select().from(reservas).where(eq(reservas.id, link.reservaId)).for("update")
-      : [];
-    if (reserva && ["ANTICIPO_PAGADO", "SALDO_LINK_ENVIADO", "PAGO_COMPLETO"].includes(reserva.estado)) {
-      await tx
-        .update(calendarioDias)
-        .set({ estado: "disponible", reservaId: null, actualizadoEn: sql`now()` })
-        .where(and(eq(calendarioDias.reservaId, reserva.id), eq(calendarioDias.estado, "reservado_app")));
-      await tx
-        .update(linksDePago)
-        .set({ estado: "invalidado" })
-        .where(and(eq(linksDePago.reservaId, reserva.id), eq(linksDePago.estado, "activo")));
-      await transicionarReserva(tx as unknown as Db, reserva.id, "CANCELADA", admin.id, {
-        motivo: "reembolso_admin",
-        refundRef,
-      });
-    }
-    return { refundRef, reservaId: reserva?.id ?? null, estadoReserva: reserva?.estado ?? null };
-  }).then(async (r) => {
+  const objetivo = reservaIdObjetivo
+    ? await db
+        .select({ trx: transacciones })
+        .from(transacciones)
+        .innerJoin(linksDePago, eq(linksDePago.id, transacciones.linkId))
+        .where(and(eq(linksDePago.reservaId, reservaIdObjetivo), eq(transacciones.estado, "aprobada")))
+        .then((r) => r.map((f) => f.trx))
+    : [t];
+
+  // Splits ya dispersados no se pueden revertir con un contra-split contable.
+  const idsObjetivo = objetivo.map((o) => o.id);
+  const yaDispersados = await db
+    .select({ id: splits.id })
+    .from(splits)
+    .where(and(sql`${splits.transaccionId} IN ${idsObjetivo}`, eq(splits.dispersado, true)))
+    .limit(1);
+  if (yaDispersados.length) {
+    throw new Error("Hay splits ya dispersados: el clawback requiere gestión manual con la pasarela.");
+  }
+
+  // FASE 2 — PASARELA, FUERA de toda transacción de DB: si el proceso muere
+  // después de devolver el dinero, la DB sigue 'aprobada' y el REINTENTO es
+  // seguro porque el refund del driver es idempotente por pasarelaRef (jamás
+  // se ordena dos veces el mismo reembolso). Antes la llamada vivía DENTRO de
+  // la tx: un rollback tras el refund real habilitaba el doble reembolso.
+  const refunds: { trx: typeof t; refundRef: string }[] = [];
+  for (const trx of objetivo) {
+    const { refundRef } = await obtenerPasarela().reembolsar(trx.pasarelaRef, trx.montoCentavos);
+    refunds.push({ trx, refundRef });
+  }
+  const refundRefPrincipal = refunds.find((r) => r.trx.id === transaccionId)?.refundRef ?? refunds[0].refundRef;
+
+  // FASE 3 — CONTABILIDAD, con retry ante 40P01 (el webhook lockea link→reserva
+  // y este camino reserva→links: si chocan, la víctima reintenta limpia — y ya
+  // NO re-llama a la pasarela).
+  const r = await conRetryDeadlock(() =>
+    db.transaction(async (tx) => {
+      const [reserva] = reservaIdObjetivo
+        ? await tx.select().from(reservas).where(eq(reservas.id, reservaIdObjetivo)).for("update")
+        : [];
+
+      for (const { trx, refundRef } of refunds) {
+        const [fila] = await tx
+          .select()
+          .from(transacciones)
+          .where(eq(transacciones.id, trx.id))
+          .for("update");
+        if (!fila || fila.estado !== "aprobada") continue; // ya reversada (reintento)
+        await tx.update(transacciones).set({ estado: "reversada" }).where(eq(transacciones.id, trx.id));
+        // Contra-splits en UN insert: la conciliación sigue cuadrando al centavo.
+        const filasSplits = await tx.select().from(splits).where(and(eq(splits.transaccionId, trx.id), sql`${splits.montoCentavos} > 0`));
+        if (filasSplits.length) {
+          await tx.insert(splits).values(
+            filasSplits.map((s) => ({
+              transaccionId: trx.id,
+              beneficiarioId: s.beneficiarioId,
+              concepto: s.concepto,
+              montoCentavos: -s.montoCentavos,
+              dispersado: false,
+              pasarelaPayoutRef: refundRef,
+            })),
+          );
+        }
+        await tx
+          .insert(auditoriaAdmin)
+          .values({ adminId: admin.id, accion: "reembolso", detalle: { transaccionId: trx.id, refundRef } });
+      }
+
+      // El reembolso CANCELA la reserva EN LA MISMA tx: días liberados, links
+      // invalidados y transición auditada — o todo o nada con la contabilidad.
+      if (reserva && ["ANTICIPO_PAGADO", "SALDO_LINK_ENVIADO", "PAGO_COMPLETO"].includes(reserva.estado)) {
+        await tx
+          .update(calendarioDias)
+          .set({ estado: "disponible", reservaId: null, actualizadoEn: sql`now()` })
+          .where(and(eq(calendarioDias.reservaId, reserva.id), eq(calendarioDias.estado, "reservado_app")));
+        await tx
+          .update(linksDePago)
+          .set({ estado: "invalidado" })
+          .where(and(eq(linksDePago.reservaId, reserva.id), eq(linksDePago.estado, "activo")));
+        await transicionarReserva(tx as unknown as Db, reserva.id, "CANCELADA", admin.id, {
+          motivo: "reembolso_admin",
+          refundRef: refundRefPrincipal,
+        });
+      }
+      return {
+        refundRef: refundRefPrincipal,
+        reservaId: reserva?.id ?? null,
+        estadoReserva: reserva?.estado ?? null,
+      };
+    }),
+  );
+  return await Promise.resolve(r).then(async (r) => {
     // Solo las notificaciones quedan fuera (fallan en silencio por diseño).
     if (r.reservaId && r.estadoReserva && ["ANTICIPO_PAGADO", "SALDO_LINK_ENVIADO", "PAGO_COMPLETO"].includes(r.estadoReserva)) {
       const [res] = await db.select().from(reservas).where(eq(reservas.id, r.reservaId));

@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, inArray, lte, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
 import type { Db } from "../db";
 import {
   alias as tablaAlias,
@@ -457,8 +457,9 @@ export function datosBusquedaExterno(
 
     let filtradas = publicadas;
     if (fechas) {
-      // Disponibilidad REAL: fuera toda propiedad con ALGÚN día no-disponible
-      // en el rango (incluida la salida — mismo criterio del lock del webhook).
+      // Disponibilidad REAL por NOCHES [desde, hasta): el día de salida no
+      // cuenta — mismo criterio semiabierto del lock del webhook, así una
+      // entrada el día que otro sale (back-to-back) SÍ aparece disponible.
       const ocupadas = publicadas.length
         ? await db
             .select({ propiedadId: calendarioDias.propiedadId })
@@ -467,7 +468,7 @@ export function datosBusquedaExterno(
               and(
                 inArray(calendarioDias.propiedadId, publicadas.map((p) => p.id)),
                 gte(calendarioDias.fecha, fechas.desde),
-                lte(calendarioDias.fecha, fechas.hasta),
+                lt(calendarioDias.fecha, fechas.hasta),
                 sql`${calendarioDias.estado} <> 'disponible'`,
               ),
             )
@@ -855,7 +856,10 @@ export function datosChat(): Promise<DatosChat> {
       mensajes: filas.map((f) => ({
         id: f.id,
         emisorRol: f.emisorId === ctx.externoId ? ("externo" as const) : ("principal" as const),
-        texto: f.contenido,
+        // Un mensaje bloqueado JAMÁS entrega su contenido: el filtro anti-fuga
+        // sería inútil si el dato (teléfono/correo) viajara igual en la API y
+        // se leyera desde la pestaña Network. Se reemplaza server-side.
+        texto: f.bloqueado ? "🚫 Mensaje bloqueado por el filtro anti-fuga." : f.contenido,
         bloqueado: f.bloqueado,
         motivos: (f.flags as string[]) ?? [],
       })),

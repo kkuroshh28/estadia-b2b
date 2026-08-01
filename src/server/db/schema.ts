@@ -426,6 +426,27 @@ export const splits = pgTable(
   ],
 );
 
+/**
+ * Cobros APROBADOS que no pudieron aplicarse (link vencido/invalidado o
+ * carrera perdida): dinero del cliente pendiente de devolver. Se registra en
+ * la MISMA transacción del evento — jamás se pierde en silencio.
+ */
+export const compensaciones = pgTable(
+  "compensaciones",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    pasarelaRef: text("pasarela_ref").notNull().unique(),
+    linkId: uuid("link_id").references(() => linksDePago.id),
+    reservaId: uuid("reserva_id").references(() => reservas.id),
+    montoCentavos: bigint("monto_centavos", { mode: "number" }).notNull(),
+    motivo: text("motivo").notNull(), // link_vencido | link_no_activo | fechas_tomadas
+    estado: text("estado").notNull().default("pendiente"), // pendiente | resuelta
+    creadaEn: timestamp("creada_en", { withTimezone: true }).notNull().defaultNow(),
+    resueltaEn: timestamp("resuelta_en", { withTimezone: true }),
+  },
+  (t) => [index("compensaciones_pendientes").on(t.estado)],
+);
+
 export const contratos = pgTable("contratos", {
   id: uuid("id").primaryKey().defaultRandom(),
   reservaId: uuid("reserva_id").notNull().unique().references(() => reservas.id),

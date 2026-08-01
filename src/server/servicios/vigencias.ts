@@ -1,4 +1,4 @@
-import { and, eq, inArray, lt, sql } from "drizzle-orm";
+import { and, eq, lt, sql } from "drizzle-orm";
 import type { Db } from "../db";
 import { linksDePago, ofertas, reservas, solicitudes } from "../db/schema";
 import { transicionarReserva } from "./reservas";
@@ -39,29 +39,52 @@ export async function expirarVigencias(db: Db): Promise<{
     .where(and(eq(linksDePago.estado, "activo"), lt(linksDePago.venceEn, ahora)))
     .returning({ id: linksDePago.id, reservaId: linksDePago.reservaId, mitad: linksDePago.mitad });
 
+  // RE-ENTRANTE: las reservas a expirar se derivan de una CONSULTA (reserva en
+  // LINK_1_ENVIADO cuyo link 1 esté expirado), no del returning del UPDATE de
+  // arriba — si una corrida anterior murió a mitad del loop, esta las rescata.
+  // El saldo vencido (mitad 2) se regenera, no expira reserva.
+  const paraExpirar = await db
+    .select({ id: reservas.id })
+    .from(reservas)
+    .innerJoin(linksDePago, eq(linksDePago.reservaId, reservas.id))
+    .where(
+      and(
+        eq(reservas.estado, "LINK_1_ENVIADO"),
+        eq(linksDePago.mitad, 1),
+        eq(linksDePago.estado, "expirado"),
+      ),
+    );
   let reservasExpiradas = 0;
-  const idsMitad1 = linksVencidos.filter((l) => l.mitad === 1).map((l) => l.reservaId);
-  if (idsMitad1.length) {
-    // Un solo select; el saldo vencido (mitad 2) se regenera, no expira reserva.
-    const filas = await db
-      .select({ id: reservas.id })
-      .from(reservas)
-      .where(and(inArray(reservas.id, idsMitad1), eq(reservas.estado, "LINK_1_ENVIADO")));
-    for (const r of filas) {
+  for (const r of paraExpirar) {
+    try {
       await transicionarReserva(db, r.id, "EXPIRADA", "sistema", { motivo: "link_1_vencido" });
       reservasExpiradas++;
+    } catch (e) {
+      // Una reserva atascada jamás frena el resto del barrido.
+      console.error(`[vigencias] no se pudo expirar reserva ${r.id}:`, e);
     }
   }
 
   // Check-in hecho y fecha de salida pasada → la reserva se completa sola.
+  // El día se compara en HORA COLOMBIA: CURRENT_DATE del servidor (UTC) rueda
+  // a las 7 pm de Bogotá y completaría reservas 5 horas antes de terminar el día.
   const enCheckIn = await db
     .select({ id: reservas.id })
     .from(reservas)
-    .where(and(eq(reservas.estado, "CHECK_IN"), lt(reservas.hasta, sql`CURRENT_DATE`)));
+    .where(
+      and(
+        eq(reservas.estado, "CHECK_IN"),
+        lt(reservas.hasta, sql`(now() AT TIME ZONE 'America/Bogota')::date`),
+      ),
+    );
   let completadas = 0;
   for (const r of enCheckIn) {
-    await transicionarReserva(db, r.id, "COMPLETADA", "sistema", { motivo: "salida_cumplida" });
-    completadas++;
+    try {
+      await transicionarReserva(db, r.id, "COMPLETADA", "sistema", { motivo: "salida_cumplida" });
+      completadas++;
+    } catch (e) {
+      console.error(`[vigencias] no se pudo completar reserva ${r.id}:`, e);
+    }
   }
 
   return {

@@ -5,6 +5,7 @@ import { obtenerDb } from "@/server/db";
 import { propiedades, sincronizacionesIcal } from "@/server/db/schema";
 import { actorDePeticion, hayDb } from "@/server/datos/fuente";
 import { limitar } from "@/server/rate-limit";
+import { urlIcalSegura } from "@/server/servicios/ical";
 
 /** Conectar/desconectar calendarios externos (Airbnb/Booking) por propiedad. */
 const Cuerpo = z.object({
@@ -34,8 +35,11 @@ export async function POST(req: Request) {
   if (!propia) return NextResponse.json({ error: "La propiedad no es tuya" }, { status: 403 });
 
   if (accion === "agregar") {
-    if (!url || !/^https:\/\//.test(url)) {
-      return NextResponse.json({ error: "URL https requerida" }, { status: 422 });
+    if (!url || !urlIcalSegura(url)) {
+      return NextResponse.json(
+        { error: "URL de calendario no válida: solo Airbnb, Booking, Google Calendar, VRBO o Expedia por https." },
+        { status: 422 },
+      );
     }
     const [fila] = await db
       .insert(sincronizacionesIcal)

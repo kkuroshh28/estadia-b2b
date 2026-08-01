@@ -18,7 +18,7 @@ const REGLAS_DE_ORO = [
   },
   {
     t: "Pago 50/50, siempre tarjeta",
-    d: "50% para reservar, 50% el día de ingreso. Cada mitad se dispersa automáticamente al entrar, sin retenciones. Efectivo prohibido en cualquier punto del flujo.",
+    d: "50% para reservar, 50% el día de ingreso. Cada mitad se reparte automáticamente entre las partes al entrar, sin retenciones. Efectivo prohibido en cualquier punto del flujo.",
   },
   {
     t: "Identidad verificada, operación anónima",
@@ -26,7 +26,7 @@ const REGLAS_DE_ORO = [
   },
   {
     t: "Todo pasa dentro de la app",
-    d: "Chat, negociación y coordinación son internos. Intercambiar datos de contacto = ban perpetuo a la identidad — cédula y biometría en lista negra permanente.",
+    d: "Chat, negociación y coordinación son internos. Cada intento de fuga se bloquea y se registra; al tercero, ban perpetuo a la identidad — cédula y biometría en lista negra permanente.",
   },
   {
     t: "Sin verde no hay entrega",
@@ -558,9 +558,10 @@ export default function Landing() {
                 relación alguna con sus datos personales.
               </p>
               <p className="mt-4 leading-relaxed text-bruma">
-                Intercambiar datos de contacto tiene una sola consecuencia:{" "}
+                Cada intento de intercambiar datos de contacto se bloquea y se
+                registra como evidencia. Al tercero, una sola consecuencia:{" "}
                 <span className="font-semibold text-rojo">
-                  ban perpetuo e inmediato a la identidad
+                  ban perpetuo a la identidad
                 </span>{" "}
                 — cédula y biometría en lista negra permanente, alias retirado para
                 siempre, reputación perdida por completo.

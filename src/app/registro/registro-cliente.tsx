@@ -240,7 +240,7 @@ function Registro({ real }: { real: boolean }) {
               <motion.div key="banco" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }}>
                 <h1 className="font-display text-2xl text-tinta">Cuenta bancaria certificada</h1>
                 <p className="mt-1 text-xs text-bruma">
-                  Aquí llegan tus dispersiones automáticas. La certificación evita fraudes de suplantación.
+                  Aquí llegan tus liquidaciones automáticas. La certificación evita fraudes de suplantación.
                 </p>
                 <div className="mt-6 space-y-4">
                   <Campo etiqueta="Banco" placeholder="Bancolombia" valor={banco.nombre} onCambio={(v) => setBanco((b) => ({ ...b, nombre: v }))} />

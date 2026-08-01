@@ -165,8 +165,10 @@ describe.skipIf(!HAY_DB)("integración — operación completa", () => {
 
     const { linkId, montoCentavos } = await aceptarOfertaYGenerarLink(db, of.id, principalId);
     expect(montoCentavos).toBe(PRECIO / 2);
-    await transicionarReserva(db, res.id, "PRECIO_ACORDADO", principalId);
-    await transicionarReserva(db, res.id, "LINK_1_ENVIADO", "sistema");
+    // Las transiciones a PRECIO_ACORDADO y LINK_1_ENVIADO ya ocurren DENTRO
+    // de la transacción del link.
+    const [trasAceptar] = await db.select().from(reservas).where(eq(reservas.id, res.id));
+    expect(trasAceptar.estado).toBe("LINK_1_ENVIADO");
 
     // 5 · PAGO 1 por el MISMO webhook firmado de la pasarela (driver simulado)
     const pagar = async (lid: string, monto: number) => {
@@ -188,9 +190,12 @@ describe.skipIf(!HAY_DB)("integración — operación completa", () => {
     expect(r.estado).toBe("ANTICIPO_PAGADO");
     expect(entregaAutorizada(r.estado as never)).toBe(false); // aún sin verde
 
+    // Noches [10, 13) bloqueadas; el día de salida queda libre (back-to-back).
     const dias = await db.select().from(calendarioDias)
       .where(and(eq(calendarioDias.propiedadId, prop.id), sql`fecha BETWEEN '2026-12-10' AND '2026-12-13'`));
-    for (const d of dias) expect(d.estado).toBe("reservado_app");
+    for (const d of dias) {
+      expect(d.estado).toBe(d.fecha < "2026-12-13" ? "reservado_app" : "disponible");
+    }
 
     const [c] = await db.select().from(contratos).where(eq(contratos.reservaId, res.id));
     expect(c.tipo).toBe("vivienda_turistica"); // 3 noches < 30
