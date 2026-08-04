@@ -6,9 +6,10 @@ import { useEffect, useRef, useState } from "react";
  * Intro cinematográfico de entrada (Medellín → Guatapé → mansiones → logo).
  *
  * Rendimiento y robustez:
- *  - Móvil (≤820px) recibe el MP4 de 720p (~2,5 MB); PC/tablet el de 1080p. La
- *    fuente se asigna por JS (imperativa) — así el teléfono nunca baja el pesado
- *    y evitamos el bug de <source media> en Safari iOS.
+ *  - Fuente según dispositivo (JS imperativo, no <source media> — que falla en
+ *    Safari iOS): teléfono en VERTICAL recibe un MP4 vertical 9:16 reencuadrado
+ *    (~1,9 MB) que llena la pantalla sin recorte raro; teléfono en horizontal el
+ *    720p; PC/tablet el 1080p. Así el video se ve bien en cada formato.
  *  - `muted` se fuerza EN EL DOM (videoRef.muted = true) antes de reproducir:
  *    React no refleja de forma fiable ese atributo y sin él el móvil bloquea el
  *    autoplay. Con eso + playsInline el video arranca solo en el teléfono.
@@ -18,8 +19,11 @@ import { useEffect, useRef, useState } from "react";
  *  - Poster instantáneo; una vez por sesión; respeta reduced-motion; salta con
  *    el botón o tocando mientras corre; backstop de 12 s; scroll restaurado.
  */
-const FUENTE_MOVIL = "/intro/circle-intro-720.mp4";
-const FUENTE_PC = "/intro/circle-intro-1080.mp4";
+const FUENTE_MOVIL_VERTICAL = "/intro/circle-intro-mobile.mp4"; // 9:16, llena el teléfono
+const FUENTE_MOVIL = "/intro/circle-intro-720.mp4"; // 16:9 liviano (teléfono horizontal)
+const FUENTE_PC = "/intro/circle-intro-1080.mp4"; // 16:9 (PC/tablet)
+const POSTER_VERTICAL = "/intro/circle-poster-mobile.jpg";
+const POSTER_PC = "/intro/circle-poster.jpg";
 
 export function IntroGate() {
   const [fase, setFase] = useState<"activo" | "saliendo" | "oculto">("activo");
@@ -63,9 +67,19 @@ export function IntroGate() {
 
     const v = videoRef.current;
     if (v) {
-      const movil = window.matchMedia("(max-width: 820px)").matches;
+      const telefono = window.matchMedia("(max-width: 820px)").matches;
+      const vertical = window.matchMedia("(orientation: portrait)").matches;
       v.muted = true;
-      v.src = movil ? FUENTE_MOVIL : FUENTE_PC;
+      if (telefono && vertical) {
+        v.src = FUENTE_MOVIL_VERTICAL;
+        v.poster = POSTER_VERTICAL;
+      } else if (telefono) {
+        v.src = FUENTE_MOVIL;
+        v.poster = POSTER_PC;
+      } else {
+        v.src = FUENTE_PC;
+        v.poster = POSTER_PC;
+      }
       v.load();
     }
     reproducir();
