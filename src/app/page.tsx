@@ -3,6 +3,7 @@ import { LogoCircle } from "@/components/logo";
 import { Badge, Money } from "@/components/ui";
 import { Reveal, RevealHero } from "@/components/motion";
 import { FlujoDinero } from "@/components/flujo-dinero";
+import { IntroGate } from "@/components/intro-gate";
 import { calcularSplit } from "@/lib/domain/split";
 
 const EJEMPLO = calcularSplit(1_200_000, 1_000_000);
@@ -77,6 +78,7 @@ const FLUJO = [
 export default function Landing() {
   return (
     <main className="grano atmosfera min-h-screen">
+      <IntroGate />
       {/* BANDA TERCIOPELO: nav + hero — la joya Tiffany sobre el fondo profundo */}
       <div className="terciopelo">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
