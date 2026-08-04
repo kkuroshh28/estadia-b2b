@@ -5,30 +5,28 @@ import { useEffect, useRef, useState } from "react";
 /**
  * Intro cinematográfico de entrada (Medellín → Guatapé → mansiones → logo).
  *
- * Rendimiento y robustez:
- *  - Fuente según dispositivo (JS imperativo, no <source media> — que falla en
- *    Safari iOS): teléfono en VERTICAL recibe un MP4 vertical 9:16 reencuadrado
- *    (~1,9 MB) que llena la pantalla sin recorte raro; teléfono en horizontal el
- *    720p; PC/tablet el 1080p. Así el video se ve bien en cada formato.
- *  - `muted` se fuerza EN EL DOM (videoRef.muted = true) antes de reproducir:
- *    React no refleja de forma fiable ese atributo y sin él el móvil bloquea el
- *    autoplay. Con eso + playsInline el video arranca solo en el teléfono.
- *  - Si aun así el navegador bloquea el autoplay (p. ej. modo ahorro de iOS),
- *    NO se salta: se muestra el póster con "Toca para reproducir" y un tap lo
- *    inicia (el gesto del usuario desbloquea la reproducción).
- *  - Poster instantáneo; una vez por sesión; respeta reduced-motion; salta con
- *    el botón o tocando mientras corre; backstop de 12 s; scroll restaurado.
+ * Rendimiento y adaptación por dispositivo:
+ *  - PC/tablet: video 1080p a pantalla completa (objectFit cover).
+ *  - Teléfono en VERTICAL: el video 16:9 NO se recorta (objectFit contain) para
+ *    que se vea COMPLETO; el vacío arriba/abajo se llena con una copia
+ *    DESENFOCADA del propio póster → llena la pantalla y queda cinematográfico,
+ *    sin barras negras ni "zoom" a los lados.
+ *  - Teléfono en horizontal: 720p a pantalla completa.
+ *  - Fuente/objectFit/póster se asignan por JS imperativo (no <source media>,
+ *    que falla en Safari iOS) y `muted` se fuerza en el DOM (sin eso el móvil
+ *    bloquea el autoplay). Si aun así se bloquea, se muestra "Toca para
+ *    reproducir" en vez de saltarlo.
+ *  - Una vez por sesión; respeta reduced-motion; backstop 12 s; scroll restaurado.
  */
-const FUENTE_MOVIL_VERTICAL = "/intro/circle-intro-mobile.mp4"; // 9:16, llena el teléfono
-const FUENTE_MOVIL = "/intro/circle-intro-720.mp4"; // 16:9 liviano (teléfono horizontal)
+const FUENTE_MOVIL = "/intro/circle-intro-720.mp4"; // 16:9 liviano (teléfono)
 const FUENTE_PC = "/intro/circle-intro-1080.mp4"; // 16:9 (PC/tablet)
-const POSTER_VERTICAL = "/intro/circle-poster-mobile.jpg";
-const POSTER_PC = "/intro/circle-poster.jpg";
+const POSTER = "/intro/circle-poster.jpg";
 
 export function IntroGate() {
   const [fase, setFase] = useState<"activo" | "saliendo" | "oculto">("activo");
   const [necesitaTap, setNecesitaTap] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const fondoRef = useRef<HTMLDivElement>(null);
   const cerrado = useRef(false);
 
   const cerrar = () => {
@@ -47,7 +45,6 @@ export function IntroGate() {
     v.muted = true; // imperativo: clave para el autoplay en móvil
     const p = v.play();
     if (p && typeof p.catch === "function") {
-      // Autoplay bloqueado → mostrar póster + "Toca para reproducir" (no saltar).
       p.then(() => setNecesitaTap(false)).catch(() => setNecesitaTap(true));
     }
   };
@@ -66,31 +63,28 @@ export function IntroGate() {
     }
 
     const v = videoRef.current;
+    const fondo = fondoRef.current;
     if (v) {
       const telefono = window.matchMedia("(max-width: 820px)").matches;
       const vertical = window.matchMedia("(orientation: portrait)").matches;
       v.muted = true;
+      v.src = telefono ? FUENTE_MOVIL : FUENTE_PC;
       if (telefono && vertical) {
-        v.src = FUENTE_MOVIL_VERTICAL;
-        v.poster = POSTER_VERTICAL;
-      } else if (telefono) {
-        v.src = FUENTE_MOVIL;
-        v.poster = POSTER_PC;
+        // Cuadro completo (sin recorte) + fondo desenfocado que llena la pantalla.
+        v.style.objectFit = "contain";
+        if (fondo) fondo.style.display = "block";
       } else {
-        v.src = FUENTE_PC;
-        v.poster = POSTER_PC;
+        v.style.objectFit = "cover";
+        if (fondo) fondo.style.display = "none";
       }
       v.load();
     }
     reproducir();
 
-    // Backstop: si nunca llegó a reproducir y el usuario no toca, continuar a
-    // los 12 s (jamás lo deja atrapado en el póster).
     const tope = window.setTimeout(cerrar, 12_000);
     return () => window.clearTimeout(tope);
   }, []);
 
-  // Bloqueo de scroll atado a la fase: al cerrar SIEMPRE se restaura.
   useEffect(() => {
     if (fase !== "activo") return;
     const previo = document.body.style.overflow;
@@ -103,8 +97,8 @@ export function IntroGate() {
   if (fase === "oculto") return null;
 
   const alTocar = () => {
-    if (necesitaTap) reproducir(); // un tap desbloquea la reproducción
-    else cerrar(); // tocar mientras corre = saltar
+    if (necesitaTap) reproducir();
+    else cerrar();
   };
 
   return (
@@ -124,14 +118,29 @@ export function IntroGate() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          overflow: "hidden",
           cursor: "pointer",
           opacity: fase === "saliendo" ? 0 : 1,
           transition: "opacity 0.6s ease",
         }}
       >
+        {/* Fondo desenfocado (solo teléfono vertical): llena el alto sin barras. */}
+        <div
+          ref={fondoRef}
+          style={{
+            display: "none",
+            position: "absolute",
+            inset: 0,
+            backgroundImage: `url(${POSTER})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            filter: "blur(32px) brightness(0.45)",
+            transform: "scale(1.15)",
+          }}
+        />
         <video
           ref={videoRef}
-          poster="/intro/circle-poster.jpg"
+          poster={POSTER}
           muted
           autoPlay
           playsInline
@@ -141,7 +150,7 @@ export function IntroGate() {
           onEnded={cerrar}
           onError={cerrar}
           disablePictureInPicture
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          style={{ position: "relative", width: "100%", height: "100%", objectFit: "cover" }}
         />
 
         {necesitaTap && (
