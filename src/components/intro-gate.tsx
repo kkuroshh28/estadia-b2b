@@ -6,19 +6,24 @@ import { useEffect, useRef, useState } from "react";
  * Intro cinematográfico de entrada (Medellín → Guatapé → mansiones → logo).
  *
  * Rendimiento y robustez:
- *  - El navegador elige la fuente por media query en los <source>: móvil carga
- *    el MP4 de 720p (~2,5 MB) y PC/tablet el de 1080p — el teléfono nunca baja
- *    el archivo pesado, así arranca instantáneo y no se traba.
- *  - `muted` + `playsInline` + `autoPlay`: única forma de que el navegador móvil
- *    reproduzca sin gesto. `preload="auto"` para que fluya sin cortes.
- *  - Poster instantáneo: primera pintura inmediata mientras el video carga.
- *  - Se ve UNA vez por sesión (sessionStorage); reduced-motion lo omite.
- *  - Salir: al terminar, con "Saltar", tocando la pantalla, o por timeout/fallo
- *    de autoplay — jamás deja al usuario atrapado.
+ *  - Móvil (≤820px) recibe el MP4 de 720p (~2,5 MB); PC/tablet el de 1080p. La
+ *    fuente se asigna por JS (imperativa) — así el teléfono nunca baja el pesado
+ *    y evitamos el bug de <source media> en Safari iOS.
+ *  - `muted` se fuerza EN EL DOM (videoRef.muted = true) antes de reproducir:
+ *    React no refleja de forma fiable ese atributo y sin él el móvil bloquea el
+ *    autoplay. Con eso + playsInline el video arranca solo en el teléfono.
+ *  - Si aun así el navegador bloquea el autoplay (p. ej. modo ahorro de iOS),
+ *    NO se salta: se muestra el póster con "Toca para reproducir" y un tap lo
+ *    inicia (el gesto del usuario desbloquea la reproducción).
+ *  - Poster instantáneo; una vez por sesión; respeta reduced-motion; salta con
+ *    el botón o tocando mientras corre; backstop de 12 s; scroll restaurado.
  */
+const FUENTE_MOVIL = "/intro/circle-intro-720.mp4";
+const FUENTE_PC = "/intro/circle-intro-1080.mp4";
+
 export function IntroGate() {
-  // Arranca visible (SSR + cliente) para cubrir el hero sin parpadeo.
   const [fase, setFase] = useState<"activo" | "saliendo" | "oculto">("activo");
+  const [necesitaTap, setNecesitaTap] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const cerrado = useRef(false);
 
@@ -32,8 +37,18 @@ export function IntroGate() {
     window.setTimeout(() => setFase("oculto"), 650);
   };
 
+  const reproducir = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = true; // imperativo: clave para el autoplay en móvil
+    const p = v.play();
+    if (p && typeof p.catch === "function") {
+      // Autoplay bloqueado → mostrar póster + "Toca para reproducir" (no saltar).
+      p.then(() => setNecesitaTap(false)).catch(() => setNecesitaTap(true));
+    }
+  };
+
   useEffect(() => {
-    // Ya visto en esta sesión, o el usuario prefiere menos movimiento → fuera.
     let visto = false;
     try {
       visto = sessionStorage.getItem("circle-intro-visto") === "1";
@@ -46,20 +61,22 @@ export function IntroGate() {
       return;
     }
 
-    // Red de seguridad: si algo falla, cerrar a los 11 s pase lo que pase.
-    const tope = window.setTimeout(cerrar, 11_000);
-
-    // Intentar reproducir; si el navegador rechaza el autoplay, cerrar sin trabar.
-    const intento = videoRef.current?.play?.();
-    if (intento && typeof intento.catch === "function") {
-      intento.catch(() => cerrar());
+    const v = videoRef.current;
+    if (v) {
+      const movil = window.matchMedia("(max-width: 820px)").matches;
+      v.muted = true;
+      v.src = movil ? FUENTE_MOVIL : FUENTE_PC;
+      v.load();
     }
+    reproducir();
 
+    // Backstop: si nunca llegó a reproducir y el usuario no toca, continuar a
+    // los 12 s (jamás lo deja atrapado en el póster).
+    const tope = window.setTimeout(cerrar, 12_000);
     return () => window.clearTimeout(tope);
   }, []);
 
-  // Bloqueo de scroll atado a la fase: al cerrar (fase ≠ activo) SIEMPRE se
-  // restaura, aunque el componente siga montado devolviendo null.
+  // Bloqueo de scroll atado a la fase: al cerrar SIEMPRE se restaura.
   useEffect(() => {
     if (fase !== "activo") return;
     const previo = document.body.style.overflow;
@@ -71,16 +88,20 @@ export function IntroGate() {
 
   if (fase === "oculto") return null;
 
+  const alTocar = () => {
+    if (necesitaTap) reproducir(); // un tap desbloquea la reproducción
+    else cerrar(); // tocar mientras corre = saltar
+  };
+
   return (
     <>
-      {/* Sin JavaScript el video no se puede cerrar → se oculta por completo. */}
       <noscript>
         <style>{`.circle-intro-overlay{display:none!important}`}</style>
       </noscript>
       <div
         className="circle-intro-overlay"
         aria-hidden
-        onClick={cerrar}
+        onClick={alTocar}
         style={{
           position: "fixed",
           inset: 0,
@@ -101,15 +122,56 @@ export function IntroGate() {
           autoPlay
           playsInline
           preload="auto"
+          controls={false}
+          onPlaying={() => setNecesitaTap(false)}
           onEnded={cerrar}
           onError={cerrar}
           disablePictureInPicture
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
-        >
-          {/* Móvil primero (media query); PC/tablet cae al 1080p. */}
-          <source src="/intro/circle-intro-720.mp4" media="(max-width: 820px)" type="video/mp4" />
-          <source src="/intro/circle-intro-1080.mp4" type="video/mp4" />
-        </video>
+        />
+
+        {necesitaTap && (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "14px",
+              pointerEvents: "none",
+              color: "#e6c78a",
+            }}
+          >
+            <span
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "72px",
+                height: "72px",
+                borderRadius: "9999px",
+                border: "1.5px solid rgba(201,164,107,0.7)",
+                background: "rgba(13,23,18,0.4)",
+                fontSize: "26px",
+                paddingLeft: "6px",
+              }}
+            >
+              ▶
+            </span>
+            <span
+              style={{
+                font: "600 13px/1 var(--font-bricolage), sans-serif",
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+              }}
+            >
+              Toca para reproducir
+            </span>
+          </div>
+        )}
+
         <button
           onClick={(e) => {
             e.stopPropagation();
