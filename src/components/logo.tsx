@@ -56,13 +56,14 @@ export function LogoCircle({
             letterSpacing: "0.5em",
             marginBottom: tam * 0.18,
             marginLeft: tam * 0.06,
+            fontWeight: 600,
           }}
         >
           THE
         </span>
         <span
           className="font-display oro-brillante"
-          style={{ fontSize: tam * 0.66, letterSpacing: "0.36em", fontWeight: 460 }}
+          style={{ fontSize: tam * 0.66, letterSpacing: "0.36em", fontWeight: 640 }}
         >
           IRCLE
         </span>

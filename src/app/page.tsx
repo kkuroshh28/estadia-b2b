@@ -81,7 +81,7 @@ export default function Landing() {
       <div className="terciopelo">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <p className="font-display text-2xl text-tinta">
-          <LogoCircle tam={34} />
+          <LogoCircle tam={46} />
         </p>
         <div className="hidden items-center gap-8 text-sm text-tinta/75 sm:flex">
           <a href="#modelo" className="transition hover:text-tinta">Modelo</a>
@@ -190,7 +190,7 @@ export default function Landing() {
               <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-tiffany">
                 Cómo funciona
               </p>
-              <h2 className="mt-2 font-display text-2xl text-tinta">
+              <h2 className="mt-2 font-display text-3xl text-tinta">
                 Tres movimientos. Cero fricción.
               </h2>
               <div className="mt-6 space-y-5">
@@ -224,7 +224,7 @@ export default function Landing() {
               <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-esmeralda">
                 El estándar del Círculo
               </p>
-              <h2 className="mt-2 font-display text-2xl text-tinta">
+              <h2 className="mt-2 font-display text-3xl text-tinta">
                 Reglas de acero. Por eso funciona.
               </h2>
               <ul className="mt-6 space-y-3.5">
@@ -259,7 +259,7 @@ export default function Landing() {
       <section className="mx-auto max-w-6xl px-6 py-24">
         <Reveal>
           <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-esmeralda">Cómo funciona</p>
-          <h2 className="mt-2 max-w-2xl font-display text-4xl text-tinta">
+          <h2 className="mt-2 max-w-3xl font-display text-4xl text-tinta sm:text-5xl">
             Tres roles. Un estándar. Cero improvisación.
           </h2>
           <p className="mt-4 max-w-2xl text-bruma">
@@ -352,7 +352,7 @@ export default function Landing() {
         <div className="mx-auto max-w-6xl px-6">
           <Reveal>
             <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-oro">El modelo de dinero</p>
-            <h2 className="mt-2 max-w-2xl font-display text-4xl text-tinta">
+            <h2 className="mt-2 max-w-3xl font-display text-4xl text-tinta sm:text-5xl">
               Comisión = precio acordado − tarifa neta. Así de simple.
             </h2>
             <p className="mt-4 max-w-2xl text-bruma">
@@ -419,7 +419,7 @@ export default function Landing() {
       <section id="reglas" className="mx-auto max-w-6xl px-6 py-24">
         <Reveal>
           <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-esmeralda">No negociables</p>
-          <h2 className="mt-2 font-display text-4xl text-tinta">Las reglas de oro</h2>
+          <h2 className="mt-2 font-display text-4xl text-tinta sm:text-5xl">Las reglas de oro</h2>
         </Reveal>
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {REGLAS_DE_ORO.map((p, i) => (
@@ -441,7 +441,7 @@ export default function Landing() {
             <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-tiffany">
               Políticas y privacidad
             </p>
-            <h2 className="mt-2 max-w-2xl font-display text-4xl text-tinta">
+            <h2 className="mt-2 max-w-3xl font-display text-4xl text-tinta sm:text-5xl">
               Escritas para que nadie pierda.{" "}
               <em className="text-tiffany">Aplicadas por el sistema, no por confianza.</em>
             </h2>
@@ -488,7 +488,7 @@ export default function Landing() {
         <div className="mx-auto max-w-6xl px-6">
           <Reveal>
             <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-oro">Máquina de estados</p>
-            <h2 className="mt-2 max-w-2xl font-display text-4xl text-tinta">
+            <h2 className="mt-2 max-w-3xl font-display text-4xl text-tinta sm:text-5xl">
               De la solicitud a la entrega, sin zonas grises.
             </h2>
           </Reveal>
@@ -544,7 +544,7 @@ export default function Landing() {
           <div>
             <Reveal>
               <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-esmeralda">Confianza estructural</p>
-              <h2 className="mt-2 font-display text-4xl text-tinta">
+              <h2 className="mt-2 font-display text-4xl text-tinta sm:text-5xl">
                 Verificados hasta el hueso.{" "}
                 <em className="text-esmeralda">Anónimos en la cancha.</em>
               </h2>
@@ -606,7 +606,7 @@ export default function Landing() {
       <section className="terciopelo">
         <div className="mx-auto max-w-6xl px-6 py-24 text-center">
           <Reveal>
-            <h2 className="mx-auto max-w-3xl font-display text-5xl leading-tight text-tinta">
+            <h2 className="mx-auto max-w-3xl font-display text-5xl leading-tight text-tinta sm:text-6xl">
               Fugarse cuesta más <em className="text-tiffany">de lo que ahorra.</em>
             </h2>
             <p className="mx-auto mt-5 max-w-xl text-tinta/85">
