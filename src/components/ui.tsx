@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { EstadoReserva } from "@/lib/domain/tipos";
 import { ETIQUETA_ESTADO } from "@/lib/domain/reserva";
 import { formatearCOP } from "@/lib/domain/split";
@@ -28,7 +29,7 @@ export function Badge({
 }) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold tracking-wide uppercase ${TONOS[tono]}`}
+      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-[11px] font-semibold tracking-wide uppercase ${TONOS[tono]}`}
     >
       {vivo && <span className={`size-1.5 rounded-full bg-current pulso`} />}
       {children}
@@ -121,8 +122,32 @@ export function AvatarAlias({ alias, size = 36 }: { alias: string; size?: number
   );
 }
 
-/** Carátula abstracta generada por propiedad — sin fotos externas en el demo. */
-export function Cover({ matiz, className = "" }: { matiz: number; className?: string }) {
+/**
+ * Carátula de la propiedad: su foto de portada si la tiene; si no, una
+ * carátula abstracta generada por su matiz.
+ */
+export function Cover({
+  matiz,
+  foto,
+  alt = "",
+  sizes = "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw",
+  prioridad = false,
+  className = "",
+}: {
+  matiz: number;
+  foto?: string;
+  alt?: string;
+  sizes?: string;
+  prioridad?: boolean;
+  className?: string;
+}) {
+  if (foto) {
+    return (
+      <div className={`relative overflow-hidden bg-tarjeta ${className}`}>
+        <Image src={foto} alt={alt} fill sizes={sizes} priority={prioridad} className="object-cover" />
+      </div>
+    );
+  }
   return (
     <div
       className={`relative overflow-hidden ${className}`}

@@ -139,7 +139,7 @@ export function NuevaPropiedadCliente() {
         <CampoTexto etiqueta="Nombre" valor={f.nombre} onCambio={(v) => setF({ ...f, nombre: v })} placeholder="Finca La Cascada" />
         <div className="grid gap-5 sm:grid-cols-2">
           <CampoTexto etiqueta="Municipio" valor={f.municipio} onCambio={(v) => setF({ ...f, municipio: v })} placeholder="Guatapé" />
-          <CampoTexto etiqueta="Zona" valor={f.zona} onCambio={(v) => setF({ ...f, zona: v })} placeholder="Oriente Antioqueño" />
+          <CampoTexto etiqueta="Zona" valor={f.zona} onCambio={(v) => setF({ ...f, zona: v })} placeholder="El Poblado" />
         </div>
 
         <div>

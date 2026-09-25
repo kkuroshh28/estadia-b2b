@@ -399,5 +399,16 @@ export async function editarPropiedad(
         netaNocheCentavos: t * 100,
       });
     }
+
+    // Sin tarifa neta vigente no hay nada que vender: no se publica.
+    if (cambios.publicada === true) {
+      const [{ vigentes }] = await tx
+        .select({ vigentes: sql<number>`count(*)::int` })
+        .from(tarifas)
+        .where(sql`${tarifas.propiedadId} = ${propiedadId} AND ${tarifas.hasta} >= CURRENT_DATE`);
+      if (vigentes === 0) {
+        throw new PropiedadError("Define la tarifa neta por noche antes de publicar la propiedad.");
+      }
+    }
   });
 }

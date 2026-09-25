@@ -23,13 +23,13 @@ const jetbrains = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://estadia-b2b.vercel.app"),
   title: {
-    default: "THE CIRCLE — La red B2B de rentas cortas de Antioquia",
+    default: "THE CIRCLE — La red B2B de rentas cortas de Colombia",
     template: "%s · THE CIRCLE",
   },
   description:
     "Plataforma B2B que conecta propietarios de inmuebles de renta corta con su red de socios. El calendario solo se bloquea con dinero. El primero que paga, gana.",
   openGraph: {
-    title: "THE CIRCLE — La red B2B de rentas cortas de Antioquia",
+    title: "THE CIRCLE — La red B2B de rentas cortas de Colombia",
     description:
       "La app no te quita tu cliente: te da inventario. Split automático 45/45/10, calendario que nunca miente y pago garantizado por link.",
     url: "https://estadia-b2b.vercel.app",

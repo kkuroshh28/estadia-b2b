@@ -64,6 +64,13 @@
       "when": 1785613489992,
       "tag": "0008_compensaciones",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790365540672,
+      "tag": "0009_ficha_y_fotos",
+      "breakpoints": true
     }
   ]
 }

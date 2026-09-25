@@ -21,8 +21,12 @@ export function BusquedaExternoCliente({ datos }: { datos: DatosBusquedaExterno 
     if (!d && !h) router.push(pathname);
   };
   const [zona, setZona] = useState("todas");
+  // Topes del filtro según el inventario real (villas de lujo superan de lejos
+  // los rangos de una finca típica).
+  const techoNoche = Math.max(3_000_000, Math.ceil(Math.max(0, ...datos.propiedades.map((p) => p.tarifaNetaNoche)) / 500_000) * 500_000);
+  const techoCapacidad = Math.max(14, ...datos.propiedades.map((p) => p.capacidad));
   const [capacidad, setCapacidad] = useState(2);
-  const [maxNoche, setMaxNoche] = useState(3_000_000);
+  const [maxNoche, setMaxNoche] = useState(techoNoche);
 
   const zonas = ["todas", ...new Set(datos.propiedades.map((p) => p.zona))];
 
@@ -103,7 +107,7 @@ export function BusquedaExternoCliente({ datos }: { datos: DatosBusquedaExterno 
             <input
               type="range"
               min={1}
-              max={14}
+              max={techoCapacidad}
               value={capacidad}
               onChange={(e) => setCapacidad(Number(e.target.value))}
               className="mt-3 w-full accent-tiffany"
@@ -116,7 +120,7 @@ export function BusquedaExternoCliente({ datos }: { datos: DatosBusquedaExterno 
             <input
               type="range"
               min={400_000}
-              max={3_000_000}
+              max={techoNoche}
               step={50_000}
               value={maxNoche}
               onChange={(e) => setMaxNoche(Number(e.target.value))}
@@ -131,7 +135,7 @@ export function BusquedaExternoCliente({ datos }: { datos: DatosBusquedaExterno 
         {resultados.map((p) => {
           return (
             <Card key={p.id} className="flex flex-col overflow-hidden">
-              <Cover matiz={p.matiz} className="h-32" />
+              <Cover matiz={p.matiz} foto={p.fotos?.[0]} alt={p.nombre} className="h-40" />
               <div className="flex flex-1 flex-col p-5">
                 <div className="flex items-start justify-between gap-2">
                   <div>

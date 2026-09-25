@@ -6,6 +6,7 @@ import { GraficaIngresos } from "@/components/grafica-ingresos";
 import { datosPropietario } from "@/server/datos/paneles";
 import { calcularNetoPropietario } from "@/lib/domain/split";
 import { formatearFechaCO } from "@/lib/fechas";
+import { ubicacionDe } from "@/lib/domain/ficha";
 import { PublicarBoton } from "./publicar-boton";
 import { SolicitudesDirectas } from "./solicitudes-directas";
 
@@ -45,7 +46,11 @@ export default async function PanelPropietario() {
           valor={datos.suscripcion?.estado === "activa" ? "Activa" : datos.suscripcion ? "Vencida" : "—"}
           detalle={
             datos.suscripcion
-              ? `Renueva el ${formatearFechaCO(datos.suscripcion.renuevaEn, { day: "numeric", month: "long" })} · tus propiedades están visibles`
+              ? `Renueva el ${formatearFechaCO(datos.suscripcion.renuevaEn, { day: "numeric", month: "long" })} · ${
+                  datos.propiedades.some((p) => p.publicada)
+                    ? "tus propiedades publicadas están visibles"
+                    : "publica tus propiedades cuando definas su tarifa"
+                }`
               : "Sin suscripción registrada"
           }
           tono="oro"
@@ -87,17 +92,21 @@ export default async function PanelPropietario() {
             suscripción del piloto se activa sola.
           </Card>
         )}
-        {datos.propiedades.slice(0, 6).map((p) => {
+        {datos.propiedades.map((p) => {
             const neto = calcularNetoPropietario(p.tarifaNetaNoche);
             return (
               <Card key={p.id} className="overflow-hidden">
-                <Cover matiz={p.matiz} className="h-28" />
+                <Link href={`/app/propietario/propiedad/${p.id}`} aria-label={`Ver ficha de ${p.nombre}`}>
+                  <Cover matiz={p.matiz} foto={p.fotos?.[0]} alt={p.nombre} className="h-44" />
+                </Link>
                 <div className="p-5">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <h3 className="font-semibold leading-tight text-tinta">{p.nombre}</h3>
+                      <Link href={`/app/propietario/propiedad/${p.id}`} className="hover:underline">
+                        <h3 className="font-semibold leading-tight text-tinta">{p.nombre}</h3>
+                      </Link>
                       <p className="mt-0.5 text-xs text-bruma">
-                        {p.municipio} · {p.zona} · {p.capacidad} personas
+                        {ubicacionDe(p)} · {p.capacidad} personas
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-1.5">
@@ -117,13 +126,24 @@ export default async function PanelPropietario() {
                       <p className="text-[10px] font-semibold uppercase tracking-wider text-bruma-osc">
                         Tarifa neta / noche
                       </p>
-                      <Money valor={p.tarifaNetaNoche} className="text-base font-bold text-esmeralda" />
-                      <p className="text-[10px] text-bruma-osc">
-                        recibes <Money valor={neto.recibe} /> tras pasarela
-                      </p>
+                      {p.tarifaNetaNoche > 0 ? (
+                        <>
+                          <Money valor={p.tarifaNetaNoche} className="text-base font-bold text-esmeralda" />
+                          <p className="text-[10px] text-bruma-osc">
+                            recibes <Money valor={neto.recibe} /> tras pasarela
+                          </p>
+                        </>
+                      ) : (
+                        <Link
+                          href={`/app/propietario/calendario?propiedad=${p.id}`}
+                          className="text-sm font-semibold text-oro hover:underline"
+                        >
+                          Definir tarifa →
+                        </Link>
+                      )}
                     </div>
                     <p className="text-[11px] text-bruma">
-                      {p.principalesVinculados}/5 socios
+                      {p.ownerDirect ? "Solo tú negocias" : `${p.principalesVinculados}/5 socios`}
                     </p>
                   </div>
                 </div>

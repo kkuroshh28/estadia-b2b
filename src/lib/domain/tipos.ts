@@ -1,5 +1,5 @@
 /**
- * Tipos del dominio — Marketplace B2B de Rentas Cortas (Antioquia).
+ * Tipos del dominio — Marketplace B2B de Rentas Cortas (Colombia).
  * El cliente final NUNCA es usuario: solo recibe links de pago.
  */
 
@@ -55,8 +55,20 @@ export interface Propiedad {
   tarifaAdicional?: number;
   amenidades: string[];
   reglas: string[];
-  /** Semilla determinista para la carátula generada (sin fotos externas). */
+  /** Semilla determinista para la carátula generada cuando no hay fotos. */
   matiz: number;
+  /** Rutas de las fotos en orden; la primera es la portada. */
+  fotos?: string[];
+  /** Videos de recorrido, en orden. */
+  videos?: string[];
+  /** Ficha comercial (opcional: las altas manuales pueden no tenerla). */
+  departamento?: string | null;
+  ubicacionPublica?: string | null;
+  resumen?: string | null;
+  descripcion?: string | null;
+  nota?: string | null;
+  datosClave?: { valor: string; etiqueta: string }[];
+  secciones?: { titulo: string; items: string[] }[];
   principalesVinculados: number; // 3–5 por regla de negocio
 }
 

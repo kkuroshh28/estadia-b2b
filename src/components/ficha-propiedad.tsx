@@ -5,6 +5,9 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { Badge, Card, Cover, Money } from "@/components/ui";
+import { Galeria } from "@/components/galeria";
+import { FichaComercial } from "@/components/ficha-comercial";
+import { lineaDeFicha } from "@/lib/domain/ficha";
 import { MoneyAnimado } from "@/components/motion";
 import { mesVecino, type DatosFicha } from "@/lib/domain/paneles";
 
@@ -95,18 +98,19 @@ export function FichaPropiedad({ datos }: { datos: DatosFicha }) {
         ← Volver a la búsqueda
       </Link>
 
+      {(propiedad.fotos?.length ?? 0) > 0 && <Galeria fotos={propiedad.fotos!} nombre={propiedad.nombre} />}
+
       <div className="overflow-hidden rounded-2xl border border-borde">
-        <Cover matiz={propiedad.matiz} className="h-44 sm:h-56" />
+        {(propiedad.fotos?.length ?? 0) === 0 && (
+          <Cover matiz={propiedad.matiz} className="h-44 sm:h-56" />
+        )}
         <div className="flex flex-wrap items-start justify-between gap-4 bg-tarjeta p-6">
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="font-display text-3xl text-tinta">{propiedad.nombre}</h1>
               {propiedad.verificada && <Badge tono="esmeralda">Propiedad Verificada</Badge>}
             </div>
-            <p className="mt-1 text-sm text-bruma">
-              {propiedad.municipio} · {propiedad.zona} · {propiedad.tipo} ·{" "}
-              {propiedad.capacidad} personas · {propiedad.habitaciones} hab · {propiedad.banos} baños
-            </p>
+            <p className="mt-1 text-sm text-bruma">{lineaDeFicha(propiedad)}</p>
           </div>
           <div className="text-right">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-bruma-osc">
@@ -124,9 +128,12 @@ export function FichaPropiedad({ datos }: { datos: DatosFicha }) {
         </div>
       </div>
 
+      <FichaComercial propiedad={propiedad} />
+
       <div className="grid gap-6 lg:grid-cols-5">
         {/* DATOS PARA VENDER */}
         <div className="space-y-5 lg:col-span-2">
+          {(propiedad.secciones?.length ?? 0) === 0 && propiedad.amenidades.length > 0 && (
           <Card className="p-6">
             <h2 className="font-display text-lg text-tinta">Para venderla bien</h2>
             <ul className="mt-3 space-y-2 text-sm text-bruma">
@@ -137,8 +144,12 @@ export function FichaPropiedad({ datos }: { datos: DatosFicha }) {
               ))}
             </ul>
           </Card>
+          )}
           <Card className="p-6">
             <h2 className="font-display text-lg text-tinta">Reglas de la casa</h2>
+            {propiedad.reglas.length === 0 && (
+              <p className="mt-3 text-sm text-bruma">Se confirman con el propietario al reservar.</p>
+            )}
             <ul className="mt-3 space-y-2 text-sm text-bruma">
               {propiedad.reglas.map((r) => (
                 <li key={r} className="flex items-center gap-2">
@@ -147,8 +158,9 @@ export function FichaPropiedad({ datos }: { datos: DatosFicha }) {
               ))}
             </ul>
             <p className="mt-4 border-t border-borde pt-3 text-[11px] text-bruma-osc">
-              {propiedad.principalesVinculados} socios comerciales atienden esta propiedad —
-              el primero que acepte tu solicitud negocia contigo.
+              {propiedad.ownerDirect
+                ? "Gestión directa: el propietario atiende y negocia personalmente cada solicitud."
+                : `${propiedad.principalesVinculados} socios comerciales atienden esta propiedad — el primero que acepte tu solicitud negocia contigo.`}
             </p>
           </Card>
         </div>
@@ -265,7 +277,11 @@ export function FichaPropiedad({ datos }: { datos: DatosFicha }) {
                 transition={{ type: "spring", stiffness: 260, damping: 20 }}
                 className="mt-5 rounded-xl border border-oro/30 bg-oro-tenue/40 p-4 text-center"
               >
-                <p className="text-sm font-bold text-oro">Solicitud enviada a los {propiedad.principalesVinculados} socios comerciales</p>
+                <p className="text-sm font-bold text-oro">
+                  {propiedad.ownerDirect
+                    ? "Solicitud enviada al propietario"
+                    : `Solicitud enviada a los ${propiedad.principalesVinculados} socios comerciales`}
+                </p>
                 <p className="mt-1 text-xs text-bruma">
                   El primero que acepte se queda con ella y abre la negociación contigo.
                   Recuerda: las fechas NO están apartadas hasta que tu cliente pague el 50%.

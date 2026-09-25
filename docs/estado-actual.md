@@ -1,5 +1,37 @@
 # Estado real del proyecto — inventario honesto (2026-07-20)
 
+## Novedades 2026-09-25: FIN DE LA VITRINA + PORTAFOLIO REAL DEL FUNDADOR
+- **Vitrina demo eliminada** (revierte 3b6c5bd): `src/lib/data/demo.ts` borrado;
+  sin DATABASE_URL los paneles muestran estados vacíos honestos (checkout 404,
+  campanita/aliases/chat sin datos ficticios).
+- **Cobertura Colombia**: metadata/OG/manifest/shell/landing dicen Colombia
+  (antes Antioquia) — el portafolio incluye Cartagena, Barú y Tintipán.
+- **Ficha comercial + fotos/videos** (migración 0009): `propiedades.slug`,
+  `departamento`, `ubicacion_publica`, `resumen`, `descripcion`, `nota`,
+  `datos_clave` (jsonb), `secciones` (jsonb), `fotos[]`, `videos[]`.
+  `Cover` pinta la portada real; `Galeria` (mosaico + visor con teclado y
+  swipe) y `FichaComercial` en la ficha del socio de ventas y en la nueva
+  ficha del dueño `/app/propietario/propiedad/[id]`.
+- **Portafolio del fundador**: 9 propiedades (datos exactos de su web pública)
+  en `data/portafolio-kurosh.json` + 307 fotos WebP 1920px y 3 videos en
+  `public/propiedades/<slug>/`. Importador idempotente
+  `npm run db:importar-portafolio` (vars `PORTAFOLIO_EMAIL/NOMBRE/CEDULA/TELEFONO`):
+  usuario propietario activo + alias, propiedades **Owner Direct** (solo el
+  dueño negocia), **no publicadas, sin tarifa, verificada=false**, dirección
+  exacta cifrada (Anexo II). Frases "por WhatsApp" retiradas (anti-fuga).
+- **Regla nueva**: no se publica sin tarifa neta vigente (servicio + test
+  `publicacion.test.ts`). Editor de tarifa con campo numérico y rango hasta
+  $20M; filtros de búsqueda con topes según el inventario real.
+- Datos NO publicados en la web de origen (quedan en 0 = "sin confirmar" en la
+  UI, o estimados): baños de La Divisa, habitaciones/baños de Quinta del Mar y
+  Crystal Beach; capacidad estimada de El Tesoro (12) y Casa 109 (6).
+- ⚠️ Producción SIN base: Supabase rechazó crear `thecircle-prod` por facturas
+  vencidas de la organización. Pasos al desbloquear: crear proyecto → migrar →
+  env en Vercel (DATABASE_URL, ENCRYPTION_KEY, AUTH_SECRET, CRON_SECRET,
+  MODO_AUTH=exigida, EMAIL real para OTP) → importar portafolio → admin TOTP
+  para verificar.
+- Suite: **113 tests**.
+
 ## Novedades 2026-07-20 (sesión de mejoras sin credenciales)
 - **Dashboards /app conectados a datos por sesión** (`src/server/datos/`):
   con DATABASE_URL las 11 vistas leen Postgres real scoped al usuario (o al

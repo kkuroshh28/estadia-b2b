@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "THE CIRCLE — Red B2B de rentas cortas",
     short_name: "THE CIRCLE",
     description:
-      "La red B2B de rentas cortas de Antioquia. El primero que paga, gana.",
+      "La red B2B de rentas cortas de Colombia. El primero que paga, gana.",
     start_url: "/app",
     display: "standalone",
     background_color: "#101b16",

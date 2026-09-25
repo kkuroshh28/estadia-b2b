@@ -11,7 +11,8 @@
     "test:integracion": "vitest run src/server",
     "db:migrate": "drizzle-kit migrate",
     "db:generate": "drizzle-kit generate",
-    "db:seed": "vite-node --config vitest.config.ts src/server/db/seed.ts"
+    "db:seed": "vite-node --config vitest.config.ts src/server/db/seed.ts",
+    "db:importar-portafolio": "vite-node --config vitest.config.ts src/server/db/importar-portafolio.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.2",

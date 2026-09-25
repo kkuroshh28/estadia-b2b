@@ -3,7 +3,7 @@ import { ImageResponse } from "next/og";
 /** OG para compartir por WhatsApp — Tiffany + blanco, se ve premium en el chat. */
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-export const alt = "THE CIRCLE — La red B2B de rentas cortas de Antioquia";
+export const alt = "THE CIRCLE — La red B2B de rentas cortas de Colombia";
 
 export default function OgImage() {
   return new ImageResponse(
@@ -39,7 +39,7 @@ export default function OgImage() {
               borderRadius: 999,
             }}
           >
-            Antioquia · 100% B2B
+            Colombia · 100% B2B
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>

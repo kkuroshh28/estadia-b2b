@@ -99,7 +99,7 @@ export function AppShell({
             <LogoCircle tam={26} />
           </p>
           <p className="mt-0.5 text-[10px] uppercase tracking-[0.2em] text-bruma-osc">
-            Red B2B · Antioquia
+            Red B2B · Colombia
           </p>
         </Link>
         <div className="flex-1 space-y-6 overflow-y-auto px-3 py-6">
@@ -155,15 +155,16 @@ export function AppShell({
             </span>
           </div>
           <div className="flex items-center gap-3">
-            <Campanita
-              vitrina={!conDatos}
-              rol={
-                (ROL_DE_SECCION[seccionActiva?.rol ?? "Propietario"] ?? "propietario") as
-                  | "propietario"
-                  | "principal"
-                  | "externo"
-              }
-            />
+            {conDatos && (
+              <Campanita
+                rol={
+                  (ROL_DE_SECCION[seccionActiva?.rol ?? "Propietario"] ?? "propietario") as
+                    | "propietario"
+                    | "principal"
+                    | "externo"
+                }
+              />
+            )}
             <Badge tono="esmeralda" vivo>Piloto</Badge>
             {roles !== null && (
               <button

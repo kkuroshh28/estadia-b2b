@@ -26,10 +26,18 @@ const ESTILO_DIA: Record<EstadoDia, string> = {
   bloqueado_ical: "border-tiffany-claro bg-tiffany-claro/45 text-tinta cursor-not-allowed",
 };
 
-export function CalendarioCliente({ datos }: { datos: DatosCalendario }) {
+export function CalendarioCliente({
+  datos,
+  propiedadInicial,
+}: {
+  datos: DatosCalendario;
+  propiedadInicial?: string;
+}) {
   const router = useRouter();
   const pathname = usePathname();
-  const [propId, setPropId] = useState(datos.propiedades[0]?.id ?? "");
+  const [propId, setPropId] = useState(
+    datos.propiedades.find((p) => p.id === propiedadInicial)?.id ?? datos.propiedades[0]?.id ?? "",
+  );
   const irAlMes = (delta: 1 | -1) => router.push(`${pathname}?mes=${mesVecino(datos.mes.iso, delta)}`);
   // Overlay local sobre los estados del servidor (optimista).
   const [cambios, setCambios] = useState<Record<string, Partial<Record<number, "bloqueado_manual" | "disponible">>>>({});
@@ -39,7 +47,7 @@ export function CalendarioCliente({ datos }: { datos: DatosCalendario }) {
   const [rangoVivo, setRangoVivo] = useState<[number, number] | null>(null);
 
   const prop = datos.propiedades.find((p) => p.id === propId);
-  const [tarifa, setTarifa] = useState(prop?.tarifaNetaNoche || 1_450_000);
+  const [tarifa, setTarifa] = useState(prop?.tarifaNetaNoche ?? 0);
   const neto = useMemo(() => calcularNetoPropietario(tarifa), [tarifa]);
   const [guardandoTarifa, setGuardandoTarifa] = useState(false);
   const [tarifaGuardada, setTarifaGuardada] = useState(false);
@@ -172,7 +180,7 @@ export function CalendarioCliente({ datos }: { datos: DatosCalendario }) {
             key={p.id}
             onClick={() => {
               setPropId(p.id);
-              setTarifa(p.tarifaNetaNoche || 1_450_000);
+              setTarifa(p.tarifaNetaNoche ?? 0);
             }}
             className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${
               p.id === propId
@@ -282,13 +290,32 @@ export function CalendarioCliente({ datos }: { datos: DatosCalendario }) {
           <label className="mt-5 block text-[11px] font-bold uppercase tracking-wider text-bruma-osc">
             Tarifa neta por noche · {prop.nombre}
           </label>
+          {prop.tarifaNetaNoche === 0 && (
+            <p className="mt-2 rounded-lg border border-oro/30 bg-oro-tenue/40 px-3 py-2 text-[11px] text-oro">
+              Sin tarifa definida: la propiedad no se puede publicar hasta que la guardes.
+            </p>
+          )}
+          <div className="mt-3 flex items-center gap-2 rounded-xl border border-borde bg-panel px-4 py-2.5 focus-within:border-tiffany">
+            <span className="text-sm text-bruma">$</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              aria-label="Tarifa neta por noche en pesos"
+              placeholder="Escribe la tarifa neta por noche"
+              value={tarifa > 0 ? tarifa.toLocaleString("es-CO") : ""}
+              onChange={(e) => setTarifa(Number(e.target.value.replace(/\D/g, "").slice(0, 9)) || 0)}
+              className="cifra w-full bg-transparent text-lg font-bold text-tinta outline-none placeholder:text-sm placeholder:font-normal placeholder:text-bruma-osc"
+            />
+            <span className="text-xs text-bruma-osc">COP</span>
+          </div>
           <input
             type="range"
-            min={300_000}
-            max={3_000_000}
-            step={10_000}
-            value={tarifa}
+            min={50_000}
+            max={Math.max(20_000_000, tarifa)}
+            step={50_000}
+            value={Math.max(tarifa, 50_000)}
             onChange={(e) => setTarifa(Number(e.target.value))}
+            aria-label="Ajustar tarifa"
             className="mt-3 w-full accent-tiffany"
           />
           <div className="mt-4 space-y-3">
@@ -308,7 +335,7 @@ export function CalendarioCliente({ datos }: { datos: DatosCalendario }) {
           {!datos.esDemo && (
             <button
               onClick={guardarTarifa}
-              disabled={guardandoTarifa || tarifa === prop.tarifaNetaNoche}
+              disabled={guardandoTarifa || tarifa < 50_000 || tarifa === prop.tarifaNetaNoche}
               className="mt-4 w-full rounded-full bg-tiffany py-3 text-xs font-bold text-noche transition hover:bg-tiffany-claro disabled:opacity-50"
             >
               {tarifaGuardada

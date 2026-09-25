@@ -231,6 +231,23 @@ export const propiedades = pgTable("propiedades", {
   // propietario: se suma a la tarifa neta antes de negociar la comisión.
   huespedesIncluidos: smallint("huespedes_incluidos"),
   tarifaAdicionalCentavos: bigint("tarifa_adicional_centavos", { mode: "number" }).notNull().default(0),
+  // Ficha comercial: lo que ve la red al evaluar la propiedad.
+  slug: text("slug").unique(),
+  departamento: text("departamento"),
+  /** Ubicación pública (sector/ciudad) — la dirección exacta va cifrada aparte. */
+  ubicacionPublica: text("ubicacion_publica"),
+  resumen: text("resumen"),
+  descripcion: text("descripcion"),
+  /** Notas de capacidad/condiciones que acompañan la ficha. */
+  nota: text("nota"),
+  /** Cifras clave de la ficha: [{ valor: "260", etiqueta: "m² con terraza" }]. */
+  datosClave: jsonb("datos_clave").$type<{ valor: string; etiqueta: string }[]>().notNull().default([]),
+  /** Secciones de la ficha: [{ titulo: "Servicios incluidos", items: [...] }]. */
+  secciones: jsonb("secciones").$type<{ titulo: string; items: string[] }[]>().notNull().default([]),
+  /** Rutas de las fotos en orden; la primera es la portada. */
+  fotos: text("fotos").array().notNull().default([]),
+  /** Rutas de los videos de recorrido, en orden. */
+  videos: text("videos").array().notNull().default([]),
   creadaEn: timestamp("creada_en", { withTimezone: true }).notNull().defaultNow(),
 });
 

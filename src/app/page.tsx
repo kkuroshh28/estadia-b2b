@@ -118,7 +118,7 @@ export default function Landing() {
           <div>
             <RevealHero>
               <div className="flex flex-wrap items-center gap-2">
-                <Badge tono="esmeralda" vivo>Operación piloto · Oriente Antioqueño</Badge>
+                <Badge tono="esmeralda" vivo>Operación piloto · Medellín · Cartagena · Caribe</Badge>
                 <Badge tono="oro">Red privada · Solo verificados</Badge>
               </div>
             </RevealHero>
@@ -635,7 +635,7 @@ export default function Landing() {
         <footer className="border-t border-tinta/15">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-8 text-xs text-tinta/70">
             <p className="font-display text-lg text-tinta"><LogoCircle tam={34} /></p>
-            <p>Antioquia, Colombia · Piloto Oriente Antioqueño · Demo de producto — no es asesoría legal</p>
+            <p>Colombia · Medellín, Cartagena y el Caribe · No constituye asesoría legal</p>
           </div>
         </footer>
       </section>

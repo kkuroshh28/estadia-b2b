@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { AvatarAlias, Badge, Card } from "@/components/ui";
-import { filtrarMensaje } from "@/lib/domain/antifuga";
 import type { DatosChat, MensajeChatPanel } from "@/lib/domain/paneles";
 
 /**
@@ -37,34 +36,7 @@ export function ChatCliente({ datos }: { datos: DatosChat }) {
     const limpio = texto.trim();
     if (!limpio || baneado) return;
 
-    if (!datos.solicitudId) {
-      if (!datos.esDemo) return;
-      // Vitrina: el veredicto viene del MISMO endpoint server-side (sin DB no
-      // persiste); strikes y ban se simulan localmente para mostrar la regla.
-      let filtro = filtrarMensaje(limpio);
-      try {
-        const res = await fetch("/api/chat/validar", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ texto: limpio }),
-        });
-        if (res.ok) filtro = await res.json();
-      } catch {
-        // sin red: veredicto local
-      }
-      const id = `demo-${n}`;
-      setN(n + 1);
-      if (filtro.bloqueado) {
-        const nuevos = misStrikes + 1;
-        setStrikes((s) => ({ ...s, [perspectiva]: nuevos }));
-        setMensajes((m) => [...m, { id, emisorRol: perspectiva, texto: limpio, bloqueado: true, motivos: filtro.motivos }]);
-        if (nuevos >= MAX_STRIKES) setBaneado(true);
-      } else {
-        setMensajes((m) => [...m, { id, emisorRol: perspectiva, texto: limpio, bloqueado: false, motivos: [] }]);
-      }
-      setTexto("");
-      return;
-    }
+    if (!datos.solicitudId) return;
 
     // Real: el servidor decide, persiste y ejecuta strikes/ban.
     try {
@@ -147,7 +119,7 @@ export function ChatCliente({ datos }: { datos: DatosChat }) {
       {/* HILO */}
       <Card className="relative flex h-[26rem] flex-col overflow-hidden">
         <div className="flex-1 space-y-3 overflow-y-auto p-5">
-          {datos.solicitudId === null && !datos.esDemo && (
+          {datos.solicitudId === null && (
             <p className="p-4 text-center text-sm text-bruma">
               Sin conversaciones activas. Acepta una solicitud y su hilo aparece aquí.
             </p>
@@ -195,19 +167,13 @@ export function ChatCliente({ datos }: { datos: DatosChat }) {
               value={texto}
               onChange={(e) => setTexto(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && enviar()}
-              disabled={baneado || (!datos.esDemo && !datos.solicitudId)}
-              placeholder={
-                baneado
-                  ? "Cuenta suspendida"
-                  : datos.esDemo
-                    ? 'Prueba escribir "mi número es 310 555 1234"…'
-                    : "Escribe tu mensaje…"
-              }
+              disabled={baneado || !datos.solicitudId}
+              placeholder={baneado ? "Cuenta suspendida" : "Escribe tu mensaje…"}
               className="flex-1 rounded-full border border-borde bg-tarjeta px-5 py-3 text-sm text-tinta placeholder:text-bruma-osc focus:border-esmeralda/50 disabled:opacity-40"
             />
             <button
               onClick={enviar}
-              disabled={baneado || (!datos.esDemo && !datos.solicitudId)}
+              disabled={baneado || !datos.solicitudId}
               className="rounded-full bg-tiffany px-6 text-sm font-bold text-noche transition hover:bg-tiffany-claro disabled:opacity-40"
             >
               Enviar
@@ -244,14 +210,6 @@ export function ChatCliente({ datos }: { datos: DatosChat }) {
                 queda retirado para siempre junto con toda su reputación.
               </p>
               <p className="mt-4 text-[11px] text-bruma-osc">Sin negociación. Sin apelación. Así se protege el gremio.</p>
-              {datos.esDemo && (
-                <button
-                  onClick={() => { setBaneado(false); setStrikes((s) => ({ ...s, [perspectiva]: 0 })); }}
-                  className="mt-6 rounded-full border border-borde-claro px-6 py-2.5 text-xs font-semibold text-bruma transition hover:text-tinta"
-                >
-                  Reiniciar demostración
-                </button>
-              )}
 
             </motion.div>
           )}

@@ -27,25 +27,12 @@ const ICONO: Record<string, string> = {
   pago: "$",
 };
 
-const VITRINA: Noti[] = [
-  { id: "v1", tipo: "solicitud", titulo: "Nueva solicitud entrante", cuerpo: "GUACAMAYA-256 pide Finca Mirador del Peñol (2026-08-07 → 2026-08-10). El primero que acepte se la queda.", url: "/app/principal", leida: false },
-  { id: "v2", tipo: "pago", titulo: "Pago 1 de 2 (anticipo) confirmado ✓", cuerpo: "Casa Campestre Llanogrande · CIR-2026-00358 · $ 2.025.000. Split registrado a cada cuenta certificada.", url: "/app/propietario", leida: false },
-  { id: "v3", tipo: "oferta", titulo: "Tienes una oferta nueva", cuerpo: "CONDOR-472 propone $ 5.250.000. Vence en horas: responde.", url: "/app/negociacion", leida: true },
-];
-
-export function Campanita({
-  rol,
-  vitrina = false,
-}: {
-  rol: "propietario" | "principal" | "externo";
-  vitrina?: boolean;
-}) {
+export function Campanita({ rol }: { rol: "propietario" | "principal" | "externo" }) {
   const [abierta, setAbierta] = useState(false);
-  const [noLeidas, setNoLeidas] = useState(vitrina ? 2 : 0);
-  const [items, setItems] = useState<Noti[]>(vitrina ? VITRINA : []);
+  const [noLeidas, setNoLeidas] = useState(0);
+  const [items, setItems] = useState<Noti[]>([]);
 
   const cargar = async () => {
-    if (vitrina) return;
     try {
       const r = await fetch(`/api/notificaciones?como=${rol}`);
       if (!r.ok) return;
@@ -70,10 +57,6 @@ export function Campanita({
 
   const abrir = async () => {
     setAbierta((v) => !v);
-    if (vitrina) {
-      if (!abierta) setNoLeidas(0);
-      return;
-    }
     if (!abierta && noLeidas > 0) {
       await fetch("/api/notificaciones", {
         method: "POST",

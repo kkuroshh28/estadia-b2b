@@ -140,6 +140,15 @@ async function propiedadesUI(
     amenidades: f.amenidades,
     reglas: f.reglas,
     matiz: matizDeId(f.id),
+    fotos: f.fotos,
+    videos: f.videos,
+    departamento: f.departamento,
+    ubicacionPublica: f.ubicacionPublica,
+    resumen: f.resumen,
+    descripcion: f.descripcion,
+    nota: f.nota,
+    datosClave: f.datosClave,
+    secciones: f.secciones,
     principalesVinculados: vinculosDe.get(f.id) ?? 0,
   }));
 }
@@ -261,7 +270,7 @@ export function datosPropietario(): Promise<DatosPropietario> {
 }
 
 export function datosCalendario(mesPedido?: string): Promise<DatosCalendario> {
-  return resolverPanel("propietario", () => demoCalendario(mesPedido), async (db, u) => {
+  return resolverPanel("propietario", demoCalendario, async (db, u) => {
     const misProps = await db
       .select()
       .from(propiedades)
@@ -438,7 +447,7 @@ export function datosBusquedaExterno(
   desde?: string,
   hasta?: string,
 ): Promise<DatosBusquedaExterno> {
-  return resolverPanel("externo", () => demoBusquedaExterno(desde, hasta), async (db, u) => {
+  return resolverPanel("externo", demoBusquedaExterno, async (db, u) => {
     // Rango válido: fechas bien formadas, futuro, 1–92 noches.
     const RE = /^\d{4}-\d{2}-\d{2}$/;
     let fechas: { desde: string; hasta: string; noches: number } | null = null;
@@ -575,7 +584,7 @@ export function datosLinksExterno(): Promise<DatosLinksExterno> {
 // ─── Comisiones (compartido principal/externo) ───────────────────────────────
 
 export function datosComisiones(rol: "principal" | "externo"): Promise<DatosComisiones> {
-  return resolverPanel(rol, () => demoComisiones(), async (db, u) => {
+  return resolverPanel(rol, demoComisiones, async (db, u) => {
     const concepto = rol === "principal" ? "comision_principal" : "comision_externo";
     const mios = await db
       .select({
@@ -878,7 +887,7 @@ export function datosChat(): Promise<DatosChat> {
 // ─── Ficha de propiedad (externo) ────────────────────────────────────────────
 
 export function datosFicha(id: string, mesPedido?: string): Promise<DatosFicha | null> {
-  return resolverPanel("externo", () => demoFicha(id, mesPedido), async (db) => {
+  return resolverPanel("externo", demoFicha, async (db) => {
     const [fila] = await db.select().from(propiedades).where(eq(propiedades.id, id)).limit(1);
     if (!fila || !fila.publicada) return null;
     const [prop] = await propiedadesUI(db, [fila]);
@@ -905,5 +914,22 @@ export function datosFicha(id: string, mesPedido?: string): Promise<DatosFicha |
       offsetLunes: info.offsetLunes,
       ocupados: dias.map((d) => Number(d.fecha.slice(8, 10))),
     };
+  });
+}
+
+// ─── Ficha de propiedad (vista del dueño) ────────────────────────────────────
+
+/** Ficha completa de una propiedad del usuario — publicada o no. */
+export function datosFichaPropietario(id: string): Promise<{ propiedad: Propiedad; esDemo: boolean } | null> {
+  return resolverPanel("propietario", () => null, async (db, u) => {
+    if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
+    const [fila] = await db
+      .select()
+      .from(propiedades)
+      .where(and(eq(propiedades.id, id), eq(propiedades.propietarioId, u.id)))
+      .limit(1);
+    if (!fila) return null;
+    const [propiedad] = await propiedadesUI(db, [fila]);
+    return { propiedad, esDemo: false };
   });
 }

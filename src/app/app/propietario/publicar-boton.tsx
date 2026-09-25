@@ -13,15 +13,21 @@ export function PublicarBoton({
 }) {
   const router = useRouter();
   const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const alternar = async () => {
     setCargando(true);
+    setError(null);
     try {
-      await fetch("/api/propiedades", {
+      const r = await fetch("/api/propiedades", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ propiedadId, publicada: !publicada }),
       });
+      if (!r.ok) {
+        setError((await r.json().catch(() => null))?.error ?? "No se pudo cambiar la publicación.");
+        return;
+      }
       router.refresh();
     } finally {
       setCargando(false);
@@ -29,6 +35,7 @@ export function PublicarBoton({
   };
 
   return (
+    <>
     <button
       onClick={alternar}
       disabled={cargando}
@@ -40,5 +47,7 @@ export function PublicarBoton({
     >
       {cargando ? "…" : publicada ? "Despublicar" : "Publicar"}
     </button>
+    {error && <p role="alert" className="max-w-40 text-right text-[10px] leading-snug text-rojo">{error}</p>}
+    </>
   );
 }

@@ -4,9 +4,9 @@ import { CalendarioCliente } from "./calendario-cliente";
 export default async function CalendarioPropietario({
   searchParams,
 }: {
-  searchParams: Promise<{ mes?: string }>;
+  searchParams: Promise<{ mes?: string; propiedad?: string }>;
 }) {
-  const { mes } = await searchParams;
+  const { mes, propiedad } = await searchParams;
   const datos = await datosCalendario(mes);
-  return <CalendarioCliente datos={datos} />;
+  return <CalendarioCliente datos={datos} propiedadInicial={propiedad} />;
 }

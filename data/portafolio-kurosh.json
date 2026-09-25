@@ -1,0 +1,1036 @@
+[
+  {
+    "slug": "murano",
+    "nombre": "MURANO",
+    "tipo": "apartamento",
+    "municipio": "Cartagena de Indias",
+    "zona": "Los Morros",
+    "departamento": "Bolívar",
+    "ubicacionPublica": "Los Morros, Cartagena de Indias — Bolívar",
+    "capacidad": 12,
+    "huespedesIncluidos": 10,
+    "habitaciones": 4,
+    "banos": 4,
+    "resumen": "Apartamento de 260 m² con terraza frente al mar en Los Morros, Cartagena: 4 habitaciones, sala principal, comedor y BBQ, para 10 a 12 huéspedes, en una torre con piscina, jacuzzi, gimnasio y salida directa a la playa.",
+    "descripcion": "MURANO es un apartamento de 260 m² frente al mar en Los Morros — el corredor de playa más exclusivo de Cartagena. Cuatro habitaciones, tres con vestier y todas con baño, se abren hacia una terraza que enmarca el Caribe de horizonte a horizonte. Sala principal y comedor amplios, cocina abierta con isla y una terraza con BBQ para las tardes de atardecer sobre el mar. La torre entrega el confort de un resort: piscina frente a la playa, jacuzzi, gimnasio y baño turco, con mercadito y farmacia dentro de la urbanización y salida directa a la arena.",
+    "nota": "Capacidad de 10 a 12 huéspedes.",
+    "datosClave": [
+      {
+        "valor": "4",
+        "etiqueta": "Habitaciones"
+      },
+      {
+        "valor": "260",
+        "etiqueta": "m² con terraza"
+      },
+      {
+        "valor": "10–12",
+        "etiqueta": "Huéspedes"
+      },
+      {
+        "valor": "2",
+        "etiqueta": "Parqueaderos"
+      }
+    ],
+    "secciones": [
+      {
+        "titulo": "La experiencia",
+        "items": [
+          "4 habitaciones con baño, 3 con vestier",
+          "260 m² con terraza frente al mar",
+          "Sala principal y comedor amplios",
+          "Terraza con BBQ y vista al Caribe",
+          "Cocina abierta con isla",
+          "Aire acondicionado en las habitaciones",
+          "2 parqueaderos privados",
+          "Salida directa a la playa"
+        ]
+      },
+      {
+        "titulo": "La urbanización",
+        "items": [
+          "Piscina frente al mar",
+          "Jacuzzi",
+          "Gimnasio",
+          "Baño turco",
+          "Mercadito y farmacia en la torre",
+          "Salida directa a la playa"
+        ]
+      }
+    ],
+    "reglas": [],
+    "fotos": [
+      "/propiedades/murano/murano-03.webp",
+      "/propiedades/murano/murano-01.webp",
+      "/propiedades/murano/murano-02.webp",
+      "/propiedades/murano/murano-04.webp",
+      "/propiedades/murano/murano-05.webp",
+      "/propiedades/murano/murano-06.webp",
+      "/propiedades/murano/murano-07.webp",
+      "/propiedades/murano/murano-08.webp",
+      "/propiedades/murano/murano-09.webp",
+      "/propiedades/murano/murano-10.webp",
+      "/propiedades/murano/murano-11.webp",
+      "/propiedades/murano/murano-12.webp",
+      "/propiedades/murano/murano-13.webp",
+      "/propiedades/murano/murano-14.webp",
+      "/propiedades/murano/murano-15.webp",
+      "/propiedades/murano/murano-16.webp",
+      "/propiedades/murano/murano-17.webp",
+      "/propiedades/murano/murano-18.webp",
+      "/propiedades/murano/murano-19.webp",
+      "/propiedades/murano/murano-20.webp",
+      "/propiedades/murano/murano-21.webp",
+      "/propiedades/murano/murano-22.webp",
+      "/propiedades/murano/murano-23.webp",
+      "/propiedades/murano/murano-24.webp",
+      "/propiedades/murano/murano-25.webp",
+      "/propiedades/murano/murano-26.webp",
+      "/propiedades/murano/murano-27.webp",
+      "/propiedades/murano/murano-28.webp",
+      "/propiedades/murano/murano-29.webp",
+      "/propiedades/murano/murano-30.webp"
+    ],
+    "videos": [],
+    "amenidades": [
+      "4 habitaciones con baño, 3 con vestier",
+      "260 m² con terraza frente al mar",
+      "Sala principal y comedor amplios",
+      "Terraza con BBQ y vista al Caribe",
+      "Cocina abierta con isla",
+      "Aire acondicionado en las habitaciones",
+      "2 parqueaderos privados",
+      "Salida directa a la playa"
+    ]
+  },
+  {
+    "slug": "nattivo",
+    "nombre": "NATTIVO",
+    "tipo": "casa",
+    "municipio": "Medellín",
+    "zona": "El Poblado · Provenza",
+    "departamento": "Antioquia",
+    "ubicacionPublica": "Provenza, El Poblado — Medellín",
+    "direccion": "Cra. 32 #5G-38, Provenza, El Poblado — Medellín",
+    "capacidad": 15,
+    "huespedesIncluidos": null,
+    "habitaciones": 7,
+    "banos": 9,
+    "resumen": "Casa privada en El Poblado con 7 habitaciones, piscina con camas asoleadoras, jacuzzi climatizado, spa con turco y discoteca propia.",
+    "descripcion": "NATTIVO es un refugio donde la arquitectura se rinde ante la selva, en plena Provenza — el sector más exclusivo de El Poblado, Medellín. Piscina con camas asoleadoras y espejo de agua, gran jacuzzi climatizado para 14 personas, sala social con chimenea y techo removible, sala de cine, zona de spa con turco y una discoteca privada con consola para DJ. Todo, atendido por un mayordomo disponible las 24 horas.",
+    "nota": "Capacidad de 15 huéspedes; persona adicional con costo extra. Tarifas y disponibilidad se comparten de forma privada.",
+    "datosClave": [
+      {
+        "valor": "7",
+        "etiqueta": "Habitaciones"
+      },
+      {
+        "valor": "9",
+        "etiqueta": "Baños"
+      },
+      {
+        "valor": "12",
+        "etiqueta": "Camas king"
+      },
+      {
+        "valor": "15",
+        "etiqueta": "Huéspedes"
+      }
+    ],
+    "secciones": [
+      {
+        "titulo": "La experiencia",
+        "items": [
+          "Piscina con camas asoleadoras y espejo de agua",
+          "Gran jacuzzi climatizado (hasta 14 personas)",
+          "Discoteca privada con luces, mini bar y consola DJ",
+          "Zona de spa con baño turco",
+          "Sala de cine con mini bar",
+          "Sala social con chimenea y techo removible",
+          "Terraza con asador y horno de pizzas",
+          "Admite mascotas"
+        ]
+      },
+      {
+        "titulo": "Servicios incluidos",
+        "items": [
+          "Mayordomo disponible las 24 horas",
+          "Piscina, jacuzzi y turco",
+          "Uso de cocina, asador y horno de pizzas",
+          "Sala de cine con mini bar",
+          "Discoteca con mini bar, hielera y consola para DJ",
+          "Chef en casa para desayunos (costo adicional)"
+        ]
+      }
+    ],
+    "reglas": [
+      "Admite mascotas",
+      "Persona adicional con costo extra"
+    ],
+    "fotos": [
+      "/propiedades/nattivo/nattivo-05.webp",
+      "/propiedades/nattivo/nattivo-01.webp",
+      "/propiedades/nattivo/nattivo-02.webp",
+      "/propiedades/nattivo/nattivo-03.webp",
+      "/propiedades/nattivo/nattivo-04.webp",
+      "/propiedades/nattivo/nattivo-06.webp",
+      "/propiedades/nattivo/nattivo-07.webp",
+      "/propiedades/nattivo/nattivo-08.webp",
+      "/propiedades/nattivo/nattivo-09.webp",
+      "/propiedades/nattivo/nattivo-10.webp",
+      "/propiedades/nattivo/nattivo-11.webp",
+      "/propiedades/nattivo/nattivo-12.webp",
+      "/propiedades/nattivo/nattivo-13.webp",
+      "/propiedades/nattivo/nattivo-14.webp",
+      "/propiedades/nattivo/nattivo-15.webp",
+      "/propiedades/nattivo/nattivo-16.webp",
+      "/propiedades/nattivo/nattivo-17.webp",
+      "/propiedades/nattivo/nattivo-18.webp",
+      "/propiedades/nattivo/nattivo-19.webp",
+      "/propiedades/nattivo/nattivo-20.webp",
+      "/propiedades/nattivo/nattivo-21.webp",
+      "/propiedades/nattivo/nattivo-22.webp",
+      "/propiedades/nattivo/nattivo-23.webp",
+      "/propiedades/nattivo/nattivo-24.webp",
+      "/propiedades/nattivo/nattivo-25.webp",
+      "/propiedades/nattivo/nattivo-26.webp",
+      "/propiedades/nattivo/nattivo-27.webp",
+      "/propiedades/nattivo/nattivo-28.webp",
+      "/propiedades/nattivo/nattivo-29.webp",
+      "/propiedades/nattivo/nattivo-30.webp",
+      "/propiedades/nattivo/nattivo-31.webp",
+      "/propiedades/nattivo/nattivo-32.webp",
+      "/propiedades/nattivo/nattivo-33.webp",
+      "/propiedades/nattivo/nattivo-34.webp",
+      "/propiedades/nattivo/nattivo-35.webp",
+      "/propiedades/nattivo/nattivo-36.webp",
+      "/propiedades/nattivo/nattivo-37.webp",
+      "/propiedades/nattivo/nattivo-38.webp",
+      "/propiedades/nattivo/nattivo-39.webp",
+      "/propiedades/nattivo/nattivo-40.webp",
+      "/propiedades/nattivo/nattivo-41.webp",
+      "/propiedades/nattivo/nattivo-42.webp",
+      "/propiedades/nattivo/nattivo-43.webp",
+      "/propiedades/nattivo/nattivo-44.webp",
+      "/propiedades/nattivo/nattivo-45.webp",
+      "/propiedades/nattivo/nattivo-46.webp",
+      "/propiedades/nattivo/nattivo-47.webp",
+      "/propiedades/nattivo/nattivo-48.webp",
+      "/propiedades/nattivo/nattivo-49.webp",
+      "/propiedades/nattivo/nattivo-50.webp",
+      "/propiedades/nattivo/nattivo-51.webp",
+      "/propiedades/nattivo/nattivo-52.webp",
+      "/propiedades/nattivo/nattivo-53.webp",
+      "/propiedades/nattivo/nattivo-54.webp",
+      "/propiedades/nattivo/nattivo-55.webp",
+      "/propiedades/nattivo/nattivo-56.webp",
+      "/propiedades/nattivo/nattivo-57.webp",
+      "/propiedades/nattivo/nattivo-58.webp",
+      "/propiedades/nattivo/nattivo-59.webp"
+    ],
+    "videos": [],
+    "amenidades": [
+      "Piscina con camas asoleadoras y espejo de agua",
+      "Gran jacuzzi climatizado (hasta 14 personas)",
+      "Discoteca privada con luces, mini bar y consola DJ",
+      "Zona de spa con baño turco",
+      "Sala de cine con mini bar",
+      "Sala social con chimenea y techo removible",
+      "Terraza con asador y horno de pizzas",
+      "Admite mascotas"
+    ]
+  },
+  {
+    "slug": "el-tesoro",
+    "nombre": "EL TESORO",
+    "tipo": "casa",
+    "municipio": "Medellín",
+    "zona": "El Poblado",
+    "departamento": "Antioquia",
+    "ubicacionPublica": "El Poblado, frente al C.C. El Tesoro — Medellín",
+    "direccion": "Calle 2 # 20-75, Conjunto Bonaparte, El Poblado — Medellín",
+    "capacidad": 12,
+    "huespedesIncluidos": null,
+    "habitaciones": 5,
+    "banos": 6,
+    "resumen": "Residencia de 450 m² construidos sobre lote de 600 m² en El Poblado (Conjunto Bonaparte), frente al Centro Comercial El Tesoro: 5 habitaciones con baño privado, apartamento independiente, zona húmeda con jacuzzi, jardín y 6 parqueaderos. Disponible en venta, renta y estadías por días.",
+    "descripcion": "El Tesoro es una residencia de dos niveles en uno de los sectores más valorizados de Medellín, frente al Centro Comercial El Tesoro, en el Conjunto Residencial Bonaparte de El Poblado. En 450 m² construidos sobre un lote de 600 m² combina amplitud, confort y privacidad: primer nivel con moderna cocina integral, amplia sala y comedor, estudio, baño social, zona de lavandería y una espectacular zona húmeda con jacuzzi; un apartamento independiente con sala-comedor, cocina y habitación con baño privado; y un segundo nivel con tres habitaciones con baño privado, una sala tipo loft y una habitación principal con baño completo, jacuzzi, ducha independiente, walk-in clóset y amplio balcón con vista. Seis parqueaderos —dos internos y cuatro externos— completan una propiedad pensada para vivir con elegancia.",
+    "nota": "Disponible en venta, renta y estadías por días. El precio de venta y las tarifas se comparten de forma privada. Visitas con cita previa.",
+    "datosClave": [
+      {
+        "valor": "450",
+        "etiqueta": "m² construidos"
+      },
+      {
+        "valor": "600",
+        "etiqueta": "m² de lote"
+      },
+      {
+        "valor": "5",
+        "etiqueta": "Habitaciones"
+      },
+      {
+        "valor": "6",
+        "etiqueta": "Parqueaderos"
+      }
+    ],
+    "secciones": [
+      {
+        "titulo": "La experiencia",
+        "items": [
+          "Frente al Centro Comercial El Tesoro",
+          "450 m² construidos sobre lote de 600 m²",
+          "Habitación principal con jacuzzi, ducha independiente y walk-in clóset",
+          "Zona húmeda con jacuzzi en el primer nivel",
+          "Apartamento independiente con cocina y baño privado",
+          "Sala tipo loft en el segundo nivel",
+          "Jardín privado y balcones con vista",
+          "6 parqueaderos (2 internos, 4 externos)"
+        ]
+      },
+      {
+        "titulo": "Distribución",
+        "items": [
+          "Primer nivel: cocina integral, sala, comedor, estudio, baño social y lavandería",
+          "Zona húmeda con jacuzzi y cuarto de herramientas",
+          "Apartamento independiente: sala-comedor, cocina y 1 habitación con baño privado",
+          "Segundo nivel: 3 habitaciones con baño privado y sala tipo loft",
+          "Habitación principal con baño completo, jacuzzi, ducha independiente y walk-in clóset",
+          "Conjunto Residencial Bonaparte"
+        ]
+      },
+      {
+        "titulo": "Ficha de la propiedad",
+        "items": [
+          "Área construida: 450 m²",
+          "Área de terreno: 600 m²",
+          "Alcobas: 5",
+          "Baños: 6",
+          "Parqueaderos: 6",
+          "Unidad completa: Sí"
+        ]
+      },
+      {
+        "titulo": "Información financiera",
+        "items": [
+          "Precio de venta: cotización privada",
+          "Administración mensual: $3.000.000 COP"
+        ]
+      }
+    ],
+    "reglas": [
+      "Visitas con cita previa"
+    ],
+    "fotos": [
+      "/propiedades/el-tesoro/tesoro-01.webp",
+      "/propiedades/el-tesoro/tesoro-02.webp",
+      "/propiedades/el-tesoro/tesoro-03.webp",
+      "/propiedades/el-tesoro/tesoro-04.webp",
+      "/propiedades/el-tesoro/tesoro-05.webp",
+      "/propiedades/el-tesoro/tesoro-06.webp",
+      "/propiedades/el-tesoro/tesoro-07.webp",
+      "/propiedades/el-tesoro/tesoro-08.webp",
+      "/propiedades/el-tesoro/tesoro-09.webp",
+      "/propiedades/el-tesoro/tesoro-10.webp",
+      "/propiedades/el-tesoro/tesoro-11.webp",
+      "/propiedades/el-tesoro/tesoro-12.webp",
+      "/propiedades/el-tesoro/tesoro-13.webp",
+      "/propiedades/el-tesoro/tesoro-14.webp",
+      "/propiedades/el-tesoro/tesoro-15.webp",
+      "/propiedades/el-tesoro/tesoro-16.webp",
+      "/propiedades/el-tesoro/tesoro-17.webp",
+      "/propiedades/el-tesoro/tesoro-18.webp",
+      "/propiedades/el-tesoro/tesoro-19.webp",
+      "/propiedades/el-tesoro/tesoro-20.webp",
+      "/propiedades/el-tesoro/tesoro-21.webp",
+      "/propiedades/el-tesoro/tesoro-22.webp",
+      "/propiedades/el-tesoro/tesoro-23.webp",
+      "/propiedades/el-tesoro/tesoro-24.webp",
+      "/propiedades/el-tesoro/tesoro-25.webp",
+      "/propiedades/el-tesoro/tesoro-26.webp",
+      "/propiedades/el-tesoro/tesoro-27.webp",
+      "/propiedades/el-tesoro/tesoro-28.webp",
+      "/propiedades/el-tesoro/tesoro-29.webp",
+      "/propiedades/el-tesoro/tesoro-30.webp",
+      "/propiedades/el-tesoro/tesoro-31.webp",
+      "/propiedades/el-tesoro/tesoro-32.webp"
+    ],
+    "videos": [],
+    "amenidades": [
+      "Frente al Centro Comercial El Tesoro",
+      "450 m² construidos sobre lote de 600 m²",
+      "Habitación principal con jacuzzi, ducha independiente y walk-in clóset",
+      "Zona húmeda con jacuzzi en el primer nivel",
+      "Apartamento independiente con cocina y baño privado",
+      "Sala tipo loft en el segundo nivel",
+      "Jardín privado y balcones con vista",
+      "6 parqueaderos (2 internos, 4 externos)"
+    ]
+  },
+  {
+    "slug": "satori",
+    "nombre": "SATORI",
+    "tipo": "casa",
+    "municipio": "Envigado",
+    "zona": "Envigado",
+    "departamento": "Antioquia",
+    "ubicacionPublica": "Envigado, Antioquia",
+    "capacidad": 16,
+    "huespedesIncluidos": null,
+    "habitaciones": 10,
+    "banos": 10,
+    "resumen": "Casa de 760 m² sobre un lote de 3.963 m² en Envigado: 10 habitaciones, 10 baños, 8 jacuzzis, piscina climatizada, discoteca, billar y una terraza rooftop de 296 m². En venta y disponible para estadías.",
+    "descripcion": "SATORI es una casa concebida para recibir: diez habitaciones tipo suite, cada una con su baño y casi todas con jacuzzi privado, repartidas en una construcción tradicional de adobe, hierro y concreto terminada hace tres años. Piscina climatizada rodeada de bosque, un jacuzzi para doce personas, discoteca privada, mesa de billar, zona de BBQ y una terraza rooftop de 296 m² para eventos al aire libre. Con parqueadero para ocho vehículos sobre un lote de 3.963 m² en estrato 5, el más alto de Envigado. Funciona hoy como casa de estadías para grupos de más de dieciséis personas y se vende con esa operación en marcha.",
+    "nota": "Disponible en venta y para estadías por noche. Las tarifas de estadía se comparten en privado. Visitas con cita previa.",
+    "datosClave": [
+      {
+        "valor": "760",
+        "etiqueta": "m² construidos"
+      },
+      {
+        "valor": "3.963",
+        "etiqueta": "m² de lote"
+      },
+      {
+        "valor": "10",
+        "etiqueta": "Habitaciones"
+      },
+      {
+        "valor": "10",
+        "etiqueta": "Baños"
+      },
+      {
+        "valor": "16+",
+        "etiqueta": "Huéspedes"
+      }
+    ],
+    "secciones": [
+      {
+        "titulo": "La experiencia",
+        "items": [
+          "10 suites con baño privado, 13 camas",
+          "7 jacuzzis privados y 1 jacuzzi para 12 personas",
+          "Piscina climatizada entre el bosque",
+          "Terraza rooftop de 296 m²",
+          "Discoteca privada y mesa de billar",
+          "Zona de BBQ",
+          "Construcción tradicional: adobe, hierro y concreto (2023)",
+          "Parqueadero para 8 vehículos"
+        ]
+      },
+      {
+        "titulo": "Para estadías",
+        "items": [
+          "Capacidad 16+ personas",
+          "Estadía mínima 2 noches",
+          "Piscina climatizada",
+          "Jacuzzi para 12",
+          "Discoteca",
+          "Billar",
+          "BBQ"
+        ]
+      },
+      {
+        "titulo": "Ficha de la propiedad",
+        "items": [
+          "Área construida: 760 m²",
+          "Área de terreno: 3.963 m²",
+          "Alcobas: 10",
+          "Baños: 10",
+          "Parqueaderos: 8",
+          "Estrato: 5",
+          "Año de construcción: 2023",
+          "Unidad completa: Sí"
+        ]
+      },
+      {
+        "titulo": "Información financiera",
+        "items": [
+          "Precio de venta: $6.500.000.000 COP"
+        ]
+      }
+    ],
+    "reglas": [
+      "Estadía mínima 2 noches",
+      "Visitas con cita previa"
+    ],
+    "fotos": [
+      "/propiedades/satori/satori-01.webp",
+      "/propiedades/satori/satori-02.webp",
+      "/propiedades/satori/satori-03.webp",
+      "/propiedades/satori/satori-04.webp",
+      "/propiedades/satori/satori-05.webp",
+      "/propiedades/satori/satori-06.webp",
+      "/propiedades/satori/satori-07.webp",
+      "/propiedades/satori/satori-08.webp",
+      "/propiedades/satori/satori-09.webp",
+      "/propiedades/satori/satori-10.webp",
+      "/propiedades/satori/satori-11.webp",
+      "/propiedades/satori/satori-12.webp",
+      "/propiedades/satori/satori-13.webp",
+      "/propiedades/satori/satori-14.webp",
+      "/propiedades/satori/satori-15.webp",
+      "/propiedades/satori/satori-16.webp",
+      "/propiedades/satori/satori-17.webp",
+      "/propiedades/satori/satori-18.webp",
+      "/propiedades/satori/satori-19.webp",
+      "/propiedades/satori/satori-20.webp",
+      "/propiedades/satori/satori-21.webp",
+      "/propiedades/satori/satori-22.webp",
+      "/propiedades/satori/satori-23.webp",
+      "/propiedades/satori/satori-24.webp",
+      "/propiedades/satori/satori-25.webp",
+      "/propiedades/satori/satori-26.webp",
+      "/propiedades/satori/satori-27.webp",
+      "/propiedades/satori/satori-28.webp",
+      "/propiedades/satori/satori-29.webp",
+      "/propiedades/satori/satori-30.webp",
+      "/propiedades/satori/satori-31.webp",
+      "/propiedades/satori/satori-32.webp",
+      "/propiedades/satori/satori-33.webp",
+      "/propiedades/satori/satori-34.webp",
+      "/propiedades/satori/satori-35.webp",
+      "/propiedades/satori/satori-36.webp",
+      "/propiedades/satori/satori-37.webp",
+      "/propiedades/satori/satori-38.webp",
+      "/propiedades/satori/satori-39.webp",
+      "/propiedades/satori/satori-40.webp",
+      "/propiedades/satori/satori-41.webp",
+      "/propiedades/satori/satori-42.webp",
+      "/propiedades/satori/satori-43.webp",
+      "/propiedades/satori/satori-44.webp",
+      "/propiedades/satori/satori-45.webp",
+      "/propiedades/satori/satori-46.webp",
+      "/propiedades/satori/satori-47.webp",
+      "/propiedades/satori/satori-48.webp",
+      "/propiedades/satori/satori-49.webp"
+    ],
+    "videos": [],
+    "amenidades": [
+      "10 suites con baño privado, 13 camas",
+      "7 jacuzzis privados y 1 jacuzzi para 12 personas",
+      "Piscina climatizada entre el bosque",
+      "Terraza rooftop de 296 m²",
+      "Discoteca privada y mesa de billar",
+      "Zona de BBQ",
+      "Construcción tradicional: adobe, hierro y concreto (2023)",
+      "Parqueadero para 8 vehículos"
+    ]
+  },
+  {
+    "slug": "rincones-monticello",
+    "nombre": "CASA 109 · RINCONES DE MONTICELLO",
+    "tipo": "casa",
+    "municipio": "Envigado",
+    "zona": "Rincones de Monticello",
+    "departamento": "Antioquia",
+    "ubicacionPublica": "Rincones de Monticello — Envigado, Antioquia",
+    "capacidad": 6,
+    "huespedesIncluidos": null,
+    "habitaciones": 3,
+    "banos": 3,
+    "resumen": "Casa 109 de la unidad Rincones de Monticello, Envigado: 2 niveles, amplia área social en mármol, terraza con jardín, 3 alcobas con baño, vestier y balcón, estar y parqueadero doble. En venta o en arriendo.",
+    "descripcion": "En Rincones de Monticello — una de las unidades cerradas más apreciadas de la loma de Envigado — la casa 109 se abre en su primer nivel a un área social amplia con pisos en mármol y ventanales corredizos hacia una terraza cubierta y un jardín privado rodeado de vegetación. Cocina con mesones en granito y zona de ropas independiente. En el segundo nivel, bajo techos de madera a la vista, tres alcobas cada una con baño, vestier y balcón, más un estar familiar. Parqueadero para dos vehículos, en una unidad con salón social y juegos infantiles. Disponible para venta o para arriendo mensual.",
+    "nota": "Disponible en venta o en arriendo mensual. Visitas privadas con cita previa.",
+    "datosClave": [
+      {
+        "valor": "2",
+        "etiqueta": "Niveles"
+      },
+      {
+        "valor": "3",
+        "etiqueta": "Alcobas con baño"
+      },
+      {
+        "valor": "2",
+        "etiqueta": "Parqueaderos"
+      }
+    ],
+    "secciones": [
+      {
+        "titulo": "La experiencia",
+        "items": [
+          "Amplia área social con pisos en mármol",
+          "Terraza cubierta y jardín privado",
+          "3 alcobas con baño, vestier y balcón",
+          "Techos en madera a la vista en el segundo nivel",
+          "Estar familiar",
+          "Cocina con mesones en granito y zona de ropas",
+          "Parqueadero para 2 carros",
+          "Unidad cerrada con salón social y juegos infantiles"
+        ]
+      },
+      {
+        "titulo": "Zonas comunes de la unidad",
+        "items": [
+          "Salón social",
+          "Juegos infantiles",
+          "Portería"
+        ]
+      },
+      {
+        "titulo": "Ficha de la propiedad",
+        "items": [
+          "Alcobas: 3",
+          "Parqueaderos: 2",
+          "Piso: 2 niveles",
+          "Unidad completa: Sí"
+        ]
+      },
+      {
+        "titulo": "Información financiera",
+        "items": [
+          "Precio de venta: $2.250.000.000 COP",
+          "Canon de arriendo mensual: $13.800.000 COP",
+          "Administración mensual: $1.206.000 COP",
+          "Predial trimestral: $3.276.000 COP"
+        ]
+      }
+    ],
+    "reglas": [
+      "Visitas privadas con cita previa"
+    ],
+    "fotos": [
+      "/propiedades/rincones-monticello/monticello-01.webp",
+      "/propiedades/rincones-monticello/monticello-02.webp",
+      "/propiedades/rincones-monticello/monticello-03.webp",
+      "/propiedades/rincones-monticello/monticello-04.webp",
+      "/propiedades/rincones-monticello/monticello-05.webp",
+      "/propiedades/rincones-monticello/monticello-06.webp",
+      "/propiedades/rincones-monticello/monticello-07.webp",
+      "/propiedades/rincones-monticello/monticello-08.webp",
+      "/propiedades/rincones-monticello/monticello-09.webp",
+      "/propiedades/rincones-monticello/monticello-10.webp",
+      "/propiedades/rincones-monticello/monticello-11.webp",
+      "/propiedades/rincones-monticello/monticello-12.webp",
+      "/propiedades/rincones-monticello/monticello-13.webp"
+    ],
+    "videos": [],
+    "amenidades": [
+      "Amplia área social con pisos en mármol",
+      "Terraza cubierta y jardín privado",
+      "3 alcobas con baño, vestier y balcón",
+      "Techos en madera a la vista en el segundo nivel",
+      "Estar familiar",
+      "Cocina con mesones en granito y zona de ropas",
+      "Parqueadero para 2 carros",
+      "Unidad cerrada con salón social y juegos infantiles"
+    ]
+  },
+  {
+    "slug": "la-divisa",
+    "nombre": "LA DIVISA",
+    "tipo": "finca",
+    "municipio": "Ubicación privada",
+    "zona": "Se comparte al reservar",
+    "departamento": null,
+    "ubicacionPublica": "Ubicación privada — se comparte al reservar",
+    "capacidad": 30,
+    "huespedesIncluidos": 20,
+    "habitaciones": 9,
+    "banos": 0,
+    "resumen": "Finca completa para 20 a 30 huéspedes: habitación principal con jardín y jacuzzi privados, piscina, mirador, pesebrera con cocina tradicional y helipuerto propio.",
+    "descripcion": "La Divisa es una finca acogedora y elegante, diseñada para momentos únicos. Sus nueve habitaciones — todas con sala privada — se organizan alrededor de la habitación principal: un refugio en el centro de la casa, rodeado por un jardín abierto, con jardín y jacuzzi privados, fuente de espejo de agua, comedor propio, cama king y una vista panorámica de 360° a los jardines. Las habitaciones aledañas, cada una con dos camas king y capacidad para cuatro personas, salen directo a los dos costados de la finca: uno hacia la piscina y el otro hacia el mirador. En la zona de pesebrera, dos habitaciones conectadas comparten una cocina tradicional con horno de barro y una sala de madera fina — y allí mismo está el helipuerto, uno de los rincones más especiales para conectarse con la naturaleza.",
+    "nota": "La ubicación exacta se comparte al reservar.",
+    "datosClave": [
+      {
+        "valor": "9",
+        "etiqueta": "Habitaciones"
+      },
+      {
+        "valor": "20–30",
+        "etiqueta": "Huéspedes"
+      },
+      {
+        "valor": "9",
+        "etiqueta": "Salas privadas"
+      },
+      {
+        "valor": "100%",
+        "etiqueta": "Finca completa"
+      }
+    ],
+    "secciones": [
+      {
+        "titulo": "La experiencia",
+        "items": [
+          "Habitación principal con jardín y jacuzzi privados",
+          "Fuente de espejo de agua y comedor privado",
+          "Vista panorámica de 360° a los jardines",
+          "Habitaciones con dos camas king y sala privada",
+          "Salidas directas a la piscina y al mirador",
+          "Pesebrera con cocina tradicional y horno de barro",
+          "Sala de madera fina con pintura decorativa",
+          "Helipuerto propio"
+        ]
+      },
+      {
+        "titulo": "Servicios incluidos",
+        "items": [
+          "Cocinera y mucama en servicio",
+          "Vajilla de lujo y copas para todo tipo de bebidas",
+          "Toallas de piscina y de ducha",
+          "Camas king en todas las habitaciones"
+        ]
+      }
+    ],
+    "reglas": [],
+    "videos": [
+      "/propiedades/la-divisa/video-1.mp4",
+      "/propiedades/la-divisa/video-2.mp4",
+      "/propiedades/la-divisa/video-3.mp4"
+    ],
+    "fotos": [
+      "/propiedades/la-divisa/divisa-15.webp",
+      "/propiedades/la-divisa/divisa-01.webp",
+      "/propiedades/la-divisa/poster-1.webp",
+      "/propiedades/la-divisa/poster-2.webp",
+      "/propiedades/la-divisa/divisa-02.webp",
+      "/propiedades/la-divisa/poster-3.webp",
+      "/propiedades/la-divisa/divisa-03.webp",
+      "/propiedades/la-divisa/divisa-04.webp",
+      "/propiedades/la-divisa/divisa-05.webp",
+      "/propiedades/la-divisa/divisa-06.webp",
+      "/propiedades/la-divisa/divisa-07.webp",
+      "/propiedades/la-divisa/divisa-08.webp",
+      "/propiedades/la-divisa/divisa-09.webp",
+      "/propiedades/la-divisa/divisa-10.webp",
+      "/propiedades/la-divisa/divisa-11.webp",
+      "/propiedades/la-divisa/divisa-12.webp",
+      "/propiedades/la-divisa/divisa-13.webp",
+      "/propiedades/la-divisa/divisa-14.webp",
+      "/propiedades/la-divisa/divisa-16.webp",
+      "/propiedades/la-divisa/divisa-17.webp",
+      "/propiedades/la-divisa/divisa-18.webp",
+      "/propiedades/la-divisa/divisa-19.webp",
+      "/propiedades/la-divisa/divisa-20.webp",
+      "/propiedades/la-divisa/divisa-21.webp",
+      "/propiedades/la-divisa/divisa-22.webp",
+      "/propiedades/la-divisa/divisa-23.webp",
+      "/propiedades/la-divisa/divisa-24.webp",
+      "/propiedades/la-divisa/divisa-25.webp",
+      "/propiedades/la-divisa/divisa-26.webp",
+      "/propiedades/la-divisa/divisa-27.webp",
+      "/propiedades/la-divisa/divisa-28.webp",
+      "/propiedades/la-divisa/divisa-29.webp",
+      "/propiedades/la-divisa/divisa-30.webp",
+      "/propiedades/la-divisa/divisa-31.webp",
+      "/propiedades/la-divisa/divisa-32.webp",
+      "/propiedades/la-divisa/divisa-33.webp",
+      "/propiedades/la-divisa/divisa-34.webp",
+      "/propiedades/la-divisa/divisa-35.webp",
+      "/propiedades/la-divisa/divisa-36.webp",
+      "/propiedades/la-divisa/divisa-37.webp",
+      "/propiedades/la-divisa/divisa-38.webp",
+      "/propiedades/la-divisa/divisa-39.webp",
+      "/propiedades/la-divisa/divisa-40.webp",
+      "/propiedades/la-divisa/divisa-41.webp",
+      "/propiedades/la-divisa/divisa-42.webp",
+      "/propiedades/la-divisa/divisa-43.webp",
+      "/propiedades/la-divisa/divisa-44.webp",
+      "/propiedades/la-divisa/divisa-45.webp",
+      "/propiedades/la-divisa/divisa-46.webp",
+      "/propiedades/la-divisa/divisa-47.webp",
+      "/propiedades/la-divisa/divisa-48.webp",
+      "/propiedades/la-divisa/divisa-49.webp",
+      "/propiedades/la-divisa/divisa-50.webp",
+      "/propiedades/la-divisa/divisa-51.webp",
+      "/propiedades/la-divisa/divisa-52.webp",
+      "/propiedades/la-divisa/divisa-53.webp",
+      "/propiedades/la-divisa/divisa-54.webp",
+      "/propiedades/la-divisa/divisa-55.webp",
+      "/propiedades/la-divisa/divisa-56.webp",
+      "/propiedades/la-divisa/divisa-57.webp"
+    ],
+    "amenidades": [
+      "Habitación principal con jardín y jacuzzi privados",
+      "Fuente de espejo de agua y comedor privado",
+      "Vista panorámica de 360° a los jardines",
+      "Habitaciones con dos camas king y sala privada",
+      "Salidas directas a la piscina y al mirador",
+      "Pesebrera con cocina tradicional y horno de barro",
+      "Sala de madera fina con pintura decorativa",
+      "Helipuerto propio"
+    ]
+  },
+  {
+    "slug": "villa-baru",
+    "nombre": "VILLA BARÚ",
+    "tipo": "casa",
+    "municipio": "Cartagena de Indias",
+    "zona": "Isla Barú",
+    "departamento": "Bolívar",
+    "ubicacionPublica": "Isla Barú — Cartagena, Bolívar",
+    "capacidad": 14,
+    "huespedesIncluidos": null,
+    "habitaciones": 4,
+    "banos": 4,
+    "resumen": "Villa privada para 14 huéspedes en Isla Barú, Cartagena: 4 habitaciones con baño y aire acondicionado, piscina, amplias terrazas, bohíos, BBQ y muelle propio. Se llega por tierra en hora y media o por mar en 40 minutos.",
+    "descripcion": "VILLA BARÚ es una casa para desconectarse del continente sin renunciar a nada: cuatro habitaciones con cama doble, aire acondicionado, secador y baño interno, para catorce huéspedes en total, y tres habitaciones de apoyo para el personal que acompaña la estadía. Cocina equipada, televisor de 70 pulgadas, biblioteca y juegos de mesa para las tardes; piscina, amplias terrazas, bohíos y zona de barbacoa para el resto del día. La casa tiene muelle propio: se llega en bote deportivo desde Cartagena en cuarenta minutos, o por tierra en carro alto o van en hora y media.",
+    "nota": "Las tarifas por noche se comparten en privado. Capacidad máxima de 14 huéspedes.",
+    "datosClave": [
+      {
+        "valor": "14",
+        "etiqueta": "Huéspedes"
+      },
+      {
+        "valor": "4",
+        "etiqueta": "Habitaciones con baño"
+      },
+      {
+        "valor": "3",
+        "etiqueta": "Habitaciones de personal"
+      },
+      {
+        "valor": "40",
+        "etiqueta": "Min. en bote desde Cartagena"
+      }
+    ],
+    "secciones": [
+      {
+        "titulo": "La experiencia",
+        "items": [
+          "Muelle propio: llegada en bote deportivo en 40 minutos",
+          "4 habitaciones con cama doble, aire acondicionado, secador y baño interno",
+          "Piscina y amplias terrazas frente al mar",
+          "Bohíos y zona de barbacoa",
+          "Cocina equipada y televisor de 70 pulgadas",
+          "Biblioteca y juegos de mesa",
+          "3 habitaciones de apoyo para el personal (cama semidoble, baño y aire)",
+          "Acceso terrestre en carro alto o van (1 h 30 min)"
+        ]
+      },
+      {
+        "titulo": "Incluye",
+        "items": [
+          "Piscina",
+          "Terrazas",
+          "Bohíos",
+          "BBQ",
+          "Cocina equipada",
+          "TV 70\"",
+          "Biblioteca",
+          "Juegos de mesa",
+          "Muelle privado",
+          "Aire acondicionado"
+        ]
+      }
+    ],
+    "reglas": [],
+    "fotos": [
+      "/propiedades/villa-baru/baru-01.webp",
+      "/propiedades/villa-baru/baru-02.webp",
+      "/propiedades/villa-baru/baru-03.webp",
+      "/propiedades/villa-baru/baru-04.webp",
+      "/propiedades/villa-baru/baru-05.webp",
+      "/propiedades/villa-baru/baru-06.webp",
+      "/propiedades/villa-baru/baru-07.webp",
+      "/propiedades/villa-baru/baru-08.webp",
+      "/propiedades/villa-baru/baru-09.webp",
+      "/propiedades/villa-baru/baru-10.webp",
+      "/propiedades/villa-baru/baru-11.webp",
+      "/propiedades/villa-baru/baru-12.webp",
+      "/propiedades/villa-baru/baru-13.webp",
+      "/propiedades/villa-baru/baru-14.webp",
+      "/propiedades/villa-baru/baru-15.webp",
+      "/propiedades/villa-baru/baru-16.webp",
+      "/propiedades/villa-baru/baru-17.webp",
+      "/propiedades/villa-baru/baru-18.webp",
+      "/propiedades/villa-baru/baru-19.webp",
+      "/propiedades/villa-baru/baru-20.webp",
+      "/propiedades/villa-baru/baru-21.webp",
+      "/propiedades/villa-baru/baru-22.webp",
+      "/propiedades/villa-baru/baru-23.webp",
+      "/propiedades/villa-baru/baru-24.webp",
+      "/propiedades/villa-baru/baru-25.webp",
+      "/propiedades/villa-baru/baru-26.webp",
+      "/propiedades/villa-baru/baru-27.webp",
+      "/propiedades/villa-baru/baru-28.webp"
+    ],
+    "videos": [],
+    "amenidades": [
+      "Muelle propio: llegada en bote deportivo en 40 minutos",
+      "4 habitaciones con cama doble, aire acondicionado, secador y baño interno",
+      "Piscina y amplias terrazas frente al mar",
+      "Bohíos y zona de barbacoa",
+      "Cocina equipada y televisor de 70 pulgadas",
+      "Biblioteca y juegos de mesa",
+      "3 habitaciones de apoyo para el personal (cama semidoble, baño y aire)",
+      "Acceso terrestre en carro alto o van (1 h 30 min)"
+    ]
+  },
+  {
+    "slug": "quinta-del-mar-tintipan",
+    "nombre": "QUINTA DEL MAR",
+    "tipo": "casa",
+    "municipio": "Isla Tintipán",
+    "zona": "Archipiélago de San Bernardo",
+    "departamento": "Bolívar",
+    "ubicacionPublica": "Isla Tintipán, archipiélago de San Bernardo — Caribe colombiano",
+    "capacidad": 30,
+    "huespedesIncluidos": 24,
+    "habitaciones": 0,
+    "banos": 0,
+    "resumen": "Quinta frente al mar en Isla Tintipán para 24 huéspedes, con mayordomos, cocinera experta y paseo en planchón incluido.",
+    "descripcion": "Quinta del Mar entrega la experiencia completa del Caribe colombiano: la sede entera de la propiedad en Isla Tintipán, archipiélago de San Bernardo, exclusiva para su grupo de hasta 24 huéspedes. Aguas turquesa, kiosco de palma sobre el mar, piscina frente a la playa e interiores blancos y frescos. El servicio incluye mayordomos, cocinera experta y personal de limpieza y servicios generales, además de WiFi, DirecTV y dos horas de paseo en planchón para conocer la isla, pescar, caretear o salir a ver las estrellas.",
+    "nota": "Capacidad máxima de 24 huéspedes, más hasta 6 adicionales por noche.",
+    "datosClave": [
+      {
+        "valor": "24",
+        "etiqueta": "Huéspedes"
+      },
+      {
+        "valor": "+6",
+        "etiqueta": "Adicionales"
+      },
+      {
+        "valor": "2 h",
+        "etiqueta": "Paseo en planchón"
+      },
+      {
+        "valor": "100%",
+        "etiqueta": "Sede completa"
+      }
+    ],
+    "secciones": [
+      {
+        "titulo": "La experiencia",
+        "items": [
+          "Sede completa: la quinta entera, solo para su grupo",
+          "Kiosco de palma sobre el mar",
+          "Piscina frente a la playa",
+          "Aguas turquesa y atardeceres del golfo",
+          "Interiores blancos y frescos",
+          "Kayaks y ambiente de isla"
+        ]
+      },
+      {
+        "titulo": "Servicios incluidos",
+        "items": [
+          "Mayordomos en servicio",
+          "Cocinera experta",
+          "Personal de limpieza y servicios generales",
+          "WiFi y DirecTV",
+          "Paseo en planchón de 2 horas: isla, pesca, careteo o estrellas"
+        ]
+      }
+    ],
+    "reglas": [],
+    "fotos": [
+      "/propiedades/quinta-del-mar-tintipan/tintipan-12.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-01.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-02.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-03.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-04.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-05.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-06.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-07.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-08.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-09.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-10.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-11.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-13.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-14.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-15.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-16.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-17.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-18.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-19.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-20.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-21.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-22.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-23.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-24.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-25.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-26.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-27.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-28.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-29.webp",
+      "/propiedades/quinta-del-mar-tintipan/tintipan-30.webp"
+    ],
+    "videos": [],
+    "amenidades": [
+      "Sede completa: la quinta entera, solo para su grupo",
+      "Kiosco de palma sobre el mar",
+      "Piscina frente a la playa",
+      "Aguas turquesa y atardeceres del golfo",
+      "Interiores blancos y frescos",
+      "Kayaks y ambiente de isla"
+    ]
+  },
+  {
+    "slug": "crystal-beach",
+    "nombre": "CRYSTAL BEACH",
+    "tipo": "casa",
+    "municipio": "Isla Tintipán",
+    "zona": "Archipiélago de San Bernardo",
+    "departamento": "Bolívar",
+    "ubicacionPublica": "Isla Tintipán, archipiélago de San Bernardo — Caribe colombiano",
+    "capacidad": 30,
+    "huespedesIncluidos": 24,
+    "habitaciones": 0,
+    "banos": 0,
+    "resumen": "Sede completa frente al mar en Isla Tintipán para 24 huéspedes, con 6 personas de servicio y paseo en planchón incluido.",
+    "descripcion": "Crystal Beach es la segunda sede de Quinta del Mar en Isla Tintipán, archipiélago de San Bernardo: una casa de techo de palma sobre la arena blanca, con el Caribe turquesa a pocos pasos. La sede completa se entrega exclusiva para su grupo de hasta 24 huéspedes, atendida por un equipo de 6 personas: dos en cocina, dos en limpieza y dos en servicios generales, incluido el mayordomo. Con WiFi, DirecTV y dos horas de paseo en planchón para conocer la isla, pescar, caretear o salir a ver las estrellas.",
+    "nota": "Capacidad máxima de 24 huéspedes, más hasta 6 adicionales por noche.",
+    "datosClave": [
+      {
+        "valor": "24",
+        "etiqueta": "Huéspedes"
+      },
+      {
+        "valor": "+6",
+        "etiqueta": "Adicionales"
+      },
+      {
+        "valor": "6",
+        "etiqueta": "Personal en servicio"
+      },
+      {
+        "valor": "2 h",
+        "etiqueta": "Paseo en planchón"
+      }
+    ],
+    "secciones": [
+      {
+        "titulo": "La experiencia",
+        "items": [
+          "Sede completa: la casa entera, solo para su grupo",
+          "Casa de palma sobre la playa de arena blanca",
+          "Piscina con iluminación nocturna",
+          "Kioscos frente al mar con zonas de descanso",
+          "Comedor bajo palapa y mesa de billar",
+          "Aguas turquesa del archipiélago"
+        ]
+      },
+      {
+        "titulo": "Servicios incluidos",
+        "items": [
+          "2 personas en cocina — cocinera experta",
+          "2 personas en limpieza",
+          "2 en servicios generales, incluido el mayordomo",
+          "WiFi y DirecTV",
+          "Paseo en planchón de 2 horas: isla, pesca, careteo o estrellas"
+        ]
+      }
+    ],
+    "reglas": [],
+    "fotos": [
+      "/propiedades/crystal-beach/crystal-04.webp",
+      "/propiedades/crystal-beach/crystal-01.webp",
+      "/propiedades/crystal-beach/crystal-02.webp",
+      "/propiedades/crystal-beach/crystal-03.webp",
+      "/propiedades/crystal-beach/crystal-05.webp",
+      "/propiedades/crystal-beach/crystal-06.webp"
+    ],
+    "videos": [],
+    "amenidades": [
+      "Sede completa: la casa entera, solo para su grupo",
+      "Casa de palma sobre la playa de arena blanca",
+      "Piscina con iluminación nocturna",
+      "Kioscos frente al mar con zonas de descanso",
+      "Comedor bajo palapa y mesa de billar",
+      "Aguas turquesa del archipiélago"
+    ]
+  }
+]

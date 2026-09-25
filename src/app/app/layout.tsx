@@ -8,14 +8,9 @@ import { hayDb, usuarioDelPanel } from "@/server/datos/fuente";
 export const dynamic = "force-dynamic";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  // Vitrina sin DB: aliases de demostración en el shell.
-  let alias: { principal: string | null; externo: string | null } = {
-    principal: "CONDOR-472",
-    externo: "GUACAMAYA-256",
-  };
+  let alias: { principal: string | null; externo: string | null } = { principal: null, externo: null };
   let roles: string[] | null = null;
   if (hayDb()) {
-    alias = { principal: null, externo: null };
     try {
       const db = obtenerDb();
       if (authExigida()) {
