@@ -5,7 +5,7 @@
  * Uso:
  *   DATABASE_URL=... ENCRYPTION_KEY=... HASH_PEPPER=... \
  *   PORTAFOLIO_NOMBRE="..." PORTAFOLIO_EMAIL=... PORTAFOLIO_PASSWORD=... \
- *   [PORTAFOLIO_CEDULA=... PORTAFOLIO_TELEFONO=...] \
+ *   [PORTAFOLIO_CEDULA=... PORTAFOLIO_TELEFONO=... PORTAFOLIO_ALIAS=LEON-28] \
  *   npm run db:importar-portafolio
  *
  * El fundador es SUPERADMIN: todos los roles + acceso por contraseña.
@@ -30,7 +30,7 @@ import { eq } from "drizzle-orm";
 import { obtenerDb } from "./index";
 import { propiedades, suscripciones, usuarios } from "./schema";
 import { cifrar, hashCedula, hashPassword } from "../crypto";
-import { asegurarAlias } from "../servicios/alias";
+import { asegurarAlias, fijarAlias } from "../servicios/alias";
 
 interface PropiedadPortafolio {
   slug: string;
@@ -170,7 +170,10 @@ async function main() {
   });
 
   // Identidad protegida (Anexo II): el dueño también opera con alias.
-  const alias = await asegurarAlias(db, resultado.usuarioId);
+  const aliasElegido = process.env.PORTAFOLIO_ALIAS?.trim().toUpperCase();
+  const alias = aliasElegido
+    ? await fijarAlias(db, resultado.usuarioId, aliasElegido)
+    : await asegurarAlias(db, resultado.usuarioId);
 
   console.log(
     `Portafolio importado — usuario ${resultado.creado ? "creado" : "existente"} (${alias}), ` +

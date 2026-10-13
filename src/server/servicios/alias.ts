@@ -57,3 +57,25 @@ export async function asegurarAlias(db: Db, usuarioId: string): Promise<string> 
   if (existente?.alias) return existente.alias;
   return asignarAliasUnico(db, usuarioId);
 }
+
+/**
+ * Fija un alias ELEGIDO (superadmin). El alias anterior queda retirado y
+ * quemado para siempre; si el elegido ya existe (de otro o retirado), falla.
+ */
+export async function fijarAlias(db: Db, usuarioId: string, elegido: string): Promise<string> {
+  if (!/^[A-Z]+-\d{2,4}$/.test(elegido)) throw new Error(`Alias inválido: ${elegido} (formato NOMBRE-123).`);
+  return await db.transaction(async (tx) => {
+    const [actual] = (await tx.execute(
+      sql`SELECT alias FROM alias WHERE usuario_id = ${usuarioId} AND NOT retirado LIMIT 1`,
+    )) as unknown as [{ alias: string } | undefined];
+    if (actual?.alias === elegido) return elegido;
+    if (actual?.alias) await retirarAlias(tx as unknown as Db, actual.alias);
+    try {
+      await tx.insert(tablaAlias).values({ alias: elegido, usuarioId, avatarId: Math.floor(Math.random() * 24) });
+    } catch (e) {
+      if (esViolacionUnicidad(e)) throw new Error(`El alias ${elegido} ya existe o fue retirado.`);
+      throw e;
+    }
+    return elegido;
+  });
+}
