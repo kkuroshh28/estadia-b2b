@@ -18,6 +18,7 @@ import { aceptarSolicitud } from "./reservas";
 import { notificarEnApp } from "./notificaciones";
 import { alias as tablaAlias, vinculosComisionista as vinculos } from "../db/schema";
 import { formatear, centavos as aCentavos } from "@/lib/dinero";
+import { hoyEnBogota } from "@/lib/fechas";
 
 /** Alias activo de un usuario (para los textos de notificación). */
 async function aliasDeUsuario(db: Db, usuarioId: string): Promise<string> {
@@ -107,6 +108,10 @@ export async function crearSolicitud(
 ): Promise<{ solicitudId: string; venceEn: Date }> {
   const duracion = validarDuracion(datos.desde, datos.hasta);
   if (!duracion.valida) throw new OperacionError(duracion.motivo ?? "Fechas inválidas.");
+  // Fechas pasadas jamás (día calendario en HORA COLOMBIA, no UTC).
+  if (datos.desde < hoyEnBogota()) {
+    throw new OperacionError("La fecha de llegada no puede estar en el pasado.");
+  }
   if (datos.huespedes < 1) throw new OperacionError("Huéspedes inválidos.");
 
   const [prop] = await db
@@ -188,7 +193,8 @@ export async function crearSolicitud(
  * en el mismo microsegundo. (El count(*) anterior colisionaba en carrera.)
  */
 async function generarCodigoReserva(db: Db): Promise<string> {
-  const ano = new Date().getFullYear();
+  // Año en HORA COLOMBIA: el 31-dic a las 7 pm el reloj UTC ya es año nuevo.
+  const ano = hoyEnBogota().slice(0, 4);
   const [{ n }] = (await db.execute(
     sql`SELECT nextval('reservas_codigo_seq')::int AS n`,
   )) as unknown as [{ n: number }];
@@ -202,6 +208,9 @@ export async function aceptarYAbrirNegociacion(
 ): Promise<{ gano: boolean; negociacionId?: string; reservaId?: string }> {
   const [sol] = await db.select().from(solicitudes).where(eq(solicitudes.id, solicitudId));
   if (!sol) throw new OperacionError("Solicitud no encontrada.");
+  if (sol.desde < hoyEnBogota()) {
+    throw new OperacionError("Las fechas de esta solicitud ya pasaron.");
+  }
 
   const [propOD] = await db
     .select({ ownerDirect: propiedades.ownerDirect, propietarioId: propiedades.propietarioId })

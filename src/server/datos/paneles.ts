@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import type { Db } from "../db";
 import {
   alias as tablaAlias,
@@ -58,6 +58,19 @@ function noches(desde: string, hasta: string): number {
   const [y1, m1, d1] = desde.split("-").map(Number);
   const [y2, m2, d2] = hasta.split("-").map(Number);
   return Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / 86_400_000);
+}
+
+/** Rango [primer día, primer día del mes siguiente) de un mes ISO — usa el índice de calendario. */
+function rangoDeMes(mesIso: string): { desde: string; hasta: string } {
+  const [y, m] = mesIso.split("-").map(Number);
+  const sig = m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, "0")}`;
+  return { desde: `${mesIso}-01`, hasta: `${sig}-01` };
+}
+
+/** Etiqueta corta de un mes ISO ("2026-10" → "Oct"). */
+function etiquetaMes(mesIso: string): string {
+  const [y, m] = mesIso.split("-").map(Number);
+  return mesCortoCO(new Date(Date.UTC(y, m - 1, 15)));
 }
 
 function mesCortoCO(fecha: Date): string {
@@ -208,21 +221,28 @@ export function datosPropietario(): Promise<DatosPropietario> {
         .from(suscripciones)
         .where(eq(suscripciones.propietarioId, u.id))
         .limit(1),
-      // Neto real dispersable: splits tarifa_neta del usuario, por mes (últ. 6).
+      // Neto real dispersable: splits tarifa_neta del usuario, agregado EN SQL
+      // por año-mes de Bogotá, solo los últimos 6 meses (no todo el historial).
       db
-        .select({ monto: splits.montoCentavos, fecha: transacciones.webhookEn })
+        .select({
+          mes: sql<string>`to_char(${transacciones.webhookEn} AT TIME ZONE 'America/Bogota', 'YYYY-MM')`,
+          total: sql<string>`sum(${splits.montoCentavos})`,
+        })
         .from(splits)
         .innerJoin(transacciones, eq(splits.transaccionId, transacciones.id))
-        .where(and(eq(splits.beneficiarioId, u.id), eq(splits.concepto, "tarifa_neta")))
-        .orderBy(asc(transacciones.webhookEn)),
+        .where(
+          and(
+            eq(splits.beneficiarioId, u.id),
+            eq(splits.concepto, "tarifa_neta"),
+            sql`${transacciones.webhookEn} >= (date_trunc('month', now() AT TIME ZONE 'America/Bogota') - interval '5 months') AT TIME ZONE 'America/Bogota'`,
+          ),
+        )
+        .groupBy(sql`1`)
+        .orderBy(sql`1`),
     ]);
 
-    const porMes = new Map<string, number>();
-    const mesActual = mesCortoCO(new Date());
-    for (const n of netos) {
-      const m = mesCortoCO(n.fecha);
-      porMes.set(m, (porMes.get(m) ?? 0) + pesos(n.monto));
-    }
+    const porMes = new Map<string, number>(netos.map((n) => [n.mes, pesos(Number(n.total))]));
+    const mesActual = hoyEnBogota().slice(0, 7);
 
     // Anexo I: solicitudes pendientes de las propiedades en gestión directa.
     const idsOD = misProps.filter((p) => p.ownerDirect).map((p) => p.id);
@@ -264,7 +284,7 @@ export function datosPropietario(): Promise<DatosPropietario> {
       suscripcion: sus[0] ?? null,
       propiedades: props,
       reservas: await reservasUI(db, misReservas),
-      ingresosPorMes: [...porMes.entries()].slice(-6).map(([mes, neto]) => ({ mes, neto })),
+      ingresosPorMes: [...porMes.entries()].map(([mes, neto]) => ({ mes: etiquetaMes(mes), neto })),
     };
   });
 }
@@ -283,6 +303,7 @@ export function datosCalendario(mesPedido?: string): Promise<DatosCalendario> {
     const mesActual = hoyEnBogota().slice(0, 7);
     const mesIso = clamparMes(mesPedido, mesActual);
 
+    const rango = rangoDeMes(mesIso);
     const dias = ids.length
       ? await db
           .select()
@@ -290,7 +311,7 @@ export function datosCalendario(mesPedido?: string): Promise<DatosCalendario> {
           .where(
             and(
               inArray(calendarioDias.propiedadId, ids),
-              sql`to_char(${calendarioDias.fecha}::date, 'YYYY-MM') = ${mesIso}`,
+              sql`${calendarioDias.fecha} >= ${rango.desde}::date AND ${calendarioDias.fecha} < ${rango.hasta}::date`,
               sql`${calendarioDias.estado} <> 'disponible'`,
             ),
           )
@@ -443,6 +464,9 @@ export function datosPrincipal(): Promise<DatosPrincipal> {
 
 // ─── Externo ─────────────────────────────────────────────────────────────────
 
+/** Tope del catálogo por consulta (la UI filtra sobre este conjunto). */
+const MAX_CATALOGO = 120;
+
 export function datosBusquedaExterno(
   desde?: string,
   hasta?: string,
@@ -458,34 +482,28 @@ export function datosBusquedaExterno(
       }
     }
 
-    const publicadas = await db
+    // Catálogo visible: publicada Y verificada. La disponibilidad por NOCHES
+    // [desde, hasta) se resuelve EN SQL (NOT EXISTS sobre el índice del
+    // calendario) — mismo criterio semiabierto del lock del webhook, así una
+    // entrada el día que otro sale (back-to-back) SÍ aparece disponible.
+    const filtradas = await db
       .select()
       .from(propiedades)
-      .where(eq(propiedades.publicada, true))
-      .orderBy(asc(propiedades.creadaEn));
-
-    let filtradas = publicadas;
-    if (fechas) {
-      // Disponibilidad REAL por NOCHES [desde, hasta): el día de salida no
-      // cuenta — mismo criterio semiabierto del lock del webhook, así una
-      // entrada el día que otro sale (back-to-back) SÍ aparece disponible.
-      const ocupadas = publicadas.length
-        ? await db
-            .select({ propiedadId: calendarioDias.propiedadId })
-            .from(calendarioDias)
-            .where(
-              and(
-                inArray(calendarioDias.propiedadId, publicadas.map((p) => p.id)),
-                gte(calendarioDias.fecha, fechas.desde),
-                lt(calendarioDias.fecha, fechas.hasta),
-                sql`${calendarioDias.estado} <> 'disponible'`,
-              ),
-            )
-            .groupBy(calendarioDias.propiedadId)
-        : [];
-      const bloqueadas = new Set(ocupadas.map((o) => o.propiedadId));
-      filtradas = publicadas.filter((p) => !bloqueadas.has(p.id));
-    }
+      .where(
+        and(
+          eq(propiedades.publicada, true),
+          eq(propiedades.verificada, true),
+          fechas
+            ? sql`NOT EXISTS (
+                SELECT 1 FROM ${calendarioDias} c
+                WHERE c.propiedad_id = ${propiedades.id}
+                  AND c.fecha >= ${fechas.desde}::date AND c.fecha < ${fechas.hasta}::date
+                  AND c.estado <> 'disponible')`
+            : undefined,
+        ),
+      )
+      .orderBy(asc(propiedades.creadaEn), asc(propiedades.id))
+      .limit(MAX_CATALOGO);
 
     return {
       esDemo: false,
@@ -529,16 +547,19 @@ export function datosLinksExterno(): Promise<DatosLinksExterno> {
     const noActivos = filas.filter((f) => f.estado !== "activo");
     const pagados = noActivos.filter((f) => f.estado === "pagado").length;
 
-    // Comisiones del mes en curso (splits comision_externo del usuario).
-    const mesActual = mesCortoCO(new Date());
-    const comis = await db
-      .select({ monto: splits.montoCentavos, fecha: transacciones.webhookEn })
+    // Comisiones del mes en curso (Bogotá), sumadas EN SQL.
+    const [comis] = await db
+      .select({ total: sql<string>`coalesce(sum(${splits.montoCentavos}), 0)` })
       .from(splits)
       .innerJoin(transacciones, eq(splits.transaccionId, transacciones.id))
-      .where(and(eq(splits.beneficiarioId, u.id), eq(splits.concepto, "comision_externo")));
-    const comisionesMes = comis
-      .filter((c) => mesCortoCO(c.fecha) === mesActual)
-      .reduce((a, c) => a + pesos(c.monto), 0);
+      .where(
+        and(
+          eq(splits.beneficiarioId, u.id),
+          eq(splits.concepto, "comision_externo"),
+          sql`${transacciones.webhookEn} >= date_trunc('month', now() AT TIME ZONE 'America/Bogota') AT TIME ZONE 'America/Bogota'`,
+        ),
+      );
+    const comisionesMes = pesos(Number(comis?.total ?? 0));
 
     // Reservas con anticipo pagado que aún no tienen link de saldo.
     const pendientes = await db
@@ -899,7 +920,7 @@ export function datosFicha(id: string, mesPedido?: string): Promise<DatosFicha |
       .where(
         and(
           eq(calendarioDias.propiedadId, id),
-          sql`to_char(${calendarioDias.fecha}::date, 'YYYY-MM') = ${mesIso}`,
+          sql`${calendarioDias.fecha} >= ${rangoDeMes(mesIso).desde}::date AND ${calendarioDias.fecha} < ${rangoDeMes(mesIso).hasta}::date`,
           sql`${calendarioDias.estado} <> 'disponible'`,
         ),
       );

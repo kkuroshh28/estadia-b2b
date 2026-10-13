@@ -78,6 +78,20 @@
       "when": 1791912418352,
       "tag": "0010_password_superadmin",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791915529420,
+      "tag": "0011_indices_escala",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1791915734599,
+      "tag": "0012_bloqueo_por_cuenta",
+      "breakpoints": true
     }
   ]
 }

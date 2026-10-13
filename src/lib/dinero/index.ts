@@ -107,8 +107,14 @@ export interface LiquidacionReserva {
  *  - mitad1.tarifaNeta + mitad2.tarifaNeta === tarifaNetaTotal (exacto)
  *  - por mitad: tarifaNeta + split.comision === montoCliente (exacto)
  *  - por split: principal + externo + app === comision (exacto)
- * La mitad 2 lleva el centavo impar si el precio no es par (política explícita).
+ * La mitad 1 se redondea hacia abajo a PESOS ENTEROS (floor(precio/200)·100);
+ * la mitad 2 lleva el resto exacto (política explícita).
  */
+/** Mitad de un monto redondeada hacia abajo a pesos enteros (en centavos). */
+function mitadEnPesos(monto: Centavos): Centavos {
+  return centavos(Math.floor(monto / 200) * 100);
+}
+
 export function liquidarReserva(
   precioFinal: Centavos,
   tarifaNetaTotal: Centavos,
@@ -120,9 +126,15 @@ export function liquidarReserva(
   }
   const comisionTotal = restar(precioFinal, tarifaNetaTotal);
 
-  const monto1 = centavos(Math.floor(precioFinal / 2));
+  // Mitad 1 en PESOS ENTEROS (la pasarela cobra pesos: un link con centavos
+  // sueltos no se puede pagar exacto); la mitad 2 lleva el resto exacto.
+  const monto1 = mitadEnPesos(precioFinal);
   const monto2 = restar(precioFinal, monto1);
-  const neta1 = centavos(Math.floor(tarifaNetaTotal / 2));
+  // La neta de la mitad 1 también en pesos enteros, acotada para que NINGUNA
+  // mitad tenga comisión negativa: monto1 − (precio − neta) ≤ neta1 ≤ monto1.
+  const neta1 = centavos(
+    Math.min(monto1, Math.max(mitadEnPesos(tarifaNetaTotal), monto1 - comisionTotal)),
+  );
   const neta2 = restar(tarifaNetaTotal, neta1);
 
   const mitad = (montoCliente: Centavos, tarifaNeta: Centavos): LiquidacionMitad => {

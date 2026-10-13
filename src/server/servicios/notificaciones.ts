@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import type { Db } from "../db";
 import { notificaciones, propiedades, reservas, usuarios } from "../db/schema";
 import { obtenerEmail } from "../adaptadores/email";
@@ -71,34 +72,61 @@ export async function notificarEnApp(
   }
 }
 
-/** Notifica a las 3 partes internas cuando entra un pago. */
+/**
+ * Notifica a las 3 partes internas cuando entra un pago. Una sola consulta
+ * (reserva + propiedad + emails por JOIN), correos en paralelo con
+ * Promise.allSettled (uno caído no frena a los demás) y la campanita de las
+ * 3 partes en UN insert multi-fila.
+ */
 export async function notificarPagoConfirmado(db: Db, reservaId: string, mitad: number): Promise<void> {
-  const [r] = await db.select().from(reservas).where(eq(reservas.id, reservaId));
+  const dueno = alias(usuarios, "dueno");
+  const principal = alias(usuarios, "principal");
+  const externo = alias(usuarios, "externo");
+  const [r] = await db
+    .select({
+      codigo: reservas.codigo,
+      precioFinalCentavos: reservas.precioFinalCentavos,
+      tarifaNetaCentavos: reservas.tarifaNetaCentavos,
+      principalId: reservas.principalId,
+      externoId: reservas.externoId,
+      propiedad: propiedades.nombre,
+      propietarioId: propiedades.propietarioId,
+      emailDueno: dueno.email,
+      emailPrincipal: principal.email,
+      emailExterno: externo.email,
+    })
+    .from(reservas)
+    .innerJoin(propiedades, eq(propiedades.id, reservas.propiedadId))
+    .leftJoin(dueno, eq(dueno.id, propiedades.propietarioId))
+    .leftJoin(principal, eq(principal.id, reservas.principalId))
+    .leftJoin(externo, eq(externo.id, reservas.externoId))
+    .where(eq(reservas.id, reservaId));
   if (!r) return;
-  const [prop] = await db.select().from(propiedades).where(eq(propiedades.id, r.propiedadId));
-  const partes = await db
-    .select({ email: usuarios.email })
-    .from(usuarios)
-    .where(eq(usuarios.id, prop.propietarioId));
-  const [principal] = await db.select({ email: usuarios.email }).from(usuarios).where(eq(usuarios.id, r.principalId));
-  const [externo] = await db.select({ email: usuarios.email }).from(usuarios).where(eq(usuarios.id, r.externoId));
 
-  // Monto EXACTO de la mitad (el saldo lleva el centavo impar), no floor(/2).
+  // Monto EXACTO de la mitad (el saldo lleva el resto), no floor(/2).
   const liq = liquidarReserva(centavos(r.precioFinalCentavos), centavos(r.tarifaNetaCentavos));
   const datos = {
     codigo: r.codigo,
-    propiedad: prop.nombre,
+    propiedad: r.propiedad,
     mitad: mitad === 1 ? "1 de 2 (anticipo)" : "2 de 2 (saldo)",
     monto: formatear(liq.mitades[mitad === 1 ? 0 : 1].montoCliente),
   };
-  for (const p of [...partes, principal, externo].filter(Boolean)) {
-    await notificar(db, "pago_confirmado", p.email, datos);
+  const correos = [r.emailDueno, r.emailPrincipal, r.emailExterno].filter((e): e is string => !!e);
+  const envios = await Promise.allSettled(correos.map((email) => notificar(db, "pago_confirmado", email, datos)));
+  for (const e of envios) {
+    if (e.status === "rejected") console.error("[notificaciones] email de pago falló:", e.reason);
   }
 
-  // Campanita para las 3 partes.
+  // Campanita para las 3 partes (un solo insert).
   const titulo = `Pago ${datos.mitad} confirmado ✓`;
-  const cuerpo = `${prop.nombre} · ${r.codigo} · ${datos.monto}. Split registrado a cada cuenta certificada.`;
-  await notificarEnApp(db, prop.propietarioId, { tipo: "pago", titulo, cuerpo, url: "/app/propietario" });
-  await notificarEnApp(db, r.principalId, { tipo: "pago", titulo, cuerpo, url: "/app/principal" });
-  await notificarEnApp(db, r.externoId, { tipo: "pago", titulo, cuerpo, url: "/app/externo/links" });
+  const cuerpo = `${r.propiedad} · ${r.codigo} · ${datos.monto}. Split registrado a cada cuenta certificada.`;
+  try {
+    await db.insert(notificaciones).values([
+      { usuarioId: r.propietarioId, tipo: "pago", titulo, cuerpo, url: "/app/propietario" },
+      { usuarioId: r.principalId, tipo: "pago", titulo, cuerpo, url: "/app/principal" },
+      { usuarioId: r.externoId, tipo: "pago", titulo, cuerpo, url: "/app/externo/links" },
+    ]);
+  } catch (e) {
+    console.error("[notificaciones] in-app falló:", e);
+  }
 }

@@ -5,7 +5,10 @@ import * as schema from "./schema";
 /**
  * Conexión por entorno (dev/staging/prod tienen DATABASE_URL distintas y
  * bases SEPARADAS — ver docs/ARQUITECTURA.md §3).
- * `prepare: false` por compatibilidad con poolers (Supabase pgbouncer).
+ * `prepare: false` por compatibilidad con el pooler de Neon (PgBouncer en modo
+ * transaction). En serverless cada instancia es un proceso: pool CHICO por
+ * instancia (el pooler de Neon multiplexa), conexiones ociosas se sueltan
+ * rápido y se reciclan para no morir con el pooler.
  */
 const url = process.env.DATABASE_URL;
 
@@ -14,7 +17,13 @@ const url = process.env.DATABASE_URL;
 const globalPool = globalThis as unknown as { __estadiaDb?: ReturnType<typeof crearDb> };
 
 function crearDb() {
-  const cliente = postgres(url!, { prepare: false, max: 10 });
+  const cliente = postgres(url!, {
+    prepare: false,
+    max: 3,
+    idle_timeout: 20,
+    connect_timeout: 10,
+    max_lifetime: 60 * 30,
+  });
   return drizzle(cliente, { schema });
 }
 

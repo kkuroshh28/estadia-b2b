@@ -63,7 +63,7 @@ export default async function FichaPropietario({ params }: { params: Promise<{ i
             >
               {p.tarifaNetaNoche > 0 ? "Calendario y tarifa" : "Definir tarifa"}
             </Link>
-            <PublicarBoton propiedadId={p.id} publicada={p.publicada ?? false} />
+            <PublicarBoton propiedadId={p.id} publicada={p.publicada ?? false} tarifaNetaNoche={p.tarifaNetaNoche} />
           </div>
         </div>
       </Card>

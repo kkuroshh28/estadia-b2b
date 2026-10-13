@@ -168,6 +168,35 @@ describe.skipIf(!HAY_DB)("integración — auth + KYC + pago simulado", () => {
     expect(exigirAdmin(sesion).id).toBe(r.usuarioId);
   }, 30_000);
 
+  it("bloqueo por cuenta: 5 fallos bloquean incluso con la clave correcta", async () => {
+    const email = correo("lock");
+    const r = await registrarUsuario(db, {
+      nombreReal: "Bloqueo Prueba",
+      cedula: `60${Date.now()}`,
+      email,
+      telefono: "3000000006",
+      rol: "propietario",
+    });
+    await db
+      .update(usuarios)
+      .set({ estado: "activo", passwordHash: hashPassword("Clave-Correcta-2026") })
+      .where(eq(usuarios.id, r.usuarioId));
+    for (let i = 0; i < 5; i++) {
+      await expect(iniciarSesionConPassword(db, email, `mala-${i}`)).rejects.toThrow(
+        "Correo o contraseña incorrectos.",
+      );
+    }
+    await expect(iniciarSesionConPassword(db, email, "Clave-Correcta-2026")).rejects.toThrow(
+      /Demasiados intentos/,
+    );
+    // Vencido el bloqueo, la clave correcta entra y el contador se reinicia.
+    await db.update(usuarios).set({ bloqueadoHasta: new Date(Date.now() - 1000) }).where(eq(usuarios.id, r.usuarioId));
+    const { token } = await iniciarSesionConPassword(db, email, "Clave-Correcta-2026");
+    expect(await validarSesion(db, token)).not.toBeNull();
+    const [u] = await db.select().from(usuarios).where(eq(usuarios.id, r.usuarioId));
+    expect(u.intentosFallidos).toBe(0);
+  }, 60_000);
+
   it("login OTP completo + sesión + guard: externo NO entra a sección propietario", async () => {
     const email = correo("login");
     const r = await registrarUsuario(db, {

@@ -4,10 +4,11 @@ import { join } from "node:path";
 import { PDFDocument, StandardFonts } from "pdf-lib";
 import { eq } from "drizzle-orm";
 import type { Db } from "../db";
+import type { UsuarioSesion } from "../auth";
 import { contratos, contratosBlob, propiedades, reservas, usuarios } from "../db/schema";
 import { formatear, centavos } from "@/lib/dinero";
 import { nochesEntre } from "@/lib/domain/reglas";
-import { formatearFechaCO } from "@/lib/fechas";
+import { formatearFechaCO, hoyEnBogota } from "@/lib/fechas";
 
 /**
  * Contratos PDF (Fase 6): generación automática al confirmarse el Pago 1.
@@ -43,7 +44,7 @@ export async function generarContrato(
 
   const texto = plantilla
     .replaceAll("{{codigo}}", r.codigo)
-    .replaceAll("{{fecha_generacion}}", formatearFechaCO(new Date().toISOString().slice(0, 10), { day: "numeric", month: "long", year: "numeric" }))
+    .replaceAll("{{fecha_generacion}}", formatearFechaCO(hoyEnBogota(), { day: "numeric", month: "long", year: "numeric" }))
     .replaceAll("{{nombre_propietario}}", dueno.nombreReal)
     .replaceAll("{{nombre_propiedad}}", prop.nombre)
     .replaceAll("{{municipio}}", prop.municipio)
@@ -75,27 +76,48 @@ export async function generarContrato(
   const bytes = await doc.save();
   const hash = createHash("sha256").update(bytes).digest("hex");
 
-  const [c] = await db
-    .insert(contratos)
-    .values({ reservaId, tipo, pdfUrl: `db://contratos_blob`, hashSha256: hash })
-    .returning({ id: contratos.id });
-  await db.insert(contratosBlob).values({
-    contratoId: c.id,
-    bytesBase64: Buffer.from(bytes).toString("base64"),
+  // Contrato + PDF en UNA transacción; ante una generación concurrente
+  // (webhook + reconciliación) gana uno y el otro devuelve el existente.
+  const creado = await db.transaction(async (tx) => {
+    const [c] = await tx
+      .insert(contratos)
+      .values({ reservaId, tipo, pdfUrl: `db://contratos_blob`, hashSha256: hash })
+      .onConflictDoNothing({ target: contratos.reservaId })
+      .returning({ id: contratos.id });
+    if (!c) return null;
+    await tx.insert(contratosBlob).values({
+      contratoId: c.id,
+      bytesBase64: Buffer.from(bytes).toString("base64"),
+    });
+    return c;
   });
-  return { contratoId: c.id, tipo, hash };
+  if (!creado) {
+    const [ya] = await db.select().from(contratos).where(eq(contratos.reservaId, reservaId));
+    return { contratoId: ya.id, tipo: ya.tipo, hash: ya.hashSha256 };
+  }
+  return { contratoId: creado.id, tipo, hash };
 }
 
 /**
  * Acceso al contrato: SOLO el propietario del inmueble (parte legal) o admin.
  * Los socios —principal o externo— JAMÁS: preservar el anonimato es la regla.
  */
-export async function puedeVerContrato(db: Db, usuarioId: string, reservaId: string): Promise<boolean> {
-  const [u] = await db.select().from(usuarios).where(eq(usuarios.id, usuarioId));
-  if (u?.roles.includes("admin")) return true;
-  const [r] = await db.select().from(reservas).where(eq(reservas.id, reservaId));
-  if (!r) return false;
-  const [prop] = await db.select().from(propiedades).where(eq(propiedades.id, r.propiedadId));
+export async function puedeVerContrato(
+  db: Db,
+  actor: string | Pick<UsuarioSesion, "id" | "roles" | "adminElevada">,
+  reservaId: string,
+): Promise<boolean> {
+  // El acceso de ADMIN exige la SESIÓN completa con elevación TOTP: tener el
+  // rol en la tabla de usuarios no basta (un id suelto jamás autoriza admin).
+  const usuarioId = typeof actor === "string" ? actor : actor.id;
+  if (typeof actor !== "string" && actor.roles.includes("admin") && actor.adminElevada === true) {
+    return true;
+  }
+  const [prop] = await db
+    .select({ propietarioId: propiedades.propietarioId })
+    .from(reservas)
+    .innerJoin(propiedades, eq(propiedades.id, reservas.propiedadId))
+    .where(eq(reservas.id, reservaId));
   return prop?.propietarioId === usuarioId;
 }
 

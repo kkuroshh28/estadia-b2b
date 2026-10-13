@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
+  LazyMotion,
   MotionConfig,
-  motion,
+  domAnimation,
+  m,
   useInView,
   useMotionValue,
   useReducedMotion,
@@ -11,9 +13,17 @@ import {
 } from "motion/react";
 import { formatearCOP } from "@/lib/domain/split";
 
-/** Config global: respeta prefers-reduced-motion en toda la app. */
+/**
+ * Config global: respeta prefers-reduced-motion en toda la app.
+ * LazyMotion + domAnimation: los componentes usan `m.X` (núcleo ligero) y solo
+ * se cargan las features de animación DOM (sin drag/layout).
+ */
 export function MotionProvider({ children }: { children: React.ReactNode }) {
-  return <MotionConfig reducedMotion="user">{children}</MotionConfig>;
+  return (
+    <LazyMotion features={domAnimation}>
+      <MotionConfig reducedMotion="user">{children}</MotionConfig>
+    </LazyMotion>
+  );
 }
 
 /** Revelado al entrar en viewport — una orquestación, no efectos dispersos. */
@@ -27,7 +37,7 @@ export function Reveal({
   className?: string;
 }) {
   return (
-    <motion.div
+    <m.div
       className={className}
       initial={{ opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
@@ -35,7 +45,7 @@ export function Reveal({
       transition={{ duration: 0.55, delay, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -54,14 +64,14 @@ export function RevealHero({
   className?: string;
 }) {
   return (
-    <motion.div
+    <m.div
       className={className}
       initial={{ y: 18 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.55, delay, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -110,13 +120,13 @@ export function Entrada({
   className?: string;
 }) {
   return (
-    <motion.div
+    <m.div
       className={className}
       initial={{ opacity: 0, y: 14, scale: 0.985 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ delay: index * 0.07, type: "spring", stiffness: 260, damping: 26 }}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 }

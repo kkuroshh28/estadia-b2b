@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Card, Money } from "@/components/ui";
@@ -19,110 +19,317 @@ const TIPOS = [
   { valor: "glamping", label: "Glamping" },
 ] as const;
 
+const CLASE_ETIQUETA = "text-[11px] font-bold uppercase tracking-wider text-bruma-osc";
+const CLASE_INPUT =
+  "mt-1.5 w-full rounded-xl border bg-panel px-4 py-3 text-sm text-tinta placeholder:text-bruma-osc focus:border-esmeralda/50";
+
+/** Estado del formulario: los numéricos son string para poder vaciarlos al editar. */
+interface Formulario {
+  nombre: string;
+  municipio: string;
+  zona: string;
+  tipo: (typeof TIPOS)[number]["valor"];
+  capacidad: string;
+  habitaciones: string;
+  banos: string;
+  amenidades: string;
+  reglas: string;
+  tarifaNetaNochePesos: string;
+  publicada: boolean;
+  ownerDirect: boolean;
+  margenMinimoPesos: string;
+  huespedesIncluidos: string;
+  tarifaAdicionalPesos: string;
+  direccion: string;
+  indicacionesLlegada: string;
+}
+type Campo = keyof Formulario;
+type Errores = Partial<Record<Campo, string>>;
+
+/** Valor de un input numérico: vacío → null; texto no numérico → NaN. */
+const aNumero = (v: string): number | null => {
+  const t = v.trim();
+  return t === "" ? null : Number(t);
+};
+const lista = (v: string) => v.split(",").map((s) => s.trim()).filter(Boolean);
+const pesos = (n: number) => `$${n.toLocaleString("es-CO")}`;
+
+/**
+ * Validación en cliente — espejo de las reglas zod de POST /api/propiedades
+ * (el servidor sigue siendo la autoridad). Devuelve un mensaje por campo.
+ */
+function validar(f: Formulario): Errores {
+  const e: Errores = {};
+  const texto = (campo: Campo, valor: string, min: number, max: number, nombre: string) => {
+    const t = valor.trim();
+    if (t.length < min) e[campo] = `${nombre}: mínimo ${min} caracteres.`;
+    else if (t.length > max) e[campo] = `${nombre}: máximo ${max} caracteres.`;
+  };
+  const entero = (campo: Campo, valor: string, min: number, max: number, nombre: string, opcional = false) => {
+    const n = aNumero(valor);
+    if (n === null) {
+      if (!opcional) e[campo] = `${nombre}: requerido.`;
+    } else if (!Number.isInteger(n)) {
+      e[campo] = `${nombre}: debe ser un número entero.`;
+    } else if (n < min || n > max) {
+      e[campo] = `${nombre}: entre ${min.toLocaleString("es-CO")} y ${max.toLocaleString("es-CO")}.`;
+    }
+  };
+  texto("nombre", f.nombre, 3, 80, "Nombre");
+  texto("municipio", f.municipio, 2, 60, "Municipio");
+  texto("zona", f.zona, 2, 60, "Zona");
+  entero("capacidad", f.capacidad, 1, 50, "Capacidad");
+  entero("habitaciones", f.habitaciones, 1, 30, "Habitaciones");
+  entero("banos", f.banos, 1, 30, "Baños");
+  const amen = lista(f.amenidades);
+  if (amen.length > 12) e.amenidades = "Máximo 12 amenidades.";
+  else if (amen.some((a) => a.length > 60)) e.amenidades = "Cada amenidad: máximo 60 caracteres.";
+  const reg = lista(f.reglas);
+  if (reg.length > 12) e.reglas = "Máximo 12 reglas.";
+  else if (reg.some((r) => r.length > 80)) e.reglas = "Cada regla: máximo 80 caracteres.";
+  const tarifa = aNumero(f.tarifaNetaNochePesos);
+  if (tarifa === null) e.tarifaNetaNochePesos = "Define la tarifa neta por noche.";
+  else if (!Number.isInteger(tarifa)) e.tarifaNetaNochePesos = "La tarifa debe ser un valor entero en pesos.";
+  else if (tarifa < 50_000 || tarifa > 50_000_000)
+    e.tarifaNetaNochePesos = `La tarifa neta va de ${pesos(50_000)} a ${pesos(50_000_000)}.`;
+  entero("margenMinimoPesos", f.margenMinimoPesos, 0, 50_000_000, "Margen mínimo", true);
+  const cap = aNumero(f.capacidad);
+  const incl = aNumero(f.huespedesIncluidos);
+  if (incl !== null && !Number.isInteger(incl)) {
+    e.huespedesIncluidos = "Huéspedes incluidos: debe ser un número entero.";
+  } else if (incl !== null && incl > 0) {
+    if (incl > 50) e.huespedesIncluidos = "Huéspedes incluidos: máximo 50.";
+    else if (cap !== null && incl > cap) e.huespedesIncluidos = "No puede superar la capacidad.";
+  }
+  entero("tarifaAdicionalPesos", f.tarifaAdicionalPesos, 0, 5_000_000, "Tarifa por adicional", true);
+  if (f.direccion.trim().length > 200) e.direccion = "Dirección: máximo 200 caracteres.";
+  if (f.indicacionesLlegada.trim().length > 400)
+    e.indicacionesLlegada = "Indicaciones: máximo 400 caracteres.";
+  return e;
+}
+
+/** Orden visual de los campos: al fallar el envío se enfoca el primero con error. */
+const ORDEN_CAMPOS: Campo[] = [
+  "nombre",
+  "municipio",
+  "zona",
+  "capacidad",
+  "habitaciones",
+  "banos",
+  "amenidades",
+  "reglas",
+  "direccion",
+  "indicacionesLlegada",
+  "tarifaNetaNochePesos",
+  "margenMinimoPesos",
+  "huespedesIncluidos",
+  "tarifaAdicionalPesos",
+];
+
+const idCampo = (campo: Campo) => `nueva-${campo}`;
+
+function ErrorCampo({ campo, error }: { campo: Campo; error?: string }) {
+  if (!error) return null;
+  return (
+    <p id={`${idCampo(campo)}-error`} role="alert" className="mt-1.5 text-[11px] text-rojo">
+      {error}
+    </p>
+  );
+}
+
+/** Atributos de accesibilidad comunes de un campo (id, aria-invalid, aria-describedby). */
+const aria = (campo: Campo, error?: string) => ({
+  id: idCampo(campo),
+  name: campo,
+  "aria-invalid": error ? true : undefined,
+  "aria-describedby": error ? `${idCampo(campo)}-error` : undefined,
+});
+
 function CampoTexto({
+  campo,
   etiqueta,
   valor,
   onCambio,
   placeholder,
+  error,
+  requerido = false,
+  minimo,
+  maximo,
 }: {
+  campo: Campo;
   etiqueta: string;
   valor: string;
   onCambio: (v: string) => void;
   placeholder?: string;
+  error?: string;
+  requerido?: boolean;
+  minimo?: number;
+  maximo?: number;
 }) {
   return (
-    <label className="block">
-      <span className="text-[11px] font-bold uppercase tracking-wider text-bruma-osc">{etiqueta}</span>
+    <div>
+      <label htmlFor={idCampo(campo)} className={`block ${CLASE_ETIQUETA}`}>
+        {etiqueta}
+      </label>
       <input
+        {...aria(campo, error)}
         value={valor}
         onChange={(e) => onCambio(e.target.value)}
         placeholder={placeholder}
-        className="mt-1.5 w-full rounded-xl border border-borde bg-panel px-4 py-3 text-sm text-tinta placeholder:text-bruma-osc focus:border-esmeralda/50"
+        required={requerido}
+        minLength={minimo}
+        maxLength={maximo}
+        className={`${CLASE_INPUT} ${error ? "border-rojo/60" : "border-borde"}`}
       />
-    </label>
+      <ErrorCampo campo={campo} error={error} />
+    </div>
   );
 }
 
 function CampoNumero({
+  campo,
   etiqueta,
   valor,
   onCambio,
   min,
   max,
+  step,
+  error,
+  requerido = false,
+  className = "text-sm",
 }: {
+  campo: Campo;
   etiqueta: string;
-  valor: number;
-  onCambio: (v: number) => void;
+  valor: string;
+  onCambio: (v: string) => void;
   min: number;
   max: number;
+  step?: number;
+  error?: string;
+  requerido?: boolean;
+  className?: string;
 }) {
   return (
-    <label className="block">
-      <span className="text-[11px] font-bold uppercase tracking-wider text-bruma-osc">{etiqueta}</span>
+    <div>
+      <label htmlFor={idCampo(campo)} className={`block ${CLASE_ETIQUETA}`}>
+        {etiqueta}
+      </label>
       <input
+        {...aria(campo, error)}
         type="number"
+        inputMode="numeric"
         min={min}
         max={max}
+        step={step}
+        required={requerido}
         value={valor}
-        onChange={(e) => onCambio(Number(e.target.value))}
-        className="mt-1.5 w-full rounded-xl border border-borde bg-panel px-4 py-3 text-sm text-tinta"
+        // String: el campo se puede vaciar mientras se edita (se convierte al enviar).
+        onChange={(e) => onCambio(e.target.value)}
+        className={`${CLASE_INPUT} ${className} ${error ? "border-rojo/60" : "border-borde"}`}
       />
-    </label>
+      <ErrorCampo campo={campo} error={error} />
+    </div>
   );
 }
 
 export function NuevaPropiedadCliente() {
   const router = useRouter();
-  const [f, setF] = useState({
+  const [f, setF] = useState<Formulario>({
     nombre: "",
     municipio: "",
     zona: "",
     tipo: "finca",
-    capacidad: 8,
-    habitaciones: 3,
-    banos: 2,
+    capacidad: "8",
+    habitaciones: "3",
+    banos: "2",
     amenidades: "",
     reglas: "",
-    tarifaNetaNochePesos: 800_000,
+    tarifaNetaNochePesos: "800000",
     publicada: true,
     ownerDirect: false,
-    margenMinimoPesos: 0,
-    huespedesIncluidos: 0,
-    tarifaAdicionalPesos: 0,
+    margenMinimoPesos: "0",
+    huespedesIncluidos: "0",
+    tarifaAdicionalPesos: "0",
     direccion: "",
     indicacionesLlegada: "",
   });
   const [enviando, setEnviando] = useState(false);
+  const [intentado, setIntentado] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const neto = calcularNetoPropietario(f.tarifaNetaNochePesos || 0);
+  const enviandoRef = useRef(false);
 
-  const crear = async () => {
-    setEnviando(true);
+  // Los errores por campo aparecen tras el primer intento de envío y se
+  // recalculan en vivo mientras el usuario corrige.
+  const errores = intentado ? validar(f) : {};
+  const cambiar = <K extends Campo>(campo: K, valor: Formulario[K]) =>
+    setF((prev) => ({ ...prev, [campo]: valor }));
+
+  /** Número utilizable para cálculos en vivo (vacío/NaN → 0). */
+  const n = (v: string) => {
+    const x = aNumero(v);
+    return x !== null && Number.isFinite(x) ? x : 0;
+  };
+  const tarifaN = n(f.tarifaNetaNochePesos);
+  const margenN = n(f.margenMinimoPesos);
+  const capacidadN = n(f.capacidad);
+  const inclN = n(f.huespedesIncluidos);
+  const adicionalN = n(f.tarifaAdicionalPesos);
+  const neto = calcularNetoPropietario(tarifaN);
+
+  const crear = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (enviandoRef.current) return; // guard de doble envío (clic doble / Enter repetido)
+    setIntentado(true);
     setError(null);
+    const errs = validar(f);
+    const primero = ORDEN_CAMPOS.find((c) => errs[c]);
+    if (primero) {
+      document.getElementById(idCampo(primero))?.focus();
+      return;
+    }
+    enviandoRef.current = true;
+    setEnviando(true);
     try {
       const r = await fetch("/api/propiedades", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...f,
+          nombre: f.nombre.trim(),
+          municipio: f.municipio.trim(),
+          zona: f.zona.trim(),
+          tipo: f.tipo,
+          capacidad: capacidadN,
+          habitaciones: n(f.habitaciones),
+          banos: n(f.banos),
+          amenidades: lista(f.amenidades),
+          reglas: lista(f.reglas),
+          tarifaNetaNochePesos: tarifaN,
+          publicada: f.publicada,
+          ownerDirect: f.ownerDirect,
+          margenMinimoPesos: margenN,
           // 0 = sin adicionales: se omite para que toda la capacidad quede incluida.
-          huespedesIncluidos: f.huespedesIncluidos > 0 ? f.huespedesIncluidos : undefined,
-          amenidades: f.amenidades.split(",").map((s) => s.trim()).filter(Boolean),
-          reglas: f.reglas.split(",").map((s) => s.trim()).filter(Boolean),
+          huespedesIncluidos: inclN > 0 ? inclN : undefined,
+          tarifaAdicionalPesos: adicionalN,
+          direccion: f.direccion.trim() || undefined,
+          indicacionesLlegada: f.indicacionesLlegada.trim() || undefined,
         }),
       });
-      const json = await r.json();
+      const json = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(json.error ?? "No se pudo crear la propiedad");
       router.push("/app/propietario");
       router.refresh();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo crear la propiedad");
+      // Se mantiene "enviando" hasta que la navegación desmonte el formulario.
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo crear la propiedad");
+      enviandoRef.current = false;
       setEnviando(false);
     }
   };
 
+  const hayErrores = Object.keys(errores).length > 0;
+
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
+    <form onSubmit={crear} noValidate className="mx-auto max-w-3xl space-y-8">
       <div>
         <Link href="/app/propietario" className="text-xs font-semibold text-bruma transition hover:text-tinta">
           ← Volver al panel
@@ -136,19 +343,21 @@ export function NuevaPropiedadCliente() {
       </div>
 
       <Card className="space-y-5 p-6">
-        <CampoTexto etiqueta="Nombre" valor={f.nombre} onCambio={(v) => setF({ ...f, nombre: v })} placeholder="Finca La Cascada" />
+        <CampoTexto campo="nombre" etiqueta="Nombre" valor={f.nombre} onCambio={(v) => cambiar("nombre", v)} placeholder="Finca La Cascada" error={errores.nombre} requerido minimo={3} maximo={80} />
         <div className="grid gap-5 sm:grid-cols-2">
-          <CampoTexto etiqueta="Municipio" valor={f.municipio} onCambio={(v) => setF({ ...f, municipio: v })} placeholder="Guatapé" />
-          <CampoTexto etiqueta="Zona" valor={f.zona} onCambio={(v) => setF({ ...f, zona: v })} placeholder="El Poblado" />
+          <CampoTexto campo="municipio" etiqueta="Municipio" valor={f.municipio} onCambio={(v) => cambiar("municipio", v)} placeholder="Guatapé" error={errores.municipio} requerido minimo={2} maximo={60} />
+          <CampoTexto campo="zona" etiqueta="Zona" valor={f.zona} onCambio={(v) => cambiar("zona", v)} placeholder="El Poblado" error={errores.zona} requerido minimo={2} maximo={60} />
         </div>
 
-        <div>
-          <span className="text-[11px] font-bold uppercase tracking-wider text-bruma-osc">Tipo</span>
+        <div role="group" aria-labelledby="nueva-tipo-etiqueta">
+          <span id="nueva-tipo-etiqueta" className={CLASE_ETIQUETA}>Tipo</span>
           <div className="mt-2 flex flex-wrap gap-2">
             {TIPOS.map((t) => (
               <button
                 key={t.valor}
-                onClick={() => setF({ ...f, tipo: t.valor })}
+                type="button"
+                aria-pressed={f.tipo === t.valor}
+                onClick={() => cambiar("tipo", t.valor)}
                 className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${
                   f.tipo === t.valor
                     ? "border-tiffany bg-tiffany-bruma text-tinta"
@@ -162,21 +371,25 @@ export function NuevaPropiedadCliente() {
         </div>
 
         <div className="grid gap-5 sm:grid-cols-3">
-          <CampoNumero etiqueta="Capacidad" valor={f.capacidad} onCambio={(v) => setF({ ...f, capacidad: v })} min={1} max={50} />
-          <CampoNumero etiqueta="Habitaciones" valor={f.habitaciones} onCambio={(v) => setF({ ...f, habitaciones: v })} min={1} max={30} />
-          <CampoNumero etiqueta="Baños" valor={f.banos} onCambio={(v) => setF({ ...f, banos: v })} min={1} max={30} />
+          <CampoNumero campo="capacidad" etiqueta="Capacidad" valor={f.capacidad} onCambio={(v) => cambiar("capacidad", v)} min={1} max={50} error={errores.capacidad} requerido />
+          <CampoNumero campo="habitaciones" etiqueta="Habitaciones" valor={f.habitaciones} onCambio={(v) => cambiar("habitaciones", v)} min={1} max={30} error={errores.habitaciones} requerido />
+          <CampoNumero campo="banos" etiqueta="Baños" valor={f.banos} onCambio={(v) => cambiar("banos", v)} min={1} max={30} error={errores.banos} requerido />
         </div>
 
         <CampoTexto
+          campo="amenidades"
           etiqueta="Amenidades (separadas por coma)"
           valor={f.amenidades}
-          onCambio={(v) => setF({ ...f, amenidades: v })}
+          onCambio={(v) => cambiar("amenidades", v)}
+          error={errores.amenidades}
           placeholder="Piscina, BBQ, WiFi, Jacuzzi"
         />
         <CampoTexto
+          campo="reglas"
           etiqueta="Reglas de la casa (separadas por coma)"
           valor={f.reglas}
-          onCambio={(v) => setF({ ...f, reglas: v })}
+          onCambio={(v) => cambiar("reglas", v)}
+          error={errores.reglas}
           placeholder="No fiestas después de 11 pm, Check-in 3 pm"
         />
         <div className="rounded-xl border border-borde bg-panel p-4">
@@ -189,15 +402,21 @@ export function NuevaPropiedadCliente() {
           </p>
           <div className="mt-3 space-y-3">
             <CampoTexto
+              campo="direccion"
               etiqueta="Dirección exacta"
               valor={f.direccion}
-              onCambio={(v) => setF({ ...f, direccion: v })}
+              onCambio={(v) => cambiar("direccion", v)}
+              error={errores.direccion}
+              maximo={200}
               placeholder="Km 4 vía Guatapé–El Peñol, portería Los Almendros"
             />
             <CampoTexto
+              campo="indicacionesLlegada"
               etiqueta="Indicaciones de llegada"
               valor={f.indicacionesLlegada}
-              onCambio={(v) => setF({ ...f, indicacionesLlegada: v })}
+              onCambio={(v) => cambiar("indicacionesLlegada", v)}
+              error={errores.indicacionesLlegada}
+              maximo={400}
               placeholder="Entrada por la portería norte; el QR se muestra al vigilante"
             />
           </div>
@@ -205,39 +424,38 @@ export function NuevaPropiedadCliente() {
       </Card>
 
       <Card className="space-y-4 p-6">
-        <div>
-          <span className="text-[11px] font-bold uppercase tracking-wider text-bruma-osc">
-            Tarifa neta por noche (lo que TÚ recibes completo)
-          </span>
-          <input
-            type="number"
-            min={50_000}
-            step={10_000}
-            value={f.tarifaNetaNochePesos}
-            onChange={(e) => setF({ ...f, tarifaNetaNochePesos: Number(e.target.value) })}
-            className="mt-2 w-full rounded-xl border border-borde bg-panel px-4 py-3 text-lg font-bold text-tinta"
-          />
-        </div>
+        <CampoNumero
+          campo="tarifaNetaNochePesos"
+          etiqueta="Tarifa neta por noche (lo que TÚ recibes completo)"
+          valor={f.tarifaNetaNochePesos}
+          onCambio={(v) => cambiar("tarifaNetaNochePesos", v)}
+          min={50_000}
+          max={50_000_000}
+          step={10_000}
+          error={errores.tarifaNetaNochePesos}
+          requerido
+          className="text-lg font-bold"
+        />
         <div className="flex items-center justify-between rounded-xl border border-esmeralda/30 bg-esmeralda-tenue px-4 py-3 text-sm">
           <span className="font-semibold text-esmeralda">Recibes tras pasarela (~3%)</span>
           <Money valor={neto.recibe} className="text-lg font-bold text-esmeralda" />
         </div>
         <div>
-          <span className="text-[11px] font-bold uppercase tracking-wider text-bruma-osc">
-            Margen comercial mínimo (opcional)
-          </span>
-          <input
-            type="number"
+          <CampoNumero
+            campo="margenMinimoPesos"
+            etiqueta="Margen comercial mínimo (opcional)"
+            valor={f.margenMinimoPesos}
+            onCambio={(v) => cambiar("margenMinimoPesos", v)}
             min={0}
+            max={50_000_000}
             step={50_000}
-            value={f.margenMinimoPesos}
-            onChange={(e) => setF({ ...f, margenMinimoPesos: Number(e.target.value) })}
-            className="mt-2 w-full rounded-xl border border-borde bg-panel px-4 py-3 text-sm font-bold text-tinta"
+            error={errores.margenMinimoPesos}
+            className="text-sm font-bold"
           />
           <p className="mt-1.5 text-[11px] text-bruma">
             Precio mínimo de venta:{" "}
             <Money
-              valor={(f.tarifaNetaNochePesos || 0) + (f.margenMinimoPesos || 0)}
+              valor={tarifaN + margenN}
               className="font-bold text-tinta"
             />{" "}
             por noche — ninguna oferta puede cerrar por debajo.
@@ -255,28 +473,29 @@ export function NuevaPropiedadCliente() {
           </p>
           <div className="mt-3 grid gap-4 sm:grid-cols-2">
             <CampoNumero
+              campo="huespedesIncluidos"
               etiqueta="Huéspedes incluidos (0 = todos)"
               valor={f.huespedesIncluidos}
-              onCambio={(v) => setF({ ...f, huespedesIncluidos: v })}
+              onCambio={(v) => cambiar("huespedesIncluidos", v)}
               min={0}
-              max={f.capacidad}
+              max={Math.min(50, capacidadN || 50)}
+              error={errores.huespedesIncluidos}
             />
             <CampoNumero
+              campo="tarifaAdicionalPesos"
               etiqueta="Tarifa por adicional / noche ($)"
               valor={f.tarifaAdicionalPesos}
-              onCambio={(v) => setF({ ...f, tarifaAdicionalPesos: v })}
+              onCambio={(v) => cambiar("tarifaAdicionalPesos", v)}
               min={0}
               max={5_000_000}
+              error={errores.tarifaAdicionalPesos}
             />
           </div>
-          {f.huespedesIncluidos > 0 && f.tarifaAdicionalPesos > 0 && (
+          {inclN > 0 && adicionalN > 0 && (
             <p className="mt-2 text-[11px] text-bruma">
-              Ejemplo: {f.capacidad} huéspedes ={" "}
+              Ejemplo: {capacidadN} huéspedes ={" "}
               <Money
-                valor={
-                  (f.tarifaNetaNochePesos || 0) +
-                  Math.max(0, f.capacidad - f.huespedesIncluidos) * f.tarifaAdicionalPesos
-                }
+                valor={tarifaN + Math.max(0, capacidadN - inclN) * adicionalN}
                 className="font-bold text-esmeralda"
               />{" "}
               netos por noche para ti.
@@ -288,7 +507,7 @@ export function NuevaPropiedadCliente() {
           <input
             type="checkbox"
             checked={f.ownerDirect}
-            onChange={(e) => setF({ ...f, ownerDirect: e.target.checked })}
+            onChange={(e) => cambiar("ownerDirect", e.target.checked)}
             className="mt-0.5 accent-tiffany"
           />
           <span className="text-xs leading-relaxed text-bruma">
@@ -303,7 +522,7 @@ export function NuevaPropiedadCliente() {
           <input
             type="checkbox"
             checked={f.publicada}
-            onChange={(e) => setF({ ...f, publicada: e.target.checked })}
+            onChange={(e) => cambiar("publicada", e.target.checked)}
             className="mt-0.5 accent-tiffany"
           />
           <span className="text-xs leading-relaxed text-bruma">
@@ -314,16 +533,24 @@ export function NuevaPropiedadCliente() {
         </label>
       </Card>
 
+      {hayErrores && (
+        <p role="alert" className="rounded-lg border border-rojo/30 bg-rojo-tenue p-3 text-[11px] text-rojo">
+          Revisa los campos marcados en rojo antes de crear la propiedad.
+        </p>
+      )}
       {error && (
-        <p className="rounded-lg border border-rojo/30 bg-rojo-tenue p-3 text-[11px] text-rojo">{error}</p>
+        <p role="alert" className="rounded-lg border border-rojo/30 bg-rojo-tenue p-3 text-[11px] text-rojo">
+          {error}
+        </p>
       )}
       <button
-        onClick={crear}
+        type="submit"
         disabled={enviando}
+        aria-busy={enviando}
         className="w-full rounded-full bg-tiffany py-3.5 text-sm font-bold text-noche transition hover:bg-tiffany-claro disabled:opacity-60"
       >
         {enviando ? "Creando…" : "Crear propiedad →"}
       </button>
-    </div>
+    </form>
   );
 }

@@ -14,6 +14,7 @@ import {
 import { notificarEnApp } from "./notificaciones";
 import { transicionarReserva } from "./reservas";
 import { centavos, liquidarReserva, type Centavos } from "@/lib/dinero";
+import { hoyEnBogota } from "@/lib/fechas";
 
 /**
  * MOTOR DE PAGOS — los webhooks de la pasarela son la ÚNICA fuente de verdad.
@@ -42,7 +43,18 @@ export type ResultadoPago =
   | { resultado: "procesado"; transaccionId: string }
   | { resultado: "duplicado" } // idempotencia: ya se procesó este evento
   | { resultado: "fechas_tomadas" } // perdió la carrera: link invalidado, sin cobro
-  | { resultado: "link_no_activo" };
+  | { resultado: "link_no_activo" }
+  // Monto distinto al del link: compensación registrada, 200 a la pasarela
+  // (lanzar provocaría reintentos infinitos de un evento que jamás cuadrará).
+  | { resultado: "monto_no_coincide" };
+
+/** Motivos de compensación (dinero aprobado que no se aplicó). */
+export type MotivoCompensacion =
+  | "link_vencido"
+  | "link_no_activo"
+  | "fechas_tomadas"
+  | "monto_no_coincide"
+  | "reserva_no_cobrable";
 
 /**
  * Un cobro APROBADO que no pudo aplicarse (link vencido/invalidado o carrera
@@ -53,7 +65,7 @@ export type ResultadoPago =
 async function registrarCompensacion(
   tx: Db,
   evento: EventoPago,
-  motivo: "link_vencido" | "link_no_activo" | "fechas_tomadas",
+  motivo: MotivoCompensacion,
   reservaId: string | null,
 ): Promise<void> {
   await tx
@@ -109,7 +121,11 @@ export async function procesarWebhookPago(db: Db, evento: EventoPago): Promise<R
   for (let intento = 1; ; intento++) {
     try {
       const r = await procesarUnaVez(db, evento);
-      if (r.resultado === "fechas_tomadas" || r.resultado === "link_no_activo") {
+      if (
+        r.resultado === "fechas_tomadas" ||
+        r.resultado === "link_no_activo" ||
+        r.resultado === "monto_no_coincide"
+      ) {
         await avisarAdminsCompensacion(db, evento, r.resultado);
       }
       return r;
@@ -158,9 +174,14 @@ async function procesarUnaVez(db: Db, evento: EventoPago): Promise<ResultadoPago
       return { resultado: "link_no_activo" };
     }
     if (link.montoCentavos !== evento.montoCentavos) {
-      throw new Error(
-        `Monto del webhook (${evento.montoCentavos}) no coincide con el link (${link.montoCentavos}) — se detiene el procesamiento`,
+      // Jamás se aplica un monto distinto al del link; tampoco se lanza (la
+      // pasarela reintentaría para siempre). El cobro queda en compensación
+      // y el link sigue vivo para el pago correcto.
+      console.error(
+        `[pagos] monto del webhook (${evento.montoCentavos}) ≠ link (${link.montoCentavos}) — ref ${evento.pasarelaRef}`,
       );
+      await registrarCompensacion(tx as unknown as Db, evento, "monto_no_coincide", link.reservaId);
+      return { resultado: "monto_no_coincide" };
     }
 
     const [reserva] = await tx
@@ -169,6 +190,17 @@ async function procesarUnaVez(db: Db, evento: EventoPago): Promise<ResultadoPago
       .where(eq(reservas.id, link.reservaId))
       .for("update");
     if (!reserva) throw new Error(`Reserva no encontrada para link ${link.id}`);
+
+    // La reserva DEBE estar esperando exactamente este pago (lockeada arriba:
+    // nadie la cambia hasta el commit). Una reserva cancelada/expirada/
+    // invalidada jamás se cobra: link invalidado + compensación, y 200 para
+    // que la pasarela no reintente sin fin.
+    const estadoEsperado = link.mitad === 1 ? "LINK_1_ENVIADO" : "SALDO_LINK_ENVIADO";
+    if (reserva.estado !== estadoEsperado) {
+      await tx.update(linksDePago).set({ estado: "invalidado" }).where(eq(linksDePago.id, link.id));
+      await registrarCompensacion(tx as unknown as Db, evento, "reserva_no_cobrable", reserva.id);
+      return { resultado: "link_no_activo" };
+    }
 
     if (link.mitad === 1) {
       // Las NOCHES ocupadas son [desde, hasta): el día de salida (checkout)
@@ -206,6 +238,12 @@ async function procesarUnaVez(db: Db, evento: EventoPago): Promise<ResultadoPago
           .set({ estado: "invalidado" })
           .where(eq(linksDePago.id, link.id));
         await registrarCompensacion(tx as unknown as Db, evento, "fechas_tomadas", link.reservaId);
+        // La reserva perdedora no queda zombi en LINK_1_ENVIADO: se invalida
+        // en esta misma tx (lockeada arriba), auditada como toda transición.
+        await transicionarReserva(tx as unknown as Db, reserva.id, "INVALIDADA", "webhook:pasarela", {
+          motivo: "fechas_tomadas",
+          linkId: link.id,
+        });
         return { resultado: "fechas_tomadas" };
       }
 
@@ -226,7 +264,7 @@ async function procesarUnaVez(db: Db, evento: EventoPago): Promise<ResultadoPago
       // SKIP LOCKED evita el deadlock: si el rival tiene SU link bloqueado es
       // porque su webhook está corriendo — perderá la carrera de días y se
       // auto-invalidará. Jamás esperamos su lock mientras él espera los días.
-      await tx.execute(sql`
+      const competidores = (await tx.execute(sql`
         UPDATE links_de_pago SET estado = 'invalidado'
         WHERE id IN (
           SELECT lp.id FROM links_de_pago lp
@@ -238,7 +276,24 @@ async function procesarUnaVez(db: Db, evento: EventoPago): Promise<ResultadoPago
             AND r.id <> ${reserva.id}
             AND r.desde < ${reserva.hasta} AND r.hasta > ${reserva.desde}
           FOR UPDATE OF lp SKIP LOCKED
-        )`);
+        )
+        RETURNING reserva_id`)) as unknown as { reserva_id: string }[];
+
+      // 4c · Sus reservas pasan a INVALIDADA en la MISMA tx (antes quedaban
+      // zombis en LINK_1_ENVIADO). Solo las que siguen esperando el pago 1.
+      for (const { reserva_id } of competidores) {
+        const [rival] = await tx
+          .select({ estado: reservas.estado })
+          .from(reservas)
+          .where(eq(reservas.id, reserva_id))
+          .for("update");
+        if (rival?.estado === "LINK_1_ENVIADO") {
+          await transicionarReserva(tx as unknown as Db, reserva_id, "INVALIDADA", "webhook:pasarela", {
+            motivo: "fechas_tomadas_por_otro_pago",
+            ganadora: reserva.id,
+          });
+        }
+      }
     }
 
     // 5 · Registrar transacción + splits EXACTOS
@@ -292,11 +347,19 @@ async function procesarUnaVez(db: Db, evento: EventoPago): Promise<ResultadoPago
       .set({ estado: "pagado" })
       .where(eq(linksDePago.id, link.id));
 
+    // 6 · Transición (ANTICIPO_PAGADO / PAGO_COMPLETO) DENTRO de la misma tx:
+    // dinero registrado y estado avanzan juntos o no avanzan — jamás una
+    // reserva atrás respecto a su link pagado.
+    await transicionarReserva(
+      tx as unknown as Db,
+      reserva.id,
+      link.mitad === 1 ? "ANTICIPO_PAGADO" : "PAGO_COMPLETO",
+      "webhook:pasarela",
+      { mitad: link.mitad },
+    );
+
     return { resultado: "procesado", transaccionId: trx.id };
   });
-  // La transición de estado (ANTICIPO_PAGADO / PAGO_COMPLETO) la ejecuta el
-  // orquestador del webhook llamando a transicionPostPago tras "procesado":
-  // queda en su propia transacción auditada sin alargar el lock del dinero.
 }
 
 /** El cuadre por mitad debe ser EXACTO al centavo; si no, se detiene todo. */
@@ -308,12 +371,22 @@ function verificarCuadre(monto: Centavos, neta: Centavos, comision: Centavos) {
   }
 }
 
-/** Transición de estado post-pago (la llama el orquestador tras procesar). */
+/**
+ * Transición de estado post-pago. procesarWebhookPago ya la ejecuta dentro
+ * de su transacción; esta función queda para la reconciliación de reservas
+ * antiguas y es IDEMPOTENTE: si la reserva ya está en el estado destino, no-op.
+ */
 export async function transicionPostPago(
   db: Db,
   reservaId: string,
   mitad: number,
 ): Promise<void> {
+  const destino = mitad === 1 ? "ANTICIPO_PAGADO" : "PAGO_COMPLETO";
+  const [actual] = await db
+    .select({ estado: reservas.estado })
+    .from(reservas)
+    .where(eq(reservas.id, reservaId));
+  if (actual?.estado === destino) return;
   await transicionarReserva(
     db,
     reservaId,
@@ -376,12 +449,29 @@ async function generarLinkSaldoUnaVez(
       // devuelve como si lo fuera ni se revive en silencio.
       throw new SaldoError("El link del saldo fue invalidado. Contacta al administrador.");
     }
-    if (existente && existente.estado !== "expirado") {
+    // Un link 'activo' cuya vigencia ya pasó (el cron aún no lo marcó) se
+    // trata como EXPIRADO: jamás se entrega un link que el webhook rechazaría.
+    const vencido =
+      existente?.estado === "expirado" ||
+      (existente?.estado === "activo" && existente.venceEn.getTime() < Date.now());
+    if (existente && !vencido) {
       return { linkId: existente.id, montoCentavos: existente.montoCentavos, yaExistia: true };
     }
 
     if (!existente && reserva.estado !== "ANTICIPO_PAGADO") {
       throw new SaldoError("El saldo solo se genera con el anticipo pagado.");
+    }
+    if (existente) {
+      // Regenerar SOLO si la reserva sigue esperando el saldo: una reserva
+      // CANCELADA (reembolso) o ya pagada jamás revive su link de cobro.
+      if (reserva.estado !== "SALDO_LINK_ENVIADO") {
+        throw new SaldoError("La reserva ya no admite el cobro del saldo.");
+      }
+      // Pasado el día de check-in (hora Colombia) el saldo no se regenera:
+      // lo gestiona el administrador.
+      if (reserva.desde < hoyEnBogota()) {
+        throw new SaldoError("El check-in ya pasó: el saldo no puede regenerarse. Contacta al administrador.");
+      }
     }
     // Vigencia: 24 h, capeada al FIN del día de check-in en HORA COLOMBIA
     // (el saldo se paga el día de ingreso — antes moría a las 7 pm del día

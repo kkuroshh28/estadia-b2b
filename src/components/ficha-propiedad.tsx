@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import { Badge, Card, Cover, Money } from "@/components/ui";
 import { Galeria } from "@/components/galeria";
 import { FichaComercial } from "@/components/ficha-comercial";
@@ -223,7 +223,7 @@ export function FichaPropiedad({ datos }: { datos: DatosFicha }) {
 
           <AnimatePresence mode="wait">
             {noches > 0 && !solicitada && (
-              <motion.div
+              <m.div
                 key="resumen"
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -267,10 +267,10 @@ export function FichaPropiedad({ datos }: { datos: DatosFicha }) {
                     {enviando ? "Enviando…" : "Solicitar estas fechas"}
                   </button>
                 </div>
-              </motion.div>
+              </m.div>
             )}
             {solicitada && (
-              <motion.div
+              <m.div
                 key="ok"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -286,7 +286,7 @@ export function FichaPropiedad({ datos }: { datos: DatosFicha }) {
                   El primero que acepte se queda con ella y abre la negociación contigo.
                   Recuerda: las fechas NO están apartadas hasta que tu cliente pague el 50%.
                 </p>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
         </Card>

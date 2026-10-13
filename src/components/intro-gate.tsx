@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { CLAVE_INTRO_VISTO, VIGENCIA_INTRO_MS } from "@/lib/intro";
 
 /**
  * Intro cinematográfico de entrada (Medellín → Guatapé → mansiones → logo).
@@ -16,25 +17,41 @@ import { useEffect, useRef, useState } from "react";
  *    que falla en Safari iOS) y `muted` se fuerza en el DOM (sin eso el móvil
  *    bloquea el autoplay). Si aun así se bloquea, se muestra "Toca para
  *    reproducir" en vez de saltarlo.
- *  - Una vez por sesión; respeta reduced-motion; backstop 12 s; scroll restaurado.
+ *  - Se muestra una vez cada 7 días (localStorage). Un script inline temprano
+ *    del layout raíz marca <html data-intro-visto> ANTES del primer paint y el
+ *    CSS oculta el overlay → quien ya lo vio no ve ni un destello.
+ *  - Respeta reduced-motion; backstop 12 s; scroll restaurado.
+ *  - Accesible: role="dialog", foco inicial en "Saltar", Esc cierra.
  */
 const FUENTE_MOVIL = "/intro/circle-intro-720.mp4"; // 16:9 liviano (teléfono)
 const FUENTE_PC = "/intro/circle-intro-1080.mp4"; // 16:9 (PC/tablet)
 const POSTER = "/intro/circle-poster.jpg";
+
+
+function introVistoReciente(): boolean {
+  try {
+    const t = Number(localStorage.getItem(CLAVE_INTRO_VISTO));
+    return t > 0 && Date.now() - t < VIGENCIA_INTRO_MS;
+  } catch {
+    return false;
+  }
+}
 
 export function IntroGate() {
   const [fase, setFase] = useState<"activo" | "saliendo" | "oculto">("activo");
   const [necesitaTap, setNecesitaTap] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const fondoRef = useRef<HTMLDivElement>(null);
+  const saltarRef = useRef<HTMLButtonElement>(null);
   const cerrado = useRef(false);
 
   const cerrar = () => {
     if (cerrado.current) return;
     cerrado.current = true;
     try {
-      sessionStorage.setItem("circle-intro-visto", "1");
+      localStorage.setItem(CLAVE_INTRO_VISTO, String(Date.now()));
     } catch {}
+    document.documentElement.setAttribute("data-intro-visto", "");
     setFase("saliendo");
     window.setTimeout(() => setFase("oculto"), 650);
   };
@@ -50,10 +67,8 @@ export function IntroGate() {
   };
 
   useEffect(() => {
-    let visto = false;
-    try {
-      visto = sessionStorage.getItem("circle-intro-visto") === "1";
-    } catch {}
+    const visto =
+      document.documentElement.hasAttribute("data-intro-visto") || introVistoReciente();
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     if (visto || reduce) {
       cerrado.current = true;
@@ -80,6 +95,7 @@ export function IntroGate() {
       v.load();
     }
     reproducir();
+    saltarRef.current?.focus();
 
     const tope = window.setTimeout(cerrar, 12_000);
     return () => window.clearTimeout(tope);
@@ -89,8 +105,13 @@ export function IntroGate() {
     if (fase !== "activo") return;
     const previo = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    const alTeclear = (e: KeyboardEvent) => {
+      if (e.key === "Escape") cerrar();
+    };
+    document.addEventListener("keydown", alTeclear);
     return () => {
       document.body.style.overflow = previo;
+      document.removeEventListener("keydown", alTeclear);
     };
   }, [fase]);
 
@@ -108,7 +129,9 @@ export function IntroGate() {
       </noscript>
       <div
         className="circle-intro-overlay"
-        aria-hidden
+        role="dialog"
+        aria-modal="true"
+        aria-label="Intro de THE CIRCLE"
         onClick={alTocar}
         style={{
           position: "fixed",
@@ -127,6 +150,7 @@ export function IntroGate() {
         {/* Fondo desenfocado (solo teléfono vertical): llena el alto sin barras. */}
         <div
           ref={fondoRef}
+          aria-hidden
           style={{
             display: "none",
             position: "absolute",
@@ -140,11 +164,12 @@ export function IntroGate() {
         />
         <video
           ref={videoRef}
+          aria-hidden
           poster={POSTER}
           muted
           autoPlay
           playsInline
-          preload="auto"
+          preload="metadata"
           controls={false}
           onPlaying={() => setNecesitaTap(false)}
           onEnded={cerrar}
@@ -155,6 +180,7 @@ export function IntroGate() {
 
         {necesitaTap && (
           <div
+            aria-hidden
             style={{
               position: "absolute",
               inset: 0,
@@ -196,6 +222,8 @@ export function IntroGate() {
         )}
 
         <button
+          ref={saltarRef}
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             cerrar();

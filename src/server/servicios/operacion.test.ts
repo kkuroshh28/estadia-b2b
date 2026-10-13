@@ -25,19 +25,24 @@ import { POST as webhookPost } from "@/app/api/webhooks/pasarela/route";
 
 const HAY_DB = Boolean(process.env.DATABASE_URL);
 
+// Fechas RELATIVAS a hoy (el import iCal recorta a [hoy, hoy+18m]): el test no caduca.
+const BASE = Date.now() + 40 * 86_400_000;
+const F = (n: number) => new Date(BASE + n * 86_400_000).toISOString().slice(0, 10);
+const C = (n: number) => F(n).replaceAll("-", "");
+
 const ICS_AIRBNB = [
   "BEGIN:VCALENDAR",
   "VERSION:2.0",
   "PRODID:-//Airbnb Inc//Hosting Calendar 0.8.8//EN",
   "BEGIN:VEVENT",
-  "DTSTART;VALUE=DATE:20261120",
-  "DTEND;VALUE=DATE:20261123",
+  `DTSTART;VALUE=DATE:${C(0)}`,
+  `DTEND;VALUE=DATE:${C(3)}`,
   "SUMMARY:Airbnb (Not available)",
   "UID:airbnb-123@airbnb.com",
   "END:VEVENT",
   "BEGIN:VEVENT",
-  "DTSTART:20261201T140000Z",
-  "DTEND:20261202T100000Z",
+  `DTSTART:${C(11)}T140000Z`,
+  `DTEND:${C(12)}T100000Z`,
   "SUMMARY:Reserved",
   "UID:booking-456@booking.com",
   "END:VEVENT",
@@ -48,8 +53,8 @@ describe("iCal — parser puro", () => {
   it("lee VALUE=DATE (Airbnb) y datetime UTC (Booking), DTEND exclusivo", () => {
     const eventos = parsearIcs(ICS_AIRBNB);
     expect(eventos).toEqual([
-      { desde: "2026-11-20", hasta: "2026-11-23" },
-      { desde: "2026-12-01", hasta: "2026-12-02" },
+      { desde: F(0), hasta: F(3) },
+      { desde: F(11), hasta: F(12) },
     ]);
   });
   it("token de export: válido solo el propio", () => {
@@ -87,9 +92,9 @@ describe.skipIf(!HAY_DB)("integración — operación completa", () => {
 
     // El 21 nov YA está reservado por la app (pago confirmado)
     await db.insert(calendarioDias).values([
-      { propiedadId: p.id, fecha: "2026-11-20", estado: "disponible" },
-      { propiedadId: p.id, fecha: "2026-11-21", estado: "reservado_app" },
-      { propiedadId: p.id, fecha: "2026-11-22", estado: "disponible" },
+      { propiedadId: p.id, fecha: F(0), estado: "disponible" },
+      { propiedadId: p.id, fecha: F(1), estado: "reservado_app" },
+      { propiedadId: p.id, fecha: F(2), estado: "disponible" },
     ]);
 
     const r = await importarIcs(db, p.id, ICS_AIRBNB, "airbnb");
@@ -97,7 +102,7 @@ describe.skipIf(!HAY_DB)("integración — operación completa", () => {
     expect(r.conflictos).toBe(1); // el 21 NO se pisa
 
     const [dia21] = await db.select().from(calendarioDias)
-      .where(and(eq(calendarioDias.propiedadId, p.id), eq(calendarioDias.fecha, "2026-11-21")));
+      .where(and(eq(calendarioDias.propiedadId, p.id), eq(calendarioDias.fecha, F(1))));
     expect(dia21.estado).toBe("reservado_app"); // el dinero manda
 
     const alertas = await db.select().from(alertasAdmin).where(eq(alertasAdmin.tipo, "conflicto_ical"));
@@ -105,7 +110,7 @@ describe.skipIf(!HAY_DB)("integración — operación completa", () => {
 
     // Export: el .ics propio contiene los días no disponibles
     const ics = await exportarIcs(db, p.id);
-    expect(ics).toContain("DTSTART;VALUE=DATE:20261121");
+    expect(ics).toContain(`DTSTART;VALUE=DATE:${C(1)}`);
     expect(ics).toContain("BEGIN:VCALENDAR");
   }, 30_000);
 
@@ -132,15 +137,15 @@ describe.skipIf(!HAY_DB)("integración — operación completa", () => {
       tipo: "finca", capacidad: 8, habitaciones: 4, banos: 3, verificada: true, publicada: true,
     }).returning({ id: propiedades.id });
     await db.insert(suscripciones).values({
-      propietarioId: duenoId, plan: "piloto", estado: "activa", renuevaEn: "2026-08-01",
+      propietarioId: duenoId, plan: "piloto", estado: "activa", renuevaEn: F(60),
     });
     for (let d = 10; d <= 13; d++) {
-      await db.insert(calendarioDias).values({ propiedadId: prop.id, fecha: `2026-12-${d}`, estado: "disponible" });
+      await db.insert(calendarioDias).values({ propiedadId: prop.id, fecha: F(d + 10), estado: "disponible" });
     }
 
     // 3 · Solicitud del externo; el principal la gana (primero que acepta)
     const [sol] = await db.insert(solicitudes).values({
-      externoId, propiedadId: prop.id, desde: "2026-12-10", hasta: "2026-12-13",
+      externoId, propiedadId: prop.id, desde: F(20), hasta: F(23),
       huespedes: 6, estado: "pendiente",
       venceEn: sql`now() + interval '1 hour'` as unknown as Date,
     }).returning({ id: solicitudes.id });
@@ -152,7 +157,7 @@ describe.skipIf(!HAY_DB)("integración — operación completa", () => {
     const PRECIO = 510_000_000; // $5.100.000
     const [res] = await db.insert(reservas).values({
       codigo: `CIR-E2E-${Date.now()}`, solicitudId: sol.id, propiedadId: prop.id,
-      principalId, externoId, desde: "2026-12-10", hasta: "2026-12-13",
+      principalId, externoId, desde: F(20), hasta: F(23),
       estado: "NEGOCIACION", precioFinalCentavos: 0, tarifaNetaCentavos: NETA,
     }).returning({ id: reservas.id, codigo: reservas.codigo });
     const [neg] = await db.insert(negociaciones).values({
@@ -192,9 +197,9 @@ describe.skipIf(!HAY_DB)("integración — operación completa", () => {
 
     // Noches [10, 13) bloqueadas; el día de salida queda libre (back-to-back).
     const dias = await db.select().from(calendarioDias)
-      .where(and(eq(calendarioDias.propiedadId, prop.id), sql`fecha BETWEEN '2026-12-10' AND '2026-12-13'`));
+      .where(and(eq(calendarioDias.propiedadId, prop.id), sql`fecha BETWEEN ${F(20)}::date AND ${F(23)}::date`));
     for (const d of dias) {
-      expect(d.estado).toBe(d.fecha < "2026-12-13" ? "reservado_app" : "disponible");
+      expect(d.estado).toBe(d.fecha < F(23) ? "reservado_app" : "disponible");
     }
 
     const [c] = await db.select().from(contratos).where(eq(contratos.reservaId, res.id));

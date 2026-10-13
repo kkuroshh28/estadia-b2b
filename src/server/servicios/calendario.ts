@@ -44,20 +44,19 @@ export async function bloquearDias(
 ): Promise<number> {
   await exigirPropiedadDe(db, propietarioId, propiedadId);
   validarFechas(fechas);
-  let bloqueados = 0;
-  for (const fecha of fechas) {
-    const r = await db
-      .insert(calendarioDias)
-      .values({ propiedadId, fecha, estado: "bloqueado_manual" })
-      .onConflictDoUpdate({
-        target: [calendarioDias.propiedadId, calendarioDias.fecha],
-        set: { estado: sql`'bloqueado_manual'::estado_dia`, actualizadoEn: sql`now()` },
-        setWhere: sql`${calendarioDias.estado} = 'disponible'`,
-      })
-      .returning({ estado: calendarioDias.estado });
-    if (r[0]?.estado === "bloqueado_manual") bloqueados++;
-  }
-  return bloqueados;
+  // UN solo INSERT multi-fila (sin duplicados: ON CONFLICT no admite tocar
+  // dos veces la misma fila en un statement). Orden ascendente de locks.
+  const unicas = [...new Set(fechas)].sort();
+  const r = await db
+    .insert(calendarioDias)
+    .values(unicas.map((fecha) => ({ propiedadId, fecha, estado: "bloqueado_manual" as const })))
+    .onConflictDoUpdate({
+      target: [calendarioDias.propiedadId, calendarioDias.fecha],
+      set: { estado: sql`'bloqueado_manual'::estado_dia`, actualizadoEn: sql`now()` },
+      setWhere: sql`${calendarioDias.estado} = 'disponible'`,
+    })
+    .returning({ estado: calendarioDias.estado });
+  return r.filter((f) => f.estado === "bloqueado_manual").length;
 }
 
 /** Liberar bloqueo manual. Solo transición bloqueado_manual → disponible. */

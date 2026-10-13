@@ -67,19 +67,27 @@ export function tokenAleatorio(bytes = 32): string {
 
 // ─── Contraseñas (scrypt, sal por usuario) ──────────────────────────────────
 
-const SCRYPT_N = 16_384;
+const SCRYPT_N = 131_072; // 2^17 — el N viaja en el hash: los hashes viejos siguen validando
+const SCRYPT_MEM = 256 * 1024 * 1024;
 
 /** Hash de contraseña: `scrypt$N$sal$hash` — jamás la contraseña en claro. */
 export function hashPassword(password: string): string {
   const sal = randomBytes(16).toString("hex");
-  const hash = scryptSync(password, sal, 64, { N: SCRYPT_N }).toString("hex");
+  const hash = scryptSync(password, sal, 64, { N: SCRYPT_N, maxmem: SCRYPT_MEM }).toString("hex");
   return `scrypt$${SCRYPT_N}$${sal}$${hash}`;
+}
+
+let senuelo: string | undefined;
+/** Hash señuelo: se verifica contra él cuando el correo no existe (mismo tiempo, sin enumerar). */
+export function hashSenuelo(): string {
+  senuelo ??= hashPassword(randomBytes(16).toString("hex"));
+  return senuelo;
 }
 
 export function verificarPassword(password: string, empaquetado: string): boolean {
   const [alg, n, sal, hash] = empaquetado.split("$");
   if (alg !== "scrypt" || !sal || !hash) return false;
-  const calculado = scryptSync(password, sal, 64, { N: Number(n) }).toString("hex");
+  const calculado = scryptSync(password, sal, 64, { N: Number(n), maxmem: SCRYPT_MEM }).toString("hex");
   return igualdadSegura(calculado, hash);
 }
 

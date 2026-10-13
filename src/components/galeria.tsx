@@ -1,26 +1,45 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { AnimatePresence, motion } from "motion/react";
+import { m } from "motion/react";
 
 /**
  * Galería de la propiedad: mosaico de portada (1 grande + 4) y visor a
  * pantalla completa con teclado (← → Esc) y gestos de toque.
+ * El visor es un <dialog> nativo abierto con showModal(): el navegador atrapa
+ * el foco (el resto de la página queda inerte) y Esc lo cierra; al cerrar, el
+ * foco vuelve al botón que lo abrió.
  */
 export function Galeria({ fotos, nombre }: { fotos: string[]; nombre: string }) {
   const [abierta, setAbierta] = useState<number | null>(null);
   const total = fotos.length;
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const opener = useRef<HTMLElement | null>(null);
+
+  const abrir = (i: number) => {
+    opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    setAbierta(i);
+  };
 
   const mover = useCallback(
     (delta: number) => setAbierta((i) => (i === null ? i : (i + delta + total) % total)),
     [total],
   );
 
+  // Sincroniza el estado con el <dialog> nativo (modal real, foco atrapado).
+  const visorAbierto = abierta !== null;
+  useEffect(() => {
+    const d = dialogRef.current;
+    if (!d) return;
+    if (visorAbierto && !d.open) d.showModal();
+    if (!visorAbierto && d.open) d.close();
+  }, [visorAbierto]);
+
   useEffect(() => {
     if (abierta === null) return;
     const tecla = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setAbierta(null);
+      // Esc lo maneja el <dialog> nativo (evento close).
       if (e.key === "ArrowRight") mover(1);
       if (e.key === "ArrowLeft") mover(-1);
     };
@@ -42,7 +61,7 @@ export function Galeria({ fotos, nombre }: { fotos: string[]; nombre: string }) 
         {mosaico.map((src, i) => (
           <button
             key={src}
-            onClick={() => setAbierta(i)}
+            onClick={() => abrir(i)}
             aria-label={`Ver foto ${i + 1} de ${total}`}
             className={`group relative overflow-hidden bg-tarjeta ${
               i === 0 ? "col-span-4 row-span-2 sm:col-span-2" : "hidden sm:block"
@@ -59,30 +78,36 @@ export function Galeria({ fotos, nombre }: { fotos: string[]; nombre: string }) 
           </button>
         ))}
         <button
-          onClick={() => setAbierta(0)}
+          onClick={() => abrir(0)}
           className="absolute bottom-3 right-3 rounded-full border border-borde-claro bg-noche/80 px-4 py-2 text-xs font-semibold text-tinta backdrop-blur transition hover:bg-noche"
         >
           Ver las {total} fotos
         </button>
       </div>
 
-      <AnimatePresence>
+      <dialog
+        ref={dialogRef}
+        aria-label={`Fotos de ${nombre}`}
+        onClose={() => {
+          setAbierta(null);
+          opener.current?.focus();
+        }}
+        className="fixed inset-0 m-0 h-dvh max-h-none w-screen max-w-none border-0 bg-transparent p-0 text-tinta backdrop:bg-black/90"
+      >
         {abierta !== null && (
-          <motion.div
-            role="dialog"
-            aria-modal="true"
-            aria-label={`Fotos de ${nombre}`}
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex flex-col bg-black/95"
+            className="flex h-full flex-col bg-black/95"
           >
             <div className="flex items-center justify-between px-4 py-3 text-sm text-bruma">
               <span className="cifra">
                 {abierta + 1} / {total}
               </span>
               <button
-                onClick={() => setAbierta(null)}
+                type="button"
+                autoFocus
+                onClick={() => dialogRef.current?.close()}
                 aria-label="Cerrar"
                 className="rounded-full border border-borde px-4 py-1.5 text-xs font-semibold text-tinta transition hover:border-tiffany"
               >
@@ -135,9 +160,9 @@ export function Galeria({ fotos, nombre }: { fotos: string[]; nombre: string }) 
                 </button>
               ))}
             </div>
-          </motion.div>
+          </m.div>
         )}
-      </AnimatePresence>
+      </dialog>
     </>
   );
 }

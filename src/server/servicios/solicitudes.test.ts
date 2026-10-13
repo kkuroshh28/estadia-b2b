@@ -100,17 +100,17 @@ describe.skipIf(!HAY_DB)("operación — solicitud a link, reglas en servidor", 
   it("rechaza solicitudes inválidas: 93 noches, sobre-capacidad, sin suscripción", async () => {
     const base = { externoId, propiedadId, huespedes: 4 };
     await expect(
-      crearSolicitud(db, { ...base, desde: "2026-09-01", hasta: "2026-12-03" }),
+      crearSolicitud(db, { ...base, desde: "2027-09-01", hasta: "2027-12-03" }),
     ).rejects.toThrow(OperacionError); // 93 noches
     await expect(
-      crearSolicitud(db, { ...base, desde: "2026-09-01", hasta: "2026-09-04", huespedes: 20 }),
+      crearSolicitud(db, { ...base, desde: "2027-09-01", hasta: "2027-09-04", huespedes: 20 }),
     ).rejects.toThrow(/máximo 8/);
     await expect(
       crearSolicitud(db, {
         externoId,
         propiedadId: sinSuscripcionId,
-        desde: "2026-09-01",
-        hasta: "2026-09-04",
+        desde: "2027-09-01",
+        hasta: "2027-09-04",
         huespedes: 2,
       }),
     ).rejects.toThrow(/suscripción/);
@@ -120,8 +120,8 @@ describe.skipIf(!HAY_DB)("operación — solicitud a link, reglas en servidor", 
     const { solicitudId } = await crearSolicitud(db, {
       externoId,
       propiedadId,
-      desde: "2026-09-10",
-      hasta: "2026-09-13", // 3 noches → neta $3.000.000
+      desde: "2027-09-10",
+      hasta: "2027-09-13", // 3 noches → neta $3.000.000
       huespedes: 6,
     });
 
@@ -185,7 +185,7 @@ describe.skipIf(!HAY_DB)("operación — solicitud a link, reglas en servidor", 
       .from(calendarioDias)
       .where(eq(calendarioDias.propiedadId, propiedadId));
     const bloqueados = dias.filter(
-      (d) => d.fecha >= "2026-09-10" && d.fecha <= "2026-09-13" && d.estado === "reservado_app",
+      (d) => d.fecha >= "2027-09-10" && d.fecha <= "2027-09-13" && d.estado === "reservado_app",
     );
     expect(bloqueados).toHaveLength(3); // 10, 11 y 12 — la salida (13) queda libre
 

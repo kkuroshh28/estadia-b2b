@@ -136,7 +136,7 @@ export async function crearPropiedad(
     // La tarifa nace con la propiedad: vigencia abierta desde hoy.
     await tx.insert(tarifas).values({
       propiedadId: p.id,
-      desde: sql`CURRENT_DATE` as unknown as string,
+      desde: sql`(now() AT TIME ZONE 'America/Bogota')::date` as unknown as string,
       hasta: "2099-12-31",
       netaNocheCentavos: datos.tarifaNetaNochePesos * 100,
     });
@@ -151,7 +151,7 @@ export async function crearPropiedad(
         propietarioId,
         plan: "piloto",
         estado: "activa",
-        renuevaEn: sql`CURRENT_DATE + interval '1 month'` as unknown as string,
+        renuevaEn: sql`(now() AT TIME ZONE 'America/Bogota')::date + interval '1 month'` as unknown as string,
       });
     }
 
@@ -384,17 +384,18 @@ export async function editarPropiedad(
       if (!Number.isSafeInteger(t) || t < 50_000 || t > 50_000_000) {
         throw new PropiedadError("La tarifa neta debe estar entre $50.000 y $50.000.000.");
       }
-      // Cerrar la vigencia que cubre hoy y abrir la nueva desde hoy.
+      // Cerrar la vigencia que cubre hoy y abrir la nueva desde hoy. "Hoy" es
+      // el día en HORA COLOMBIA: CURRENT_DATE del servidor (UTC) rueda a las 7 pm.
       await tx.execute(sql`
-        UPDATE tarifas SET hasta = CURRENT_DATE - 1
+        UPDATE tarifas SET hasta = (now() AT TIME ZONE 'America/Bogota')::date - 1
         WHERE propiedad_id = ${propiedadId}
-          AND desde < CURRENT_DATE AND hasta >= CURRENT_DATE`);
+          AND desde < (now() AT TIME ZONE 'America/Bogota')::date AND hasta >= (now() AT TIME ZONE 'America/Bogota')::date`);
       await tx.execute(sql`
         DELETE FROM tarifas
-        WHERE propiedad_id = ${propiedadId} AND desde >= CURRENT_DATE`);
+        WHERE propiedad_id = ${propiedadId} AND desde >= (now() AT TIME ZONE 'America/Bogota')::date`);
       await tx.insert(tarifas).values({
         propiedadId,
-        desde: sql`CURRENT_DATE` as unknown as string,
+        desde: sql`(now() AT TIME ZONE 'America/Bogota')::date` as unknown as string,
         hasta: "2099-12-31",
         netaNocheCentavos: t * 100,
       });
@@ -405,7 +406,7 @@ export async function editarPropiedad(
       const [{ vigentes }] = await tx
         .select({ vigentes: sql<number>`count(*)::int` })
         .from(tarifas)
-        .where(sql`${tarifas.propiedadId} = ${propiedadId} AND ${tarifas.hasta} >= CURRENT_DATE`);
+        .where(sql`${tarifas.propiedadId} = ${propiedadId} AND ${tarifas.hasta} >= (now() AT TIME ZONE 'America/Bogota')::date`);
       if (vigentes === 0) {
         throw new PropiedadError("Define la tarifa neta por noche antes de publicar la propiedad.");
       }

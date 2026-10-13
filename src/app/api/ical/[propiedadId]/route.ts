@@ -17,6 +17,8 @@ export async function GET(
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
       "Content-Disposition": "attachment; filename=thecircle.ics",
+      // Airbnb/Booking consultan seguido: 5 min en el CDN (la URL lleva el token).
+      "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
     },
   });
 }

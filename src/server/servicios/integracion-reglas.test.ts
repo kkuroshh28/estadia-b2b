@@ -48,7 +48,7 @@ describe.skipIf(!HAY_DB)("integración — reglas 6, 8 y 16", () => {
     const [s] = await db
       .insert(solicitudes)
       .values({
-        externoId, propiedadId, desde: "2026-09-10", hasta: "2026-09-13",
+        externoId, propiedadId, desde: "2027-09-10", hasta: "2027-09-13",
         huespedes: 4, estado: "aceptada", principalAceptanteId: principalId,
         venceEn: sql`now() + interval '1 hour'` as unknown as Date,
       })
@@ -56,7 +56,7 @@ describe.skipIf(!HAY_DB)("integración — reglas 6, 8 y 16", () => {
     await db.insert(reservas).values({
       codigo: `CIR-NEG-${Date.now()}-${Math.random()}`,
       solicitudId: s.id, propiedadId, principalId, externoId,
-      desde: "2026-09-10", hasta: "2026-09-13",
+      desde: "2027-09-10", hasta: "2027-09-13",
       estado: "NEGOCIACION",
       precioFinalCentavos: 0, tarifaNetaCentavos: neta,
     });
@@ -95,14 +95,16 @@ describe.skipIf(!HAY_DB)("integración — reglas 6, 8 y 16", () => {
       .onConflictDoNothing();
   });
 
-  it("regla #6: el link nace EXACTAMENTE del precio aceptado (mitad 1 = floor(precio/2))", async () => {
+  it("regla #6: el link nace EXACTAMENTE del precio aceptado (mitad 1 = floor(precio/200)·100, pesos enteros)", async () => {
     const precio = 510_000_001; // impar a propósito
     const { ofertaId } = await montarNegociacion(precio, 435_000_000);
     const { linkId, montoCentavos } = await aceptarOfertaYGenerarLink(db, ofertaId, principalId);
 
-    expect(montoCentavos).toBe(Math.floor(precio / 2));
+    // Mitad 1 en PESOS ENTEROS (la pasarela no cobra centavos sueltos).
+    expect(montoCentavos).toBe(Math.floor(precio / 200) * 100);
+    expect(montoCentavos % 100).toBe(0);
     const [link] = await db.select().from(linksDePago).where(eq(linksDePago.id, linkId));
-    expect(link.montoCentavos).toBe(Math.floor(precio / 2));
+    expect(link.montoCentavos).toBe(Math.floor(precio / 200) * 100);
     // Y la reserva quedó con el precio EXACTO de la oferta aceptada
     const [n] = await db.select().from(negociaciones).where(sql`precio_acordado_centavos = ${precio}`).limit(1);
     expect(n).toBeTruthy();

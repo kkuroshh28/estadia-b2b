@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import { AvatarAlias, Badge, Card, Money } from "@/components/ui";
 import { MoneyAnimado } from "@/components/motion";
 import { DesgloseSplit } from "@/components/desglose";
@@ -173,7 +173,7 @@ export function NegociacionCliente({ datos }: { datos: DatosNegociacion }) {
               const esMia = o.emisor === perspectiva;
               const aliasEmisor = o.emisor === "principal" ? neg.aliasPrincipal : neg.aliasExterno;
               return (
-                <motion.div
+                <m.div
                   key={o.id}
                   initial={{ opacity: 0, y: 16, scale: 0.97 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -198,13 +198,13 @@ export function NegociacionCliente({ datos }: { datos: DatosNegociacion }) {
                       <Money valor={o.monto - neg.tarifaNetaTotal} className="text-oro" />
                     </p>
                   </div>
-                </motion.div>
+                </m.div>
               );
             })}
 
             <AnimatePresence>
             {acordado && (
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, scale: 0.92, y: 18 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ type: "spring", stiffness: 240, damping: 20 }}
@@ -225,7 +225,7 @@ export function NegociacionCliente({ datos }: { datos: DatosNegociacion }) {
                 >
                   Ver checkout del cliente →
                 </Link>
-              </motion.div>
+              </m.div>
             )}
             </AnimatePresence>
           </div>

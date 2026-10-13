@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { validarContenidoServidor } from "@/server/servicios/antifuga";
 import { limitar } from "@/server/rate-limit";
+import { authExigida } from "@/server/auth";
+import { usuarioDePeticion } from "@/server/auth/guardia";
 
 /**
  * Validación anti-fuga EN SERVIDOR. El cliente muestra el resultado como UX,
@@ -17,6 +19,10 @@ const Cuerpo = z.object({
 export async function POST(req: Request) {
   const excedido = limitar(req, "chat-validar", 30);
   if (excedido) return excedido;
+  // Sin sesión no se puede "entrenar" evasiones contra el filtro.
+  if (authExigida() && !(await usuarioDePeticion())) {
+    return NextResponse.json({ error: "Sesión requerida" }, { status: 401 });
+  }
   const json = await req.json().catch(() => null);
   const parseado = Cuerpo.safeParse(json);
   if (!parseado.success) {

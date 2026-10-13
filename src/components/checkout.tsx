@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import type { LinkDePago } from "@/lib/domain/tipos";
 import { Money } from "./ui";
 
@@ -45,14 +45,14 @@ export function Checkout({ link }: { link: LinkDePago }) {
   if (muerto) {
     return (
       <div className="w-full max-w-md rounded-3xl border border-borde bg-tarjeta p-8 text-center">
-        <motion.div
+        <m.div
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", stiffness: 260, damping: 16 }}
           className="mx-auto flex size-14 items-center justify-center rounded-full border border-rojo/40 bg-rojo-tenue text-2xl"
         >
           ✕
-        </motion.div>
+        </m.div>
         <h1 className="mt-5 font-display text-2xl text-tinta">Fechas ya no disponibles</h1>
         <p className="mt-3 text-sm leading-relaxed text-bruma">
           {link.estado === "invalidado"
@@ -68,7 +68,7 @@ export function Checkout({ link }: { link: LinkDePago }) {
     <div className="w-full max-w-md">
       <AnimatePresence mode="wait">
         {fase !== "pagado" ? (
-          <motion.div
+          <m.div
             key="form"
             exit={{ opacity: 0, y: -16 }}
             className="rounded-3xl border border-borde bg-tarjeta p-8"
@@ -111,12 +111,12 @@ export function Checkout({ link }: { link: LinkDePago }) {
                 className="w-full rounded-xl bg-tiffany py-3.5 text-sm font-bold text-noche transition hover:bg-tiffany-claro disabled:opacity-70"
               >
                 {fase === "procesando" ? (
-                  <motion.span
+                  <m.span
                     animate={{ opacity: [1, 0.5, 1] }}
                     transition={{ duration: 0.9, repeat: Infinity }}
                   >
                     Procesando con la pasarela…
-                  </motion.span>
+                  </m.span>
                 ) : (
                   <>Pagar <Money valor={link.monto} /></>
                 )}
@@ -126,16 +126,16 @@ export function Checkout({ link }: { link: LinkDePago }) {
                 invalida en el instante y tu tarjeta no se cobra.
               </p>
             </div>
-          </motion.div>
+          </m.div>
         ) : (
-          <motion.div
+          <m.div
             key="pagado"
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             className="space-y-5"
           >
             <div className="rounded-3xl border border-esmeralda/30 bg-tarjeta p-8 text-center">
-              <motion.div
+              <m.div
                 initial={{ scale: 0.3, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: "spring", stiffness: 260, damping: 13, delay: 0.1 }}
@@ -143,7 +143,7 @@ export function Checkout({ link }: { link: LinkDePago }) {
                 style={{ boxShadow: "0 0 50px rgba(10,186,181,0.25)" }}
               >
                 ✓
-              </motion.div>
+              </m.div>
               <h1 className="mt-5 font-display text-2xl text-tinta">Pago confirmado</h1>
               <p className="mt-2 text-sm leading-relaxed text-bruma">
                 Recibimos tu pago de <Money valor={link.monto} className="font-bold text-tinta" /> por{" "}
@@ -151,7 +151,7 @@ export function Checkout({ link }: { link: LinkDePago }) {
                 {link.mitad === 1 && " Tus fechas quedaron bloqueadas en firme."}
               </p>
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

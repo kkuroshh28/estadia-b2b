@@ -3,10 +3,13 @@ import { obtenerDb } from "@/server/db";
 import { bandejaAntifuga } from "@/server/servicios/admin";
 import { accionRevertirBan } from "../acciones";
 import { SinDb, hayDb } from "../sin-db";
+import { protegerAdmin } from "@/server/auth/guardia";
 
 export const dynamic = "force-dynamic";
 
 export default async function Antifuga() {
+  // Guard en CADA página: el layout no se re-ejecuta en navegaciones parciales.
+  await protegerAdmin();
   if (!hayDb()) return <SinDb seccion="anti-fuga" />;
   const { intentos, lista, porUsuario } = await bandejaAntifuga(obtenerDb());
   const usuarios = porUsuario as unknown as { id: string; email: string; estado: string; strikes: number }[];

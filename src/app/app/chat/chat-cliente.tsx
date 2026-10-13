@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import { AvatarAlias, Badge, Card } from "@/components/ui";
 import type { DatosChat, MensajeChatPanel } from "@/lib/domain/paneles";
 
@@ -88,7 +88,7 @@ export function ChatCliente({ datos }: { datos: DatosChat }) {
         <div className="flex items-center gap-3">
           <div className="flex gap-1.5">
             {Array.from({ length: MAX_STRIKES }).map((_, i) => (
-              <motion.span
+              <m.span
                 key={i}
                 animate={{ scale: i < misStrikes ? [1, 1.35, 1] : 1 }}
                 className={`size-2.5 rounded-full ${i < misStrikes ? "bg-rojo" : "bg-borde-claro"}`}
@@ -124,11 +124,11 @@ export function ChatCliente({ datos }: { datos: DatosChat }) {
               Sin conversaciones activas. Acepta una solicitud y su hilo aparece aquí.
             </p>
           )}
-          {visibles.map((m) => {
-            const esMio = m.emisorRol === perspectiva;
+          {visibles.map((msg) => {
+            const esMio = msg.emisorRol === perspectiva;
             return (
-              <motion.div
-                key={m.id}
+              <m.div
+                key={msg.id}
                 initial={{ opacity: 0, y: 12, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ type: "spring", stiffness: 320, damping: 26 }}
@@ -136,26 +136,26 @@ export function ChatCliente({ datos }: { datos: DatosChat }) {
               >
                 <div
                   className={`max-w-[80%] rounded-2xl border px-4 py-3 text-sm ${
-                    m.bloqueado
+                    msg.bloqueado
                       ? "rounded-tr-sm border-rojo/40 bg-rojo-tenue"
                       : esMio
                         ? "rounded-tr-sm border-tiffany-claro bg-tiffany-bruma text-tinta"
                         : "rounded-tl-sm border-borde bg-panel text-bruma"
                   }`}
                 >
-                  {m.bloqueado ? (
+                  {msg.bloqueado ? (
                     <>
-                      <p className="text-bruma line-through">{m.texto}</p>
+                      <p className="text-bruma line-through">{msg.texto}</p>
                       <p className="mt-2 text-xs font-bold text-rojo">⛔ Bloqueado antes del envío</p>
                       <p className="mt-1 text-[11px] text-bruma">
-                        Detectado: {m.motivos?.join(" · ")}. Este intento quedó registrado.
+                        Detectado: {msg.motivos?.join(" · ")}. Este intento quedó registrado.
                       </p>
                     </>
                   ) : (
-                    m.texto
+                    msg.texto
                   )}
                 </div>
-              </motion.div>
+              </m.div>
             );
           })}
         </div>
@@ -189,19 +189,19 @@ export function ChatCliente({ datos }: { datos: DatosChat }) {
         {/* BAN PERPETUO */}
         <AnimatePresence>
           {baneado && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-fondo/95 p-8 text-center backdrop-blur"
             >
-              <motion.div
+              <m.div
                 initial={{ scale: 0.5 }}
                 animate={{ scale: 1 }}
                 transition={{ type: "spring", stiffness: 220, damping: 14 }}
                 className="flex size-16 items-center justify-center rounded-full border-2 border-rojo bg-rojo-tenue text-3xl"
               >
                 ⛔
-              </motion.div>
+              </m.div>
               <h2 className="mt-5 font-display text-2xl text-rojo">Ban perpetuo aplicado</h2>
               <p className="mt-3 max-w-sm text-sm leading-relaxed text-bruma">
                 Tres intentos de intercambiar datos de contacto. Tu cédula y tu
@@ -211,7 +211,7 @@ export function ChatCliente({ datos }: { datos: DatosChat }) {
               </p>
               <p className="mt-4 text-[11px] text-bruma-osc">Sin negociación. Sin apelación. Así se protege el gremio.</p>
 
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </Card>

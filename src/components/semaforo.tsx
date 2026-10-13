@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import type { Reserva } from "@/lib/domain/tipos";
 import { entregaAutorizada, progresoReserva } from "@/lib/domain/reserva";
 import { EstadoBadge, Money } from "./ui";
@@ -97,7 +97,7 @@ export function Semaforo({
       </div>
 
       <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-borde">
-        <motion.div
+        <m.div
           className={`h-full rounded-full ${verde ? "bg-esmeralda" : "bg-oro"}`}
           initial={{ width: 0 }}
           whileInView={{ width: `${progreso}%` }}

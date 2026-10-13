@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Badge, Card, Cover, Money, Stat } from "@/components/ui";
 import { MoneyAnimado } from "@/components/motion";
 import { Semaforo } from "@/components/semaforo";
-import { GraficaIngresos } from "@/components/grafica-ingresos";
+import { GraficaIngresosDiferida } from "@/components/graficas-diferidas";
 import { datosPropietario } from "@/server/datos/paneles";
 import { calcularNetoPropietario } from "@/lib/domain/split";
 import { formatearFechaCO } from "@/lib/fechas";
@@ -58,12 +58,12 @@ export default async function PanelPropietario() {
       </div>
 
       <Card className="p-6">
-        <div className="flex items-center justify-between">
-          <h2 className="font-display text-xl text-tinta">Neto mensual 2026</h2>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="font-display text-xl text-tinta">Neto · últimos 6 meses</h2>
           <Badge tono="esmeralda">Tarifa neta completa · −3% pasarela</Badge>
         </div>
         <div className="mt-4">
-          <GraficaIngresos datos={datos.ingresosPorMes} />
+          <GraficaIngresosDiferida datos={datos.ingresosPorMes} />
         </div>
       </Card>
 
@@ -117,7 +117,11 @@ export default async function PanelPropietario() {
                       )}
                       {p.ownerDirect && <Badge tono="azul">Gestión directa</Badge>}
                       {!datos.esDemo && (
-                        <PublicarBoton propiedadId={p.id} publicada={p.publicada ?? true} />
+                        <PublicarBoton
+                          propiedadId={p.id}
+                          publicada={p.publicada ?? false}
+                          tarifaNetaNoche={p.tarifaNetaNoche}
+                        />
                       )}
                     </div>
                   </div>

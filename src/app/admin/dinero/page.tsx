@@ -4,10 +4,13 @@ import { obtenerDb } from "@/server/db";
 import { bandejaDinero, conciliar } from "@/server/servicios/admin";
 import { accionReembolsar } from "../acciones";
 import { SinDb, hayDb } from "../sin-db";
+import { protegerAdmin } from "@/server/auth/guardia";
 
 export const dynamic = "force-dynamic";
 
 export default async function Dinero() {
+  // Guard en CADA página: el layout no se re-ejecuta en navegaciones parciales.
+  await protegerAdmin();
   if (!hayDb()) return <SinDb seccion="dinero" />;
   const db = obtenerDb();
   const { trx, splits } = await bandejaDinero(db);

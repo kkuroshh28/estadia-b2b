@@ -118,3 +118,37 @@ describe("liquidarReserva — invariantes financieros completos", () => {
     expect(restar(centavos(10), centavos(4))).toBe(6);
   });
 });
+
+describe("liquidarReserva — mitad 1 en PESOS ENTEROS (M1)", () => {
+  it("mitad 1 = floor(precio/200)·100 y la mitad 2 lleva el resto exacto", () => {
+    const liq = liquidarReserva(centavos(510_000_001), centavos(435_000_000));
+    expect(liq.mitades[0].montoCliente).toBe(255_000_000);
+    expect(liq.mitades[1].montoCliente).toBe(255_000_001);
+    // precio en pesos impares: mitad 1 en pesos enteros, mitad 2 también
+    const impar = liquidarReserva(pesosACentavos(1_200_001), pesosACentavos(1_000_001));
+    expect(impar.mitades[0].montoCliente % 100).toBe(0);
+    expect(impar.mitades[1].montoCliente % 100).toBe(0);
+  });
+
+  it("ninguna mitad tiene comisión negativa ni neta fuera de rango, incluso con precio ≈ neta y centavos sueltos", () => {
+    let semilla = 7;
+    const azar = (max: number) => {
+      semilla = (semilla * 1_103_515_245 + 12_345) % 2_147_483_648;
+      return semilla % max;
+    };
+    for (let i = 0; i < 20_000; i++) {
+      const neta = centavos(azar(500_000_000) + 1);
+      const precio = centavos(neta + (i % 3 === 0 ? azar(300) : azar(50_000_000)));
+      const liq = liquidarReserva(precio, neta);
+      const [m1, m2] = liq.mitades;
+      expect(m1.montoCliente % 100).toBe(0);
+      expect(m1.montoCliente + m2.montoCliente).toBe(precio);
+      expect(m1.tarifaNeta + m2.tarifaNeta).toBe(neta);
+      expect(m1.split.comision).toBeGreaterThanOrEqual(0);
+      expect(m2.split.comision).toBeGreaterThanOrEqual(0);
+      expect(m1.tarifaNeta + m1.split.comision).toBe(m1.montoCliente);
+      expect(m2.tarifaNeta + m2.split.comision).toBe(m2.montoCliente);
+      expect(m1.split.comision + m2.split.comision).toBe(liq.comisionTotal);
+    }
+  });
+});

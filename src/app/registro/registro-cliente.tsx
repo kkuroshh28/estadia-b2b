@@ -4,7 +4,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { LogoCircle } from "@/components/logo";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import { AvatarAlias } from "@/components/ui";
 import { generarAlias } from "@/lib/domain/alias";
 
@@ -25,7 +25,7 @@ function Progreso({ paso }: { paso: number }) {
     <div className="flex items-center gap-2">
       {PASOS.map((p, i) => (
         <div key={p} className="flex flex-1 flex-col gap-1.5">
-          <motion.div
+          <m.div
             className={`h-1 rounded-full ${i <= paso ? "bg-esmeralda" : "bg-borde"}`}
             initial={false}
             animate={{ opacity: i <= paso ? 1 : 0.5 }}
@@ -162,7 +162,7 @@ function Registro({ real }: { real: boolean }) {
           <AnimatePresence mode="wait">
             {/* PASO 0 · ROL */}
             {paso === 0 && (
-              <motion.div key="rol" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }}>
+              <m.div key="rol" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }}>
                 <h1 className="font-display text-2xl text-tinta">¿Cuál es tu rol en el gremio?</h1>
                 <div className="mt-6 space-y-3">
                   {(["Propietario", "Socio Comercial", "Socio de Ventas"] as Rol[]).map((r) => (
@@ -182,12 +182,12 @@ function Registro({ real }: { real: boolean }) {
                     </button>
                   ))}
                 </div>
-              </motion.div>
+              </m.div>
             )}
 
             {/* PASO 1 · DATOS */}
             {paso === 1 && (
-              <motion.div key="datos" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }}>
+              <m.div key="datos" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }}>
                 <h1 className="font-display text-2xl text-tinta">Tus datos reales</h1>
                 <p className="mt-1 text-xs text-bruma">
                   Solo para verificación, pagos y contratos. Otros usuarios jamás los verán: operarás con un alias.
@@ -199,18 +199,18 @@ function Registro({ real }: { real: boolean }) {
                   <Campo etiqueta="Correo" placeholder="tu@correo.com" tipo="email" valor={datos.correo} onCambio={(v) => setDatos((d) => ({ ...d, correo: v }))} />
                 </div>
                 <BotonSiguiente onClick={() => setPaso(2)} />
-              </motion.div>
+              </m.div>
             )}
 
             {/* PASO 2 · BIOMETRÍA */}
             {paso === 2 && (
-              <motion.div key="bio" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} className="text-center">
+              <m.div key="bio" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} className="text-center">
                 <h1 className="font-display text-2xl text-tinta">Verificación de identidad</h1>
                 <p className="mt-1 text-xs text-bruma">Cédula + rostro. Con esto tu identidad queda blindada — y el ban, si lo hubiera, también.</p>
                 <div className="relative mx-auto mt-8 flex size-36 items-center justify-center rounded-full border border-borde bg-panel">
                   {!biometriaLista ? (
                     <>
-                      <motion.div
+                      <m.div
                         className="absolute inset-x-6 h-0.5 rounded bg-tiffany"
                         animate={{ top: ["18%", "80%", "18%"] }}
                         transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
@@ -218,26 +218,26 @@ function Registro({ real }: { real: boolean }) {
                       <span className="text-4xl opacity-60">🪪</span>
                     </>
                   ) : (
-                    <motion.div
+                    <m.div
                       initial={{ scale: 0.4, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ type: "spring", stiffness: 300, damping: 16 }}
                       className="flex size-20 items-center justify-center rounded-full bg-esmeralda-tenue text-3xl text-esmeralda"
                     >
                       ✓
-                    </motion.div>
+                    </m.div>
                   )}
                 </div>
                 <p className="mt-4 cifra text-xs text-bruma">
                   {biometriaLista ? "Identidad verificada" : "Escaneando documento…"}
                 </p>
                 {biometriaLista && <BotonSiguiente onClick={() => setPaso(3)} />}
-              </motion.div>
+              </m.div>
             )}
 
             {/* PASO 3 · BANCO */}
             {paso === 3 && (
-              <motion.div key="banco" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }}>
+              <m.div key="banco" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }}>
                 <h1 className="font-display text-2xl text-tinta">Cuenta bancaria certificada</h1>
                 <p className="mt-1 text-xs text-bruma">
                   Aquí llegan tus liquidaciones automáticas. La certificación evita fraudes de suplantación.
@@ -257,17 +257,17 @@ function Registro({ real }: { real: boolean }) {
                 <BotonSiguiente onClick={avanzarDesdeBanco}>
                   {enviando ? "Creando tu cuenta…" : "Continuar →"}
                 </BotonSiguiente>
-              </motion.div>
+              </m.div>
             )}
 
             {/* PASO 4 · REVELACIÓN DEL ALIAS */}
             {paso === 4 && (
-              <motion.div key="alias" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, x: -24 }} className="text-center">
+              <m.div key="alias" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, x: -24 }} className="text-center">
                 <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-bruma-osc">
                   Desde hoy, en The Circle nadie sabrá quién eres
                 </p>
                 <h1 className="mt-3 font-display text-2xl text-tinta">Tu identidad en el gremio es</h1>
-                <motion.div
+                <m.div
                   initial={{ scale: 0.6, opacity: 0, filter: "blur(8px)" }}
                   animate={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
                   transition={{ delay: 0.5, type: "spring", stiffness: 180, damping: 16 }}
@@ -276,19 +276,19 @@ function Registro({ real }: { real: boolean }) {
                 >
                   <AvatarAlias alias={alias} size={56} />
                   <p className="cifra text-3xl font-bold tracking-wide text-tinta">{alias}</p>
-                </motion.div>
+                </m.div>
                 <p className="mx-auto mt-5 max-w-sm text-xs leading-relaxed text-bruma">
                   Aleatorio, único e irrepetible. No se puede cambiar ni transferir. Tu
                   reputación, tu ranking y tu historial viven en este alias: cuídalo
                   como a tu marca.
                 </p>
                 <BotonSiguiente onClick={() => setPaso(5)}>Entendido, es mío →</BotonSiguiente>
-              </motion.div>
+              </m.div>
             )}
 
             {/* PASO 5 · REGLAS */}
             {paso === 5 && (
-              <motion.div key="reglas" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
+              <m.div key="reglas" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
                 <h1 className="font-display text-2xl text-tinta">Las reglas que no se negocian</h1>
                 <div className="mt-5 space-y-3">
                   <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-borde bg-panel p-4">
@@ -317,7 +317,7 @@ function Registro({ real }: { real: boolean }) {
                     Acepta ambas reglas para continuar. Sin excepciones — para nadie.
                   </p>
                 )}
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
         </div>

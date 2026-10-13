@@ -188,3 +188,18 @@ body {
     color: var(--color-tiffany);
   }
 }
+
+/* Intro ya visto (marcado por el script inline del layout antes del primer
+   paint): el overlay no se pinta ni un frame. */
+html[data-intro-visto] .circle-intro-overlay {
+  display: none !important;
+}
+
+/* iOS hace zoom al enfocar campos con fuente < 16px: en móvil, 16px mínimo.
+   Sin @layer a propósito (gana a text-xs/text-sm de Tailwind); los campos que
+   ya usan un tamaño GRANDE (text-lg…text-3xl, p. ej. el código OTP) se respetan. */
+@media (max-width: 640px) {
+  :is(input, select, textarea):not([class*="text-lg"], [class*="text-xl"], [class*="text-2xl"], [class*="text-3xl"]) {
+    font-size: 16px;
+  }
+}

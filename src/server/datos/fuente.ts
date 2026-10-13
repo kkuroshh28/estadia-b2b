@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { asc, sql } from "drizzle-orm";
 import { obtenerDb, type Db } from "../db";
 import { alias as tablaAlias, usuarios } from "../db/schema";
@@ -24,20 +25,23 @@ export interface UsuarioPanel {
   alias: string | null;
 }
 
+/** Alias activo de un usuario — una consulta por petición (memoizada). */
+const aliasDe = cache(async (usuarioId: string): Promise<string | null> => {
+  const a = await obtenerDb()
+    .select({ alias: tablaAlias.alias })
+    .from(tablaAlias)
+    .where(sql`${tablaAlias.usuarioId} = ${usuarioId} AND NOT ${tablaAlias.retirado}`)
+    .limit(1);
+  return a[0]?.alias ?? null;
+});
+
 /** Usuario cuyo panel se muestra (sesión real, o usuario semilla del rol). */
 export async function usuarioDelPanel(
   db: Db,
   seccion: Seccion,
   sesion: UsuarioSesion | null,
 ): Promise<UsuarioPanel | null> {
-  if (sesion) {
-    const a = await db
-      .select({ alias: tablaAlias.alias })
-      .from(tablaAlias)
-      .where(sql`${tablaAlias.usuarioId} = ${sesion.id} AND NOT ${tablaAlias.retirado}`)
-      .limit(1);
-    return { id: sesion.id, alias: a[0]?.alias ?? null };
-  }
+  if (sesion) return { id: sesion.id, alias: await aliasDe(sesion.id) };
   // Dev/preview sin sesión: usuario activo del rol, prefiriendo los del seed
   // (demo.*@estadia.demo) sobre restos de tests que compartan la DB.
   const u = await db
@@ -87,7 +91,8 @@ export async function actorDePeticion(db: Db, rol: Seccion): Promise<UsuarioPane
   if (authExigida()) {
     const { usuarioDePeticion } = await import("../auth/guardia");
     const sesion = await usuarioDePeticion();
-    if (!sesion || !sesion.roles.includes(rol)) return null;
+    // KYC pendiente/rechazado NO opera por la API (los layouts ya lo bloquean).
+    if (!sesion || sesion.estado !== "activo" || !sesion.roles.includes(rol)) return null;
     return usuarioDelPanel(db, rol, sesion);
   }
   return usuarioDelPanel(db, rol, null);

@@ -13,7 +13,8 @@ export interface AdaptadorEmail {
 const simulado: AdaptadorEmail = {
   async enviar(db, destinatario, asunto, cuerpo) {
     await db.insert(notificacionesDev).values({ canal: "email", destinatario, asunto, cuerpo });
-    console.log(`[email simulado] → ${destinatario} · ${asunto}\n${cuerpo}`);
+    // Solo destinatario + asunto: el CUERPO puede llevar un OTP y jamás va a logs.
+    console.log(`[email simulado] → ${destinatario} · ${asunto}`);
   },
 };
 
@@ -31,6 +32,8 @@ const resend: AdaptadorEmail = {
         subject: asunto,
         text: cuerpo,
       }),
+      // Un proveedor colgado jamás retiene la función: 5 s y se aborta.
+      signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) throw new Error(`Resend falló: ${res.status} ${await res.text()}`);
   },

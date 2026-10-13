@@ -1,7 +1,7 @@
-import { cookies } from "next/headers";
 import { AppShell } from "@/components/app-shell";
 import { obtenerDb } from "@/server/db";
-import { authExigida, COOKIE_SESION, validarSesion } from "@/server/auth";
+import { authExigida } from "@/server/auth";
+import { sesionActual } from "@/server/auth/guardia";
 import { hayDb, usuarioDelPanel } from "@/server/datos/fuente";
 
 // Paneles SIEMPRE dinámicos: jamás congelar datos en el build.
@@ -14,8 +14,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     try {
       const db = obtenerDb();
       if (authExigida()) {
-        const jar = await cookies();
-        const sesion = await validarSesion(db, jar.get(COOKIE_SESION)?.value);
+        const sesion = await sesionActual();
         roles = sesion?.roles ?? [];
         const propio = sesion ? await usuarioDelPanel(db, "principal", sesion) : null;
         alias = { principal: propio?.alias ?? null, externo: propio?.alias ?? null };

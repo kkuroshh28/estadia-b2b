@@ -1,6 +1,7 @@
-import { eq, sql } from "drizzle-orm";
+import { and, eq, gte, lt, ne, sql } from "drizzle-orm";
 import type { Db } from "../db";
 import {
+  calendarioDias,
   configuracionPlataforma,
   linksDePago,
   negociaciones,
@@ -11,6 +12,7 @@ import {
 } from "../db/schema";
 import { centavos, liquidarReserva, type Centavos } from "@/lib/dinero";
 import { transicionarReserva } from "./reservas";
+import { hoyEnBogota } from "@/lib/fechas";
 
 /**
  * Regla #6: el link de pago se genera EXCLUSIVAMENTE del precio aceptado por
@@ -88,13 +90,57 @@ export async function aceptarOfertaYGenerarLink(
     await db.update(ofertas).set({ estado: "expirada" }).where(eq(ofertas.id, ofertaId));
     throw new OfertaNoAceptableError("La oferta venció: pide una nueva propuesta.");
   }
+  if (!previa) throw new OfertaNoAceptableError("La oferta no está activa (expiró o fue contraofertada).");
+  // Retry ante 40P01: la víctima de un deadlock se revierte completa.
+  for (let intento = 1; ; intento++) {
+    try {
+      return await aceptarUnaVez(db, ofertaId, previa.negociacionId, aceptanteId);
+    } catch (e) {
+      if (esDeadlock(e) && intento < 3) continue;
+      throw e;
+    }
+  }
+}
+
+function esDeadlock(e: unknown): boolean {
+  let actual = e as { code?: string; cause?: unknown } | undefined;
+  for (let i = 0; actual && i < 5; i++) {
+    if (actual.code === "40P01") return true;
+    actual = actual.cause as { code?: string; cause?: unknown } | undefined;
+  }
+  return false;
+}
+
+async function aceptarUnaVez(
+  db: Db,
+  ofertaId: string,
+  negociacionId: string,
+  aceptanteId: string,
+): Promise<{ linkId: string; montoCentavos: number; reservaId: string }> {
   return await db.transaction(async (tx) => {
+    // ORDEN DE LOCKS = el de contraofertar: negociación → (solicitud) →
+    // ofertas. Antes se lockeaba oferta → negociación y chocaba (40P01) con
+    // una contraoferta simultánea que lockea negociación → ofertas.
+    const [neg] = await tx
+      .select()
+      .from(negociaciones)
+      .where(eq(negociaciones.id, negociacionId))
+      .for("update");
+    if (!neg || neg.estado !== "abierta") {
+      // Mismo mensaje que antes cuando la oferta ya no está viva (p. ej. ya
+      // fue aceptada y la negociación quedó acordada).
+      const [o] = await tx.select({ estado: ofertas.estado }).from(ofertas).where(eq(ofertas.id, ofertaId));
+      if (o && o.estado !== "activa") {
+        throw new OfertaNoAceptableError("La oferta no está activa (expiró o fue contraofertada).");
+      }
+      throw new OfertaNoAceptableError("La negociación no está abierta.");
+    }
     const [oferta] = await tx
       .select()
       .from(ofertas)
       .where(eq(ofertas.id, ofertaId))
       .for("update");
-    if (!oferta || oferta.estado !== "activa") {
+    if (!oferta || oferta.estado !== "activa" || oferta.negociacionId !== neg.id) {
       throw new OfertaNoAceptableError("La oferta no está activa (expiró o fue contraofertada).");
     }
     // Vigencia re-validada DENTRO de la tx: una oferta que venció mientras
@@ -106,14 +152,6 @@ export async function aceptarOfertaYGenerarLink(
       throw new OfertaNoAceptableError("No puedes aceptar tu propia oferta.");
     }
 
-    const [neg] = await tx
-      .select()
-      .from(negociaciones)
-      .where(eq(negociaciones.id, oferta.negociacionId))
-      .for("update");
-    if (!neg || neg.estado !== "abierta") {
-      throw new OfertaNoAceptableError("La negociación no está abierta.");
-    }
 
     // Solo un PARTICIPANTE de la negociación acepta — conocer el UUID de la
     // oferta jamás es autorización suficiente.
@@ -158,6 +196,29 @@ export async function aceptarOfertaYGenerarLink(
       .where(eq(reservas.solicitudId, neg.solicitudId))
       .for("update");
     if (!reserva) throw new OfertaNoAceptableError("Reserva no encontrada para la negociación.");
+
+    // Fechas pasadas: jamás se emite un link para una estadía que ya empezó.
+    if (reserva.desde < hoyEnBogota()) {
+      throw new OfertaNoAceptableError("Las fechas de esta reserva ya pasaron.");
+    }
+    // Verificación de SOLO LECTURA (sin holds, sin locks): si alguna noche ya
+    // está reservada o bloqueada, no se emite un link destinado a perder la
+    // carrera y terminar en compensación. La regla dura sigue en el webhook.
+    const [ocupada] = await tx
+      .select({ fecha: calendarioDias.fecha })
+      .from(calendarioDias)
+      .where(
+        and(
+          eq(calendarioDias.propiedadId, reserva.propiedadId),
+          gte(calendarioDias.fecha, reserva.desde),
+          lt(calendarioDias.fecha, reserva.hasta),
+          ne(calendarioDias.estado, "disponible"),
+        ),
+      )
+      .limit(1);
+    if (ocupada) {
+      throw new OfertaNoAceptableError("Las fechas ya no están disponibles en el calendario de la propiedad.");
+    }
 
     await tx
       .update(reservas)

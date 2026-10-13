@@ -132,10 +132,11 @@ export function BusquedaExternoCliente({ datos }: { datos: DatosBusquedaExterno 
 
       {/* RESULTADOS */}
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {resultados.map((p) => {
+        {resultados.map((p, i) => {
           return (
             <Card key={p.id} className="flex flex-col overflow-hidden">
-              <Cover matiz={p.matiz} foto={p.fotos?.[0]} alt={p.nombre} className="h-40" />
+              {/* Las 3 primeras portadas están en el primer viewport → prioridad (LCP). */}
+              <Cover matiz={p.matiz} foto={p.fotos?.[0]} alt={p.nombre} className="h-40" prioridad={i < 3} />
               <div className="flex flex-1 flex-col p-5">
                 <div className="flex items-start justify-between gap-2">
                   <div>

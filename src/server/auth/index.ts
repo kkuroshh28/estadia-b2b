@@ -1,7 +1,9 @@
 import { and, eq, gt, sql } from "drizzle-orm";
 import type { Db } from "../db";
 import { otps, sesiones, usuarios } from "../db/schema";
-import { sha256Hex, tokenAleatorio, verificarPassword, verificarTotp } from "../crypto";
+import { randomInt } from "node:crypto";
+import { hashSenuelo, igualdadSegura, sha256Hex, tokenAleatorio, verificarPassword, verificarTotp } from "../crypto";
+import { esProduccionReal } from "../config";
 import { obtenerEmail } from "../adaptadores/email";
 
 /**
@@ -16,11 +18,19 @@ const OTP_VIGENCIA_MIN = 10;
 const OTP_MAX_INTENTOS = 5;
 const OTP_MAX_POR_HORA = 5;
 const SESION_DIAS = 14;
+const SESION_ADMIN_HORAS = 12; // sesiones elevadas viven poco
+const PASSWORD_MAX_FALLOS = 5;
+const PASSWORD_BLOQUEO_MIN = 15;
 
 export class AuthError extends Error {}
 
 /** Paso 1: solicitar código. Rate limit por email (fuerza bruta). */
 export async function solicitarOtp(db: Db, email: string): Promise<void> {
+  // Sin proveedor de correo real, el código solo existiría en la bandeja dev:
+  // en producción el acceso por código queda cerrado (fail-closed).
+  if (esProduccionReal() && (process.env.EMAIL_DRIVER ?? "simulado") === "simulado") {
+    throw new AuthError("El acceso por código aún no está disponible. Entra con tu contraseña.");
+  }
   const normalizado = email.trim().toLowerCase();
   const [{ recientes }] = await db
     .select({ recientes: sql<number>`count(*)::int` })
@@ -30,7 +40,7 @@ export async function solicitarOtp(db: Db, email: string): Promise<void> {
     throw new AuthError("Demasiados códigos solicitados. Intenta en una hora.");
   }
 
-  const codigo = String(Math.floor(Math.random() * 900_000) + 100_000);
+  const codigo = String(randomInt(100_000, 1_000_000));
   await db.insert(otps).values({
     email: normalizado,
     codigoHash: sha256Hex(codigo),
@@ -66,7 +76,7 @@ export async function verificarOtpYCrearSesion(
     if (!otp) throw new AuthError("Código vencido o inexistente. Solicita uno nuevo.");
     if (otp.intentos >= OTP_MAX_INTENTOS) throw new AuthError("Demasiados intentos. Solicita un código nuevo.");
 
-    if (otp.codigoHash !== sha256Hex(codigo.trim())) {
+    if (!igualdadSegura(otp.codigoHash, sha256Hex(codigo.trim()))) {
       await tx.update(otps).set({ intentos: otp.intentos + 1 }).where(eq(otps.id, otp.id));
       throw new AuthError("Código incorrecto.");
     }
@@ -86,29 +96,55 @@ export async function verificarOtpYCrearSesion(
 /**
  * Acceso por contraseña: SOLO cuentas a las que se les asignó `password_hash`
  * (el superadmin del fundador). Mensaje idéntico para correo o clave erróneos
- * (no enumerar usuarios). La sesión del superadmin nace elevada.
+ * (no enumerar usuarios; correo inexistente gasta el mismo scrypt contra un
+ * señuelo). Bloqueo por CUENTA en DB tras 5 fallos (vale entre instancias
+ * serverless). La sesión del superadmin nace elevada y dura 12 h.
  */
 export async function iniciarSesionConPassword(
   db: Db,
   email: string,
   password: string,
-): Promise<{ token: string; venceEn: Date }> {
+): Promise<{ token: string; venceEn: Date; usuarioId: string }> {
   const normalizado = email.trim().toLowerCase();
   const [usuario] = await db.select().from(usuarios).where(eq(usuarios.email, normalizado));
-  if (!usuario?.passwordHash || !verificarPassword(password, usuario.passwordHash)) {
+  const valida = verificarPassword(password, usuario?.passwordHash ?? hashSenuelo());
+  if (!usuario?.passwordHash) throw new AuthError("Correo o contraseña incorrectos.");
+
+  if (usuario.bloqueadoHasta && usuario.bloqueadoHasta > new Date()) {
+    throw new AuthError("Demasiados intentos fallidos. Intenta de nuevo en unos minutos.");
+  }
+  if (!valida) {
+    // Incremento atómico; al 5º fallo bloquea y reinicia el contador.
+    await db
+      .update(usuarios)
+      .set({
+        intentosFallidos: sql`CASE WHEN ${usuarios.intentosFallidos} + 1 >= ${PASSWORD_MAX_FALLOS} THEN 0 ELSE ${usuarios.intentosFallidos} + 1 END`,
+        bloqueadoHasta: sql`CASE WHEN ${usuarios.intentosFallidos} + 1 >= ${PASSWORD_MAX_FALLOS}
+          THEN now() + interval '${sql.raw(String(PASSWORD_BLOQUEO_MIN))} minutes' ELSE ${usuarios.bloqueadoHasta} END`,
+      })
+      .where(eq(usuarios.id, usuario.id));
     throw new AuthError("Correo o contraseña incorrectos.");
   }
   if (usuario.estado === "baneado") throw new AuthError("Esta cuenta fue suspendida de forma permanente.");
 
+  const elevada = usuario.roles.includes("admin");
   const token = tokenAleatorio();
-  const venceEn = new Date(Date.now() + SESION_DIAS * 86_400_000);
-  await db.insert(sesiones).values({
-    tokenHash: sha256Hex(token),
-    usuarioId: usuario.id,
-    venceEn,
-    adminElevada: usuario.roles.includes("admin"),
+  const venceEn = new Date(
+    Date.now() + (elevada ? SESION_ADMIN_HORAS * 3_600_000 : SESION_DIAS * 86_400_000),
+  );
+  await db.transaction(async (tx) => {
+    await tx
+      .update(usuarios)
+      .set({ intentosFallidos: 0, bloqueadoHasta: null })
+      .where(eq(usuarios.id, usuario.id));
+    await tx.insert(sesiones).values({
+      tokenHash: sha256Hex(token),
+      usuarioId: usuario.id,
+      venceEn,
+      adminElevada: elevada,
+    });
   });
-  return { token, venceEn };
+  return { token, venceEn, usuarioId: usuario.id };
 }
 
 export interface UsuarioSesion {

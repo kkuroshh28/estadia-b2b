@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 
 /**
  * Campanita de notificaciones in-app. Consulta al montar y al abrir; marca
@@ -47,10 +47,18 @@ export function Campanita({ rol }: { rol: "propietario" | "principal" | "externo
   useEffect(() => {
     // El primer setState llega tras el await del fetch (nunca síncrono).
     const primero = setTimeout(cargar, 0);
-    const t = setInterval(cargar, 60_000);
+    // Polling solo con la pestaña visible; al volver a ella, refresco inmediato.
+    const t = setInterval(() => {
+      if (document.visibilityState === "visible") void cargar();
+    }, 60_000);
+    const alCambiarVisibilidad = () => {
+      if (document.visibilityState === "visible") void cargar();
+    };
+    document.addEventListener("visibilitychange", alCambiarVisibilidad);
     return () => {
       clearTimeout(primero);
       clearInterval(t);
+      document.removeEventListener("visibilitychange", alCambiarVisibilidad);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rol]);
@@ -87,7 +95,7 @@ export function Campanita({ rol }: { rol: "propietario" | "principal" | "externo
 
       <AnimatePresence>
         {abierta && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 8, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.98 }}
@@ -120,7 +128,7 @@ export function Campanita({ rol }: { rol: "propietario" | "principal" | "externo
                 </Link>
               ))}
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

@@ -85,6 +85,9 @@ export const usuarios = pgTable("usuarios", {
   kycVerificadoEn: timestamp("kyc_verificado_en", { withTimezone: true }),
   totpSecret: text("totp_secret"), // 2FA obligatorio para rol admin
   passwordHash: text("password_hash"), // solo cuentas con acceso por contraseña (superadmin)
+  // Bloqueo por CUENTA (en DB, vale para todas las instancias serverless).
+  intentosFallidos: smallint("intentos_fallidos").notNull().default(0),
+  bloqueadoHasta: timestamp("bloqueado_hasta", { withTimezone: true }),
 });
 
 // ─── Auth (sesiones propias: el modelo de identidad ES el negocio) ───────────

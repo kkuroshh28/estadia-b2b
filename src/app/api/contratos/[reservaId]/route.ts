@@ -5,6 +5,7 @@ import { contratos, contratosBlob } from "@/server/db/schema";
 import { actorDePeticion, hayDb } from "@/server/datos/fuente";
 import { puedeVerContrato } from "@/server/servicios/contratos";
 import { limitar } from "@/server/rate-limit";
+import { usuarioDePeticion } from "@/server/auth/guardia";
 
 /**
  * Descarga del contrato PDF. SOLO propietario de la reserva (o admin):
@@ -22,7 +23,10 @@ export async function GET(
   const db = obtenerDb();
   const actor = await actorDePeticion(db, "propietario");
   if (!actor) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-  if (!(await puedeVerContrato(db, actor.id, reservaId))) {
+  // Con sesión real se pasa COMPLETA: el acceso de admin exige adminElevada.
+  const sesion = await usuarioDePeticion().catch(() => null);
+  const quien = sesion && sesion.id === actor.id ? sesion : actor.id;
+  if (!(await puedeVerContrato(db, quien, reservaId))) {
     return NextResponse.json({ error: "Sin acceso a este contrato" }, { status: 403 });
   }
 

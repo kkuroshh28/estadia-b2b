@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Archivo, Bricolage_Grotesque, JetBrains_Mono } from "next/font/google";
 import { MotionProvider } from "@/components/motion";
+import { SCRIPT_INTRO_VISTO } from "@/lib/intro";
 import "./globals.css";
 
 const archivo = Archivo({
@@ -57,7 +58,13 @@ export default function RootLayout({
     <html
       lang="es"
       className={`${archivo.variable} ${bricolage.variable} ${jetbrains.variable} h-full antialiased`}
+      // El script de abajo añade data-intro-visto antes de hidratar.
+      suppressHydrationWarning
     >
+      <head>
+        {/* Antes del primer paint: oculta el intro a quien ya lo vio (sin destello). */}
+        <script dangerouslySetInnerHTML={{ __html: SCRIPT_INTRO_VISTO }} />
+      </head>
       <body className="min-h-full flex flex-col">
         <MotionProvider>{children}</MotionProvider>
       </body>

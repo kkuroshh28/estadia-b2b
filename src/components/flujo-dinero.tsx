@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { m, useReducedMotion } from "motion/react";
 import { calcularSplit } from "@/lib/domain/split";
 import { MoneyAnimado } from "./motion";
 
@@ -81,7 +81,7 @@ export function FlujoDinero({
                 }}
               />
               {activo && !reducido && (
-                <motion.span
+                <m.span
                   className="absolute left-1/2 size-1.5 -translate-x-1/2 rounded-full"
                   style={{ background: d.color, boxShadow: `0 0 8px ${d.color}` }}
                   animate={{ top: ["-8%", "108%"], opacity: [0, 1, 1, 0] }}
@@ -95,7 +95,7 @@ export function FlujoDinero({
                 />
               )}
             </div>
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -107,7 +107,7 @@ export function FlujoDinero({
               </p>
               <MoneyAnimado valor={d.v} className={`text-sm font-bold ${d.texto}`} />
               <p className="mt-0.5 text-[9px] text-bruma-osc">{d.sub}</p>
-            </motion.div>
+            </m.div>
           </div>
         ))}
       </div>

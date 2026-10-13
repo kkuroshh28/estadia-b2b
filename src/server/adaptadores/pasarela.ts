@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { hmacFirma, igualdadSegura, tokenAleatorio } from "../crypto";
+import { secretoObligatorio, simuladorPermitido } from "../config";
 import type { EventoPago } from "../servicios/pagos";
 
 /**
@@ -32,7 +33,13 @@ export interface PasarelaPagos {
 }
 
 function secretoWebhook(): string {
-  return process.env.WEBHOOK_SECRET ?? "dev-webhook-secret";
+  return secretoObligatorio("WEBHOOK_SECRET") ?? "dev-webhook-secret";
+}
+
+function secretoWompi(): string {
+  const s = process.env.WOMPI_EVENTS_SECRET;
+  if (!s) throw new FirmaInvalidaError("WOMPI_EVENTS_SECRET no configurado (fail-closed).");
+  return s;
 }
 
 /** Firma que usa el driver simulado — mismo mecanismo HMAC del mundo real. */
@@ -46,6 +53,8 @@ const simulado: PasarelaPagos = {
     return { url: `/pago/sim/${referencia}`, ref: `sim-link-${tokenAleatorio(8)}` };
   },
   verificarFirma(cuerpoCrudo, firma) {
+    // Producción real: el driver simulado JAMÁS acepta eventos (pagos falsos).
+    if (!simuladorPermitido()) throw new FirmaInvalidaError("Driver simulado deshabilitado en producción.");
     if (!igualdadSegura(firmarEventoSimulado(cuerpoCrudo), firma)) {
       throw new FirmaInvalidaError("Firma de webhook inválida (simulado).");
     }
@@ -100,7 +109,7 @@ const wompi: PasarelaPagos = {
       .map((p) => p.split(".").reduce((o: unknown, k) => (o as Record<string, unknown>)?.[k], evento.data))
       .join("");
     const esperado = createHash("sha256")
-      .update(`${valores}${evento.timestamp}${process.env.WOMPI_EVENTS_SECRET ?? ""}`)
+      .update(`${valores}${evento.timestamp}${secretoWompi()}`)
       .digest("hex");
     if (!igualdadSegura(esperado, evento.signature.checksum) || !igualdadSegura(esperado, firmaRecibida)) {
       throw new FirmaInvalidaError("Checksum de evento Wompi inválido.");

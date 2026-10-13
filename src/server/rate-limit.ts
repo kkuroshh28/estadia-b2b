@@ -33,9 +33,11 @@ export function permitirPeticion(
 
 /** IP del cliente detrás del proxy de Vercel. */
 export function ipDePeticion(req: Request): string {
+  // En Vercel `x-real-ip` lo pone el edge (no lo controla el cliente); el
+  // PRIMER valor de x-forwarded-for sí es falsificable, por eso va de último.
   return (
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     req.headers.get("x-real-ip") ??
+    req.headers.get("x-forwarded-for")?.split(",").at(-1)?.trim() ??
     "desconocida"
   );
 }

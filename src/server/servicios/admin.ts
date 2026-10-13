@@ -1,4 +1,4 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import type { Db } from "../db";
 import {
   auditoriaAdmin, calendarioDias, configuracionPlataforma, contratos, intentosFuga,
@@ -121,6 +121,14 @@ export async function conciliar(db: Db): Promise<{
   return { cuadra: descuadres.length === 0, transacciones: filas.length, descuadres };
 }
 
+/**
+ * Señal interna: entre la lectura del alcance (FASE 1) y la contabilidad
+ * (FASE 3) entró otro pago aprobado sobre la misma reserva (p. ej. el webhook
+ * del saldo). Se aborta la FASE 3 y el reembolso se reintenta COMPLETO para
+ * devolver también ese pago — jamás se cancela una reserva reteniendo dinero.
+ */
+class AlcanceReembolsoCambio extends Error {}
+
 export async function reembolsar(
   db: Db,
   actor: UsuarioSesion | null,
@@ -131,6 +139,17 @@ export async function reembolsar(
   if (confirmacion !== "CONFIRMO REEMBOLSO") {
     throw new Error("Confirmación incorrecta: escribe la frase exacta.");
   }
+  for (let intento = 1; ; intento++) {
+    try {
+      return await reembolsarUnaVez(db, admin, transaccionId);
+    } catch (e) {
+      if (e instanceof AlcanceReembolsoCambio && intento < 3) continue;
+      throw e;
+    }
+  }
+}
+
+async function reembolsarUnaVez(db: Db, admin: UsuarioSesion, transaccionId: string) {
 
   // FASE 1 — LECTURA: alcance del reembolso. Es ÍNTEGRO por reserva: si la
   // reserva tiene dos mitades aprobadas, se devuelven AMBAS (antes cancelaba
@@ -184,6 +203,21 @@ export async function reembolsar(
         ? await tx.select().from(reservas).where(eq(reservas.id, reservaIdObjetivo)).for("update")
         : [];
 
+      // Con la reserva LOCKEADA (el webhook también la lockea antes de
+      // registrar dinero), se re-lee el alcance: si apareció una transacción
+      // aprobada fuera del objetivo, se aborta y se reintenta el reembolso.
+      if (reservaIdObjetivo) {
+        const idsFase1 = new Set(objetivo.map((o) => o.id));
+        const actuales = await tx
+          .select({ id: transacciones.id })
+          .from(transacciones)
+          .innerJoin(linksDePago, eq(linksDePago.id, transacciones.linkId))
+          .where(and(eq(linksDePago.reservaId, reservaIdObjetivo), eq(transacciones.estado, "aprobada")));
+        if (actuales.some((a) => !idsFase1.has(a.id))) {
+          throw new AlcanceReembolsoCambio("Entró un pago nuevo durante el reembolso: se reintenta completo.");
+        }
+      }
+
       for (const { trx, refundRef } of refunds) {
         const [fila] = await tx
           .select()
@@ -221,7 +255,9 @@ export async function reembolsar(
         await tx
           .update(linksDePago)
           .set({ estado: "invalidado" })
-          .where(and(eq(linksDePago.reservaId, reserva.id), eq(linksDePago.estado, "activo")));
+          // También los EXPIRADOS: un link vencido podría regenerarse; tras
+          // el reembolso ningún link de la reserva vuelve a ser cobrable.
+          .where(and(eq(linksDePago.reservaId, reserva.id), inArray(linksDePago.estado, ["activo", "expirado"])));
         await transicionarReserva(tx as unknown as Db, reserva.id, "CANCELADA", admin.id, {
           motivo: "reembolso_admin",
           refundRef: refundRefPrincipal,

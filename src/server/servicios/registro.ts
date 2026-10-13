@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 import type { Db } from "../db";
 import { cuentasBancarias, usuarios } from "../db/schema";
 import { cifrar, hashCedula } from "../crypto";
@@ -7,6 +7,9 @@ import { identidadBaneada } from "./antifuga";
 import { obtenerKyc } from "../adaptadores/kyc";
 
 export class RegistroError extends Error {}
+
+/** Respuesta ÚNICA para cédula baneada, cédula o correo existente: no enumerar identidades. */
+const NO_REGISTRABLE = "No pudimos completar el registro con estos datos.";
 
 export interface DatosRegistro {
   nombreReal: string;
@@ -31,14 +34,15 @@ export async function registrarUsuario(
 
   // Ban perpetuo A LA IDENTIDAD: un baneado no vuelve ni con otro correo.
   if (await identidadBaneada(db, cedulaHash)) {
-    throw new RegistroError("Identidad no admitida en la plataforma.");
+    throw new RegistroError(NO_REGISTRABLE);
   }
 
+  const email = datos.email.trim().toLowerCase();
   const [existente] = await db
     .select({ id: usuarios.id })
     .from(usuarios)
-    .where(eq(usuarios.cedulaHash, cedulaHash));
-  if (existente) throw new RegistroError("Ya existe una cuenta con esta cédula.");
+    .where(or(eq(usuarios.cedulaHash, cedulaHash), eq(usuarios.email, email)));
+  if (existente) throw new RegistroError(NO_REGISTRABLE);
 
   const [u] = await db
     .insert(usuarios)
@@ -46,7 +50,7 @@ export async function registrarUsuario(
       nombreReal: datos.nombreReal.trim(),
       cedulaHash,
       cedulaCifrada: cifrar(datos.cedula.trim()),
-      email: datos.email.trim().toLowerCase(),
+      email,
       telefonoCifrado: cifrar(datos.telefono.trim()),
       roles: [datos.rol],
       estado: "pendiente_kyc",

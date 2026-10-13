@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import { AvatarAlias, Badge, Card } from "@/components/ui";
 import type { DatosPrincipales, VinculoPanel } from "@/lib/domain/paneles";
 
@@ -168,7 +168,7 @@ export function PrincipalesCliente({ datos }: { datos: DatosPrincipales }) {
         <div className="divide-y divide-borde">
           <AnimatePresence>
             {lista.map((v) => (
-              <motion.div
+              <m.div
                 key={v.alias}
                 layout
                 exit={{ opacity: 0, x: -30 }}
@@ -197,7 +197,7 @@ export function PrincipalesCliente({ datos }: { datos: DatosPrincipales }) {
                     Desvincular
                   </button>
                 </div>
-              </motion.div>
+              </m.div>
             ))}
           </AnimatePresence>
 

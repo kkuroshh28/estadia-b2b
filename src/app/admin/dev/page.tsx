@@ -3,11 +3,17 @@ import { Badge, Card } from "@/components/ui";
 import { obtenerDb } from "@/server/db";
 import { notificacionesDev } from "@/server/db/schema";
 import { SinDb, hayDb } from "../sin-db";
+import { notFound } from "next/navigation";
+import { protegerAdmin } from "@/server/auth/guardia";
+import { esProduccionReal } from "@/server/config";
 
 export const dynamic = "force-dynamic";
 
 /** Bandeja del driver de notificaciones "simulado" (emails/push que se habrían enviado). */
 export default async function BandejaDev() {
+  // Guard en CADA página: el layout no se re-ejecuta en navegaciones parciales.
+  await protegerAdmin();
+  if (esProduccionReal()) notFound();
   if (!hayDb()) return <SinDb seccion="bandeja dev" />;
   const filas = await obtenerDb()
     .select()

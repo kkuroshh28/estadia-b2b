@@ -37,6 +37,13 @@ const nextConfig: NextConfig = {
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
         ],
       },
+      // Assets estáticos pesados (video del intro, fotos de propiedades): caché
+      // inmutable de 1 año. Se suman a los de seguridad de arriba (Next combina
+      // todas las reglas que coinciden). Si un archivo cambia, cambia su nombre.
+      ...["/intro/:path*", "/propiedades/:path*"].map((source) => ({
+        source,
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      })),
     ];
   },
 };
