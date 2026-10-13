@@ -84,6 +84,7 @@ export const usuarios = pgTable("usuarios", {
   kycProveedorId: text("kyc_proveedor_id"), // truora_check_id — jamás biometría cruda
   kycVerificadoEn: timestamp("kyc_verificado_en", { withTimezone: true }),
   totpSecret: text("totp_secret"), // 2FA obligatorio para rol admin
+  passwordHash: text("password_hash"), // solo cuentas con acceso por contraseña (superadmin)
 });
 
 // ─── Auth (sesiones propias: el modelo de identidad ES el negocio) ───────────

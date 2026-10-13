@@ -3,9 +3,14 @@
  * crea su usuario propietario y sus propiedades con ficha, fotos y videos.
  *
  * Uso:
- *   DATABASE_URL=... ENCRYPTION_KEY=... \
- *   PORTAFOLIO_NOMBRE="..." PORTAFOLIO_EMAIL=... PORTAFOLIO_CEDULA=... PORTAFOLIO_TELEFONO=... \
+ *   DATABASE_URL=... ENCRYPTION_KEY=... HASH_PEPPER=... \
+ *   PORTAFOLIO_NOMBRE="..." PORTAFOLIO_EMAIL=... PORTAFOLIO_PASSWORD=... \
+ *   [PORTAFOLIO_CEDULA=... PORTAFOLIO_TELEFONO=...] \
  *   npm run db:importar-portafolio
+ *
+ * El fundador es SUPERADMIN: todos los roles + acceso por contraseña.
+ * Cédula/teléfono son opcionales (sin papeleos); si faltan quedan como
+ * pendientes y se pueden completar después.
  *
  * Idempotente: el usuario se busca por email y cada propiedad por su slug;
  * volver a correrlo actualiza la ficha sin duplicar ni tocar tarifas,
@@ -15,7 +20,8 @@
  * - Gestión directa (Owner Direct): solo el dueño atiende y negocia.
  * - Nacen NO publicadas y sin tarifa: se publican cuando el dueño define su
  *   tarifa neta (el servicio de edición exige tarifa vigente para publicar).
- * - verificada=false: la verificación documental la hace el pipeline.
+ * - verificada=true: son del fundador (superadmin) — no pasan por el
+ *   pipeline documental de terceros.
  * - La dirección exacta va cifrada (Anexo II), nunca en la ficha pública.
  */
 import { readFileSync } from "node:fs";
@@ -23,7 +29,7 @@ import { join } from "node:path";
 import { eq } from "drizzle-orm";
 import { obtenerDb } from "./index";
 import { propiedades, suscripciones, usuarios } from "./schema";
-import { cifrar, hashCedula } from "../crypto";
+import { cifrar, hashCedula, hashPassword } from "../crypto";
 import { asegurarAlias } from "../servicios/alias";
 
 interface PropiedadPortafolio {
@@ -56,19 +62,25 @@ function requerida(nombre: string): string {
   return v;
 }
 
+const ROLES_SUPERADMIN = ["propietario", "principal", "externo", "admin"] as const;
+
 async function main() {
   const db = obtenerDb();
   const email = requerida("PORTAFOLIO_EMAIL").toLowerCase();
+  const password = process.env.PORTAFOLIO_PASSWORD;
+  if (password !== undefined && password.length < 12) {
+    throw new Error("PORTAFOLIO_PASSWORD debe tener al menos 12 caracteres.");
+  }
   const portafolio = JSON.parse(
     readFileSync(join(process.cwd(), "data/portafolio-kurosh.json"), "utf8"),
   ) as PropiedadPortafolio[];
 
   const resultado = await db.transaction(async (tx) => {
-    // 1. Usuario propietario (se crea una sola vez).
-    let [u] = await tx.select({ id: usuarios.id, roles: usuarios.roles }).from(usuarios).where(eq(usuarios.email, email));
+    // 1. Usuario superadmin del fundador (se crea una sola vez).
+    let [u] = await tx.select({ id: usuarios.id }).from(usuarios).where(eq(usuarios.email, email));
     let creado = false;
     if (!u) {
-      const cedula = requerida("PORTAFOLIO_CEDULA");
+      const cedula = process.env.PORTAFOLIO_CEDULA?.trim() || `PENDIENTE:${email}`;
       [u] = await tx
         .insert(usuarios)
         .values({
@@ -76,15 +88,21 @@ async function main() {
           cedulaHash: hashCedula(cedula),
           cedulaCifrada: cifrar(cedula),
           email,
-          telefonoCifrado: cifrar(requerida("PORTAFOLIO_TELEFONO")),
-          roles: ["propietario"],
+          telefonoCifrado: cifrar(process.env.PORTAFOLIO_TELEFONO?.trim() || "PENDIENTE"),
+          roles: [...ROLES_SUPERADMIN],
           estado: "activo",
         })
-        .returning({ id: usuarios.id, roles: usuarios.roles });
+        .returning({ id: usuarios.id });
       creado = true;
-    } else if (!u.roles.includes("propietario")) {
-      await tx.update(usuarios).set({ roles: [...u.roles, "propietario"] }).where(eq(usuarios.id, u.id));
     }
+    await tx
+      .update(usuarios)
+      .set({
+        roles: [...ROLES_SUPERADMIN],
+        estado: "activo",
+        ...(password ? { passwordHash: hashPassword(password) } : {}),
+      })
+      .where(eq(usuarios.id, u.id));
 
     // 2. Propiedades por slug: alta o actualización de la ficha.
     let altas = 0;
@@ -120,7 +138,7 @@ async function main() {
         if (existente.propietarioId !== u.id) {
           throw new Error(`La propiedad ${p.slug} pertenece a otro usuario — no se toca.`);
         }
-        await tx.update(propiedades).set(ficha).where(eq(propiedades.id, existente.id));
+        await tx.update(propiedades).set({ ...ficha, verificada: true }).where(eq(propiedades.id, existente.id));
         actualizadas++;
       } else {
         await tx.insert(propiedades).values({
@@ -129,7 +147,7 @@ async function main() {
           propietarioId: u.id,
           ownerDirect: true,
           publicada: false,
-          verificada: false,
+          verificada: true,
         });
         altas++;
       }

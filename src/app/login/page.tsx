@@ -6,10 +6,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 
-/** Login passwordless: email → código OTP → sesión httpOnly. */
+/** Login: contraseña (cuentas que la tienen) o código OTP por correo → sesión httpOnly. */
 export default function Login() {
   const router = useRouter();
-  const [fase, setFase] = useState<"email" | "codigo">("email");
+  const [fase, setFase] = useState<"password" | "email" | "codigo">("password");
+  const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [codigo, setCodigo] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -26,6 +27,19 @@ export default function Login() {
     setCargando(false);
     if (res.ok) setFase("codigo");
     else setError((await res.json()).error ?? "No fue posible enviar el código.");
+  };
+
+  const entrarConPassword = async () => {
+    setCargando(true);
+    setError(null);
+    const res = await fetch("/api/auth/password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    setCargando(false);
+    if (res.ok) router.push("/app");
+    else setError((await res.json().catch(() => ({}))).error ?? "No fue posible entrar.");
   };
 
   const entrar = async () => {
@@ -52,15 +66,55 @@ export default function Login() {
         className="mt-8 w-full max-w-sm rounded-3xl border border-borde bg-tarjeta p-8"
       >
         <h1 className="font-display text-2xl text-tinta">
-          {fase === "email" ? "Entrar" : "Revisa tu correo"}
+          {fase === "codigo" ? "Revisa tu correo" : "Entrar"}
         </h1>
         <p className="mt-1 text-xs text-bruma">
-          {fase === "email"
-            ? "Te enviamos un código de un solo uso. Sin contraseñas."
-            : `Código de 6 dígitos enviado a ${email}. Vence en 10 minutos.`}
+          {fase === "password"
+            ? "Accede con tu correo y contraseña."
+            : fase === "email"
+              ? "Te enviamos un código de un solo uso."
+              : `Código de 6 dígitos enviado a ${email}. Vence en 10 minutos.`}
         </p>
 
-        {fase === "email" ? (
+        {fase === "password" ? (
+          <>
+            <label className="mt-6 block text-[11px] font-bold uppercase tracking-wider text-bruma-osc">
+              Correo
+            </label>
+            <input
+              type="email"
+              autoComplete="username"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="tu@correo.com"
+              className="mt-1.5 w-full rounded-xl border border-borde bg-panel px-4 py-3 text-sm text-tinta placeholder:text-bruma-osc focus:border-esmeralda/50"
+            />
+            <label className="mt-4 block text-[11px] font-bold uppercase tracking-wider text-bruma-osc">
+              Contraseña
+            </label>
+            <input
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && entrarConPassword()}
+              className="mt-1.5 w-full rounded-xl border border-borde bg-panel px-4 py-3 text-sm text-tinta placeholder:text-bruma-osc focus:border-esmeralda/50"
+            />
+            <button
+              onClick={entrarConPassword}
+              disabled={cargando || !email.includes("@") || !password}
+              className="mt-5 w-full rounded-full bg-tiffany py-3.5 text-sm font-bold text-noche transition hover:bg-tiffany-claro disabled:opacity-50"
+            >
+              {cargando ? "Verificando…" : "Entrar"}
+            </button>
+            <button
+              onClick={() => setFase("email")}
+              className="mt-3 w-full text-center text-xs text-bruma hover:text-tinta"
+            >
+              Entrar con código por correo
+            </button>
+          </>
+        ) : fase === "email" ? (
           <>
             <label className="mt-6 block text-[11px] font-bold uppercase tracking-wider text-bruma-osc">
               Correo
@@ -79,6 +133,12 @@ export default function Login() {
               className="mt-5 w-full rounded-full bg-tiffany py-3.5 text-sm font-bold text-noche transition hover:bg-tiffany-claro disabled:opacity-50"
             >
               {cargando ? "Enviando…" : "Enviar código"}
+            </button>
+            <button
+              onClick={() => setFase("password")}
+              className="mt-3 w-full text-center text-xs text-bruma hover:text-tinta"
+            >
+              Entrar con contraseña
             </button>
           </>
         ) : (

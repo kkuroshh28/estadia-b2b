@@ -1,4 +1,12 @@
-import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHash,
+  createHmac,
+  randomBytes,
+  scryptSync,
+  timingSafeEqual,
+} from "node:crypto";
 import { secretoObligatorio } from "./config";
 
 /**
@@ -55,6 +63,24 @@ export function descifrar(empaquetado: string): string {
 
 export function tokenAleatorio(bytes = 32): string {
   return randomBytes(bytes).toString("hex");
+}
+
+// ─── Contraseñas (scrypt, sal por usuario) ──────────────────────────────────
+
+const SCRYPT_N = 16_384;
+
+/** Hash de contraseña: `scrypt$N$sal$hash` — jamás la contraseña en claro. */
+export function hashPassword(password: string): string {
+  const sal = randomBytes(16).toString("hex");
+  const hash = scryptSync(password, sal, 64, { N: SCRYPT_N }).toString("hex");
+  return `scrypt$${SCRYPT_N}$${sal}$${hash}`;
+}
+
+export function verificarPassword(password: string, empaquetado: string): boolean {
+  const [alg, n, sal, hash] = empaquetado.split("$");
+  if (alg !== "scrypt" || !sal || !hash) return false;
+  const calculado = scryptSync(password, sal, 64, { N: Number(n) }).toString("hex");
+  return igualdadSegura(calculado, hash);
 }
 
 // ─── TOTP (RFC 6238) — 2FA obligatorio para admin, sin dependencias ─────────

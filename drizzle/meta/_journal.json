@@ -71,6 +71,13 @@
       "when": 1790365540672,
       "tag": "0009_ficha_y_fotos",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791912418352,
+      "tag": "0010_password_superadmin",
+      "breakpoints": true
     }
   ]
 }

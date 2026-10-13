@@ -6,13 +6,15 @@ import {
   reservas, solicitudes, usuarios,
 } from "../db/schema";
 import {
-  AuthError, elevarAdmin, puedeAccederSeccion, exigirRol,
-  solicitarOtp, validarSesion, verificarOtpYCrearSesion,
+  AuthError, elevarAdmin, puedeAccederSeccion, exigirAdmin, exigirRol,
+  iniciarSesionConPassword, solicitarOtp, validarSesion, verificarOtpYCrearSesion,
 } from "./index";
 import { registrarUsuario, RegistroError } from "../servicios/registro";
 import { obtenerKyc } from "../adaptadores/kyc";
 import { procesarMensaje } from "../servicios/antifuga";
-import { cifrar, codigoTotp, descifrar, generarSecretoTotp, verificarTotp } from "../crypto";
+import {
+  cifrar, codigoTotp, descifrar, generarSecretoTotp, hashPassword, verificarPassword, verificarTotp,
+} from "../crypto";
 import { POST as webhookPost } from "@/app/api/webhooks/pasarela/route";
 import { firmarEventoSimulado } from "../adaptadores/pasarela";
 
@@ -29,6 +31,17 @@ describe("crypto puro", () => {
     expect(verificarTotp(secreto, codigoTotp(secreto, ahora - 30_000), ahora)).toBe(true);
     expect(verificarTotp(secreto, codigoTotp(secreto, ahora - 120_000), ahora)).toBe(false);
     expect(verificarTotp(secreto, "000000", ahora)).toBe(false);
+  });
+});
+
+describe("contraseñas — scrypt con sal", () => {
+  it("verifica la correcta, rechaza la incorrecta y nunca guarda en claro", () => {
+    const h = hashPassword("Clave-Super-Segura-2026");
+    expect(h).not.toContain("Clave-Super-Segura-2026");
+    expect(h).not.toBe(hashPassword("Clave-Super-Segura-2026")); // sal distinta
+    expect(verificarPassword("Clave-Super-Segura-2026", h)).toBe(true);
+    expect(verificarPassword("clave-super-segura-2026", h)).toBe(false);
+    expect(verificarPassword("x", "basura")).toBe(false);
   });
 });
 
@@ -119,6 +132,40 @@ describe.skipIf(!HAY_DB)("integración — auth + KYC + pago simulado", () => {
         rol: "externo",
       }),
     ).rejects.toThrow(RegistroError);
+  }, 30_000);
+
+  it("login con contraseña: solo cuentas con password_hash; superadmin nace elevado", async () => {
+    const email = correo("super");
+    const r = await registrarUsuario(db, {
+      nombreReal: "Superadmin Prueba",
+      cedula: `50${Date.now()}`,
+      email,
+      telefono: "3000000005",
+      rol: "propietario",
+    });
+    // Sin password_hash (usuario normal) jamás entra por contraseña.
+    await expect(iniciarSesionConPassword(db, email, "cualquier-cosa-123")).rejects.toThrow(AuthError);
+
+    await db
+      .update(usuarios)
+      .set({
+        roles: ["propietario", "principal", "externo", "admin"],
+        estado: "activo",
+        passwordHash: hashPassword("Clave-Super-Segura-2026"),
+      })
+      .where(eq(usuarios.id, r.usuarioId));
+
+    await expect(iniciarSesionConPassword(db, email, "clave-equivocada-000")).rejects.toThrow(
+      "Correo o contraseña incorrectos.",
+    );
+    await expect(iniciarSesionConPassword(db, correo("nadie"), "x")).rejects.toThrow(
+      "Correo o contraseña incorrectos.",
+    );
+
+    const { token } = await iniciarSesionConPassword(db, ` ${email.toUpperCase()} `, "Clave-Super-Segura-2026");
+    const sesion = await validarSesion(db, token);
+    expect(sesion?.id).toBe(r.usuarioId);
+    expect(exigirAdmin(sesion).id).toBe(r.usuarioId);
   }, 30_000);
 
   it("login OTP completo + sesión + guard: externo NO entra a sección propietario", async () => {

@@ -1,13 +1,14 @@
 import { and, eq, gt, sql } from "drizzle-orm";
 import type { Db } from "../db";
 import { otps, sesiones, usuarios } from "../db/schema";
-import { sha256Hex, tokenAleatorio, verificarTotp } from "../crypto";
+import { sha256Hex, tokenAleatorio, verificarPassword, verificarTotp } from "../crypto";
 import { obtenerEmail } from "../adaptadores/email";
 
 /**
  * Auth propia: OTP por email (passwordless) + sesiones opacas con cookie
  * httpOnly. El token viaja solo en la cookie; en DB vive únicamente su hash.
- * 2FA TOTP obligatorio para elevar a admin.
+ * 2FA TOTP obligatorio para elevar a admin — salvo la cuenta superadmin del
+ * fundador, que entra con contraseña (solo cuentas con `password_hash`).
  */
 
 export const COOKIE_SESION = "estadia_sesion";
@@ -80,6 +81,34 @@ export async function verificarOtpYCrearSesion(
     await tx.insert(sesiones).values({ tokenHash: sha256Hex(token), usuarioId: usuario.id, venceEn });
     return { token, venceEn };
   });
+}
+
+/**
+ * Acceso por contraseña: SOLO cuentas a las que se les asignó `password_hash`
+ * (el superadmin del fundador). Mensaje idéntico para correo o clave erróneos
+ * (no enumerar usuarios). La sesión del superadmin nace elevada.
+ */
+export async function iniciarSesionConPassword(
+  db: Db,
+  email: string,
+  password: string,
+): Promise<{ token: string; venceEn: Date }> {
+  const normalizado = email.trim().toLowerCase();
+  const [usuario] = await db.select().from(usuarios).where(eq(usuarios.email, normalizado));
+  if (!usuario?.passwordHash || !verificarPassword(password, usuario.passwordHash)) {
+    throw new AuthError("Correo o contraseña incorrectos.");
+  }
+  if (usuario.estado === "baneado") throw new AuthError("Esta cuenta fue suspendida de forma permanente.");
+
+  const token = tokenAleatorio();
+  const venceEn = new Date(Date.now() + SESION_DIAS * 86_400_000);
+  await db.insert(sesiones).values({
+    tokenHash: sha256Hex(token),
+    usuarioId: usuario.id,
+    venceEn,
+    adminElevada: usuario.roles.includes("admin"),
+  });
+  return { token, venceEn };
 }
 
 export interface UsuarioSesion {

@@ -20,6 +20,9 @@ import { datosLlegada, LlegadaError } from "./reservas";
 
 const HAY_DB = Boolean(process.env.DATABASE_URL);
 
+// Fechas relativas a hoy: la tarifa nace vigente desde hoy, así el test no caduca.
+const enDias = (n: number) => new Date(Date.now() + n * 86_400_000).toISOString().slice(0, 10);
+
 describe.skipIf(!HAY_DB)("Owner Direct — gestión directa del dueño", () => {
   let db: Db;
   let duenoId: string;
@@ -75,8 +78,8 @@ describe.skipIf(!HAY_DB)("Owner Direct — gestión directa del dueño", () => {
     const { solicitudId } = await crearSolicitud(db, {
       externoId: socioVentasId,
       propiedadId,
-      desde: "2026-10-10",
-      hasta: "2026-10-15", // 5 noches → neta $5.000.000, mínimo $5.800.000
+      desde: enDias(30),
+      hasta: enDias(35), // 5 noches → neta $5.000.000, mínimo $5.800.000
       huespedes: 6,
     });
 
@@ -166,8 +169,8 @@ describe.skipIf(!HAY_DB)("Owner Direct — gestión directa del dueño", () => {
       crearSolicitud(db, {
         externoId: socioVentasId,
         propiedadId,
-        desde: "2026-11-01",
-        hasta: "2026-11-01",
+        desde: enDias(40),
+        hasta: enDias(40),
         huespedes: 2,
       }),
     ).rejects.toThrow(OperacionError);

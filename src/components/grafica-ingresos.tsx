@@ -3,17 +3,8 @@
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { formatearCOP } from "@/lib/domain/split";
 
-const NETO_MENSUAL = [
-  { mes: "Feb", neto: 4_820_000 },
-  { mes: "Mar", neto: 6_940_000 },
-  { mes: "Abr", neto: 5_610_000 },
-  { mes: "May", neto: 9_230_000 },
-  { mes: "Jun", neto: 10_480_000 },
-  { mes: "Jul", neto: 8_960_000 },
-];
-
 /** Neto mensual del propietario — dispersión directa, tarifa neta completa. */
-export function GraficaIngresos({ datos = NETO_MENSUAL }: { datos?: { mes: string; neto: number }[] }) {
+export function GraficaIngresos({ datos }: { datos: { mes: string; neto: number }[] }) {
   if (datos.length === 0) {
     return (
       <div className="flex h-52 items-center justify-center text-sm text-bruma">
